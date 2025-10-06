@@ -1,0 +1,62 @@
+/* Container spacing */
+.search-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Form group spacing */
+.form-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+/* Tooltip styling */
+.tooltip {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: 12px;
+  color: gray;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  white-space: nowrap;
+  background: #eee;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  z-index: 10;
+}
+
+/* Show tooltip on hover of label */
+.form-group label:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Basic input styling */
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+/* Ingredients list */
+.ingredients-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.ingredients-list li {
+  margin-bottom: 5px;
+}
+
+.ingredients-list button {
+  margin-right: 8px;
+  color: red;
+  cursor: pointer;
+}

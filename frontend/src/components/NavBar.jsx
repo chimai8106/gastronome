@@ -1,0 +1,93 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import "./Header.css";
+import { useAuth } from "../contexts/authContext";
+
+export default function NavBar(){
+    const { userLoggedIn, isSigningIn, userName } = useAuth();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+    
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
+    };
+    return (<>
+    {/* Desktop Navigation */}
+            <nav>
+                <ul>
+                    <li>
+                        <Link to="/">Home</Link>
+                    </li>
+                    <li>
+                        <Link to="/dashboard">Dashboard</Link>
+                    </li>
+                    <li>
+                        <Link to="/recipe-search">Today's Menu</Link>
+                    </li>
+                    <li> 
+                        <Link to ="/add-recipe">Create</Link>
+                    </li>
+                    
+                    {!userLoggedIn && <>
+                    <li>
+                        <Link to="/login">Login</Link>
+                    </li>
+                    
+                    <li>
+                        <Link to="/register">Register</Link>
+                    </li>
+                   
+                    </>
+                    }
+                    {userLoggedIn && (
+                    <>
+                    <li className ="greeting">{userName}</li>
+                    <li> 
+                        <Link to ="/signout">Log Out</Link>
+                    </li>
+                    </>
+                    )
+                    }
+
+                    
+
+                    
+                </ul>
+            </nav>
+
+            {/* Mobile Menu Toggle */}
+            <button 
+                className={`mobile-menu-toggle ${isMobileMenuOpen ? 'active' : ''}`}
+                onClick={toggleMobileMenu}
+                aria-label="Toggle mobile menu"
+            >
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            {/* Mobile Navigation */}
+            <nav className={`mobile-nav ${isMobileMenuOpen ? 'active' : ''}`}>
+                <ul>
+                    <li>
+                        <Link to="/" onClick={closeMobileMenu}>Home</Link>
+                    </li>
+                    <li>
+                        <Link to="/about" onClick={closeMobileMenu}>About</Link>
+                    </li>
+                    <li>
+                        <Link to="/dashboard" onClick={closeMobileMenu}>Dashboard</Link>
+                    </li>
+                    <li>
+                        <Link to="/login" onClick={closeMobileMenu}>Login</Link>
+                    </li>
+                    <li>
+                        <Link to="/register" onClick={closeMobileMenu}>Register</Link>
+                    </li>
+                </ul>
+            </nav>
+    </>)
+}
