@@ -1,15 +1,6 @@
 import admin from "firebase-admin";
-import 'dotenv/config';
-console.log('=== DEBUGGING ENV VARS ===');
-console.log('PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
-console.log('PROJECT_ID type:', typeof process.env.FIREBASE_PROJECT_ID);
-console.log('PROJECT_ID length:', process.env.FIREBASE_PROJECT_ID?.length);
-console.log('CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL);
-console.log('PRIVATE_KEY exists:', !!process.env.FIREBASE_PRIVATE_KEY);
-console.log('===========================');
-
-
-
+import dotenv from 'dotenv';
+dotenv.config();
 // Initialize Firebase Admin SDK once with environment variables
 admin.initializeApp({
   credential: admin.credential.cert({
@@ -42,6 +33,7 @@ export async function verifyFirebaseToken(req, res, next) {
       email: decodedToken.email,
       displayName: decodedToken.name
     };
+    
     
     next();
   } catch (error) {

@@ -5,7 +5,6 @@ export default function SearchBar(){
     function handleSubmit(e){
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        console.log(formData.get("searchText"));
 
     }
     return(

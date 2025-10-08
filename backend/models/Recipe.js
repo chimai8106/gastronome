@@ -8,6 +8,10 @@ const recipeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    authorName:{
+        type: String,
+        required: true
+    },
     title:{
         type: String,
         required: true

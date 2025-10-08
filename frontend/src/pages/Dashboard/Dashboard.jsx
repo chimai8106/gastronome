@@ -7,10 +7,9 @@ import RecipeForm from "../../components/RecipeForm";
 import Popup from 'reactjs-popup';
 import { toast } from "react-hot-toast";
 import { useLocation } from "react-router-dom";
-
-
+import { useAuth } from "../../contexts/authContext";
 export default function Dashboard() {
-
+  const { userLoggedIn, loading: authLoading } = useAuth(); 
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [changed, setChanged] = useState(false);
@@ -20,14 +19,23 @@ export default function Dashboard() {
   const [successMessage, setSuccessMessage] = useState("");
   
   useEffect(() => {
-  if (location.state?.message && !hasShownToast.current) {
-    toast.success(location.state.message);
-    hasShownToast.current = true;
-    navigate(location.pathname, { replace: true, state: {} });
-  }
-}, [location.state]);
+    if (location.state?.message && !hasShownToast.current) {
+      toast.success(location.state.message);
+      hasShownToast.current = true;
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state]);
 
   useEffect(() => {
+    // Don't fetch recipes until auth is ready
+    if (authLoading) return;
+    
+    // Redirect if not logged in
+    if (!userLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
     async function fetchRecipes() {
       try {
         const data = await getMyRecipes();
@@ -39,16 +47,16 @@ export default function Dashboard() {
       }
     }
     fetchRecipes();
-  }, [changed]);
-  const handleChange = async (id, recipeData) =>{
-    try{
+  }, [changed, authLoading, userLoggedIn, navigate]); 
+
+  const handleChange = async (id, recipeData) => {
+    try {
       await updateRecipe(id, recipeData);
-      setChanged(!changed); // Toggle to trigger useEffect
+      setChanged(!changed);
       toast.success("Successfully updated recipe!");
       return true;
-    }
-    catch (err) {
-      toast.error(`Failed to update recipes: ${err?.message || err}}. Please try again`);
+    } catch (err) {
+      toast.error(`Failed to update recipes: ${err?.message || err}. Please try again`);
       return false;
     }
   }
@@ -56,14 +64,16 @@ export default function Dashboard() {
   const handleDelete = async (recipeId) => {
     try {
       await deleteRecipe(recipeId);
-      setChanged(!changed); // Toggle to trigger useEffect
+      setChanged(!changed);
       toast.success("Successfully deleted recipe!");
     } catch (err) {
       toast.error(`Failed to delete recipes: ${err?.message || err}. Please try again`);
     }
   };
-  if (loading) {
-    return <p className="text-center mt-6">Loading your recipes...</p>;
+
+  // Show loading while auth is being checked
+  if (authLoading || loading) {
+    return null;
   }
 
   if (recipes.length === 0) {
@@ -100,23 +110,23 @@ export default function Dashboard() {
             </button>
 
             <Popup 
-          trigger={<button>Update</button>} 
-        modal nested>
-        {close => (
-       <div className='detail-recipe'>
-        <RecipeForm  
-          initialRecipe={recipe} 
-        initialId={recipe._id} 
-        onSubmit={async (id, recipeData) => {
-          const success = await handleChange(id, recipeData);
-          if (success) close();
-        }} 
-        submitButtonText="Update Recipe" 
-        />
-        <button onClick={() => close()}>Close</button> 
-      </div>
-  )}
-</Popup>
+              trigger={<button>Update</button>} 
+              modal nested>
+              {close => (
+                <div className='detail-recipe'>
+                  <RecipeForm  
+                    initialRecipe={recipe} 
+                    initialId={recipe._id} 
+                    onSubmit={async (id, recipeData) => {
+                      const success = await handleChange(id, recipeData);
+                      if (success) close();
+                    }} 
+                    submitButtonText="Update Recipe" 
+                  />
+                  <button onClick={() => close()}>Close</button> 
+                </div>
+              )}
+            </Popup>
           </div>
         ))}
       </div>

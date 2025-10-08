@@ -66,12 +66,11 @@ export default function RecipeForm({
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       toast.error(Object.values(newErrors).join(", "));
-      return; // STOP HERE - don't proceed
+      return; 
     }
 
     // Clear errors if validation passes
     setErrors({});
-    console.log("Validation passed, submitting...");
 
     const formattedIngredients = ingredients
       .split(",")

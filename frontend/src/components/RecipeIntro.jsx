@@ -12,13 +12,18 @@ export default function RecipeIntro({ recipe }) {
               <img src={recipe.image} alt={recipe.title} width={200} />
             )}
             <div>
-              {(recipe.timePrepared>0 || recipe.readyInMinutes!=0) && (
+                {recipe.authorName && (
+                  <p>
+                    <strong>Author: </strong> {recipe.authorName}
+                  </p>
+                )}
+              {(recipe.timePrepared>0 || recipe.readyInMinutes>0) && (
                 <p>
                   <strong>Ready in:</strong> {recipe.timePrepared || recipe.readyInMinutes} minutes
                 </p>
               )}
               
-              {(recipe.numServings>0 || recipe.servings!=0) && (
+              {(recipe.numServings>0 || recipe.servings>0) && (
                 <p>
                   <strong>Servings:</strong> {recipe.numServings || recipe.servings}
                 </p>

@@ -25,4 +25,3 @@ export const doSendEmailVerification = () =>{
         urel: `${window.location.origin}/home`,
     });
 };
-

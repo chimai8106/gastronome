@@ -1,20 +1,22 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from "../contexts/authContext";
 import { toast } from "react-hot-toast";
 
 function ProtectedRoute() {
-  const { userLoggedIn } = useAuth();
-  const hasShownToast = useRef(false); 
+
+  const { userLoggedIn, loading} = useAuth(); 
+  
+  // Wait until auth is confirmed before making decisions
+  if (loading) {
+    return null; 
+  }
 
   if (userLoggedIn) {
     return <Outlet />;
   } else {
-    if (!hasShownToast.current) {
-      toast.error("You have to log in first", { duration: 1000 });
-      hasShownToast.current = true; 
-    }
-    return <Navigate to="/login" replace />;
+    toast.error("You have to log in first", { duration: 1000 });
+    return <Navigate to='/login' replace />;
   }
 }
 

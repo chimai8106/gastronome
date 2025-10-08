@@ -11,8 +11,7 @@ export default function CreateRecipe() {
 
   const handleSubmit = async (recipeData) => {
 
-    await addRecipe(recipeData);
-    
+    await addRecipe(recipeData);    
     navigate("/dashboard", { state: { message: 'Successfully created recipe!' } });
   };
 

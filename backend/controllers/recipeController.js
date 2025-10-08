@@ -46,7 +46,8 @@ export const createRecipe= async (req, res)=> {
     const {title, instruction} = req.body;
     const recipe = new Recipe({
       ...req.body,
-      uid: req.user.uid
+      uid: req.user.uid,
+      authorName: req.user.displayName
     });
     const newRecipe = await recipe.save()
     res.status(201).json(newRecipe);
@@ -119,7 +120,6 @@ export async function updateRecipe(req, res) {
 //delete my recipe
 export async function deleteRecipe(req, res) {
   try {
-    console.log(req.params.id)
     const deletedRecipe = await Recipe.findOneAndDelete({
       _id: req.params.id,
       uid: req.user.uid,

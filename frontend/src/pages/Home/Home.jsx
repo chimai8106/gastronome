@@ -66,7 +66,6 @@ export default function Home(){
         const data = await getUserRecipes();
         setRecipes(data);
       } catch (err) {
-        console.log(err);
         toast.error(`Failed to load recipes: ${err?.message || err}. Please try again`);
       } finally {
         setLoading(false);

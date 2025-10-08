@@ -11,6 +11,7 @@ import {
     useNavigate,
     Outlet,
 } from "react-router-dom";
+import {toast} from "react-hot-toast";
 
 
 export default function Register() {
@@ -19,6 +20,7 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +38,7 @@ export default function Register() {
 }
     else{
         setErrorMessage("Passwords do not match");
-        console.log(errorMessage);
+        toast.error(errorMessage);
         return;
     }
 
