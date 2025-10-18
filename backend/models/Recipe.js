@@ -8,6 +8,9 @@ const recipeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    image:{
+        type: String
+    },
     authorName:{
         type: String,
         required: true
@@ -42,6 +45,9 @@ const recipeSchema = new mongoose.Schema({
     likes:{
         type: Number
     },
+    likedBy: 
+    [{ type: String, ref: "User", select: false }],
+
     comments:{
         type: [String]
     },
@@ -54,6 +60,7 @@ const recipeSchema = new mongoose.Schema({
     nutrition:{
         type: String
     }
+
 },
 { timestamps : true});
 const Recipe = mongoose.model("Recipe", recipeSchema)
