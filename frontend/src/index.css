@@ -71,6 +71,10 @@ p{
 h3{
   color: black
 }
+.error-text {
+  color: red;
+}
+
 
 @media (prefers-color-scheme: light) {
   :root {
