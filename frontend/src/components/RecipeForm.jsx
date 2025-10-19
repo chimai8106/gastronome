@@ -20,8 +20,10 @@ export default function RecipeForm({
   const [difficulty, setDifficulty] = useState(0);
   const [nutrition, setNutrition] = useState("");
   const [errors, setErrors] = useState({});
+  const [images, setImages] = useState();
+  const validFileTypes = ['image/jpg', 'image/jpeg', 'image/png'];
 
-  // Prepopulate form if editing (initialRecipe provided)
+  // Prepopulate form if editing
   useEffect(() => {
     if (initialRecipe) {
       setTitle(initialRecipe.title || "");
@@ -48,28 +50,18 @@ export default function RecipeForm({
   }, [initialRecipe]);
 
   const handleSubmit = (e) => {
-     e.preventDefault();
-    // Validate required fields
+    e.preventDefault();
     const newErrors = {};
-    
-    if (!title.trim()) {
-      newErrors.title = "Title is required";
-    }
-    if (!ingredients.trim()) {
-      newErrors.ingredients = "Ingredients are required";
-    }
-    if (!instruction.trim()) {
-      newErrors.instruction = "Instructions are required";
-    }
+    if (!title.trim()) newErrors.title = "Title is required";
+    if (!ingredients.trim()) newErrors.ingredients = "Ingredients are required";
+    if (!instruction.trim()) newErrors.instruction = "Instructions are required";
 
-    // If there are errors, set them and don't submit
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      toast.error(Object.values(newErrors).join(", "));
-      return; 
+      toast.error("Unsuccessful. Please try again!");
+      return;
     }
 
-    // Clear errors if validation passes
     setErrors({});
 
     const formattedIngredients = ingredients
@@ -82,31 +74,49 @@ export default function RecipeForm({
       .map((c) => c.trim())
       .filter((c) => c.length > 0);
 
-    const recipeData = {
-      title,
-      ingredients: formattedIngredients,
-      instruction,
-      isPublic,
-      numServings,
-      timePrepared,
-      rating,
-      likes,
-      comments: formattedComments,
-      cuisine,
-      difficulty,
-      nutrition,
-    };
+    // Use FormData for file upload
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("instruction", instruction);
+    formData.append("isPublic", isPublic);
+    formData.append("numServings", numServings);
+    formData.append("timePrepared", timePrepared);
+    formData.append("rating", rating);
+    formData.append("likes", likes);
+    formData.append("cuisine", cuisine);
+    formData.append("difficulty", difficulty);
+    formData.append("nutrition", nutrition);
 
-    // If initialId exists, pass it along (for updates)
+    // Append ingredients and comments as JSON strings
+    formData.append("ingredients", JSON.stringify(formattedIngredients));
+    formData.append("comments", JSON.stringify(formattedComments));
+
+    // Append image if selected
+    if (images) formData.append("image", images);
+
+    // Call onSubmit with FormData
     if (initialId) {
-      onSubmit(initialId, recipeData);
+      onSubmit(initialId, formData);
     } else {
-      onSubmit(recipeData);
+      onSubmit(formData);
+    }
+  };
+
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (validFileTypes.includes(file.type)) {
+      setImages(file);
+    } else {
+      toast.error("Invalid file type. Please upload a JPG or PNG image.");
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="max-w-xl mx-auto p-6 bg-white shadow-lg rounded-2xl">
+      
       {/* Title */}
       <div className="mb-4">
         <label className="block mb-1 font-semibold">Title *</label>
@@ -114,13 +124,38 @@ export default function RecipeForm({
           className={`w-full p-2 border rounded-lg ${errors.title ? 'border-red-500' : ''}`}
           placeholder="Recipe Title"
           value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-            if (errors.title) setErrors({...errors, title: ""});
-          }}
+          onChange={(e) => setTitle(e.target.value)}
         />
-        {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+        {errors.title && <p className="error-text">{errors.title}</p>}
       </div>
+
+      {/* Image */}
+      <div className="mb-4">
+        <label className="block mb-1 font-semibold">Image</label>
+        <input
+          id="imageInput"
+          type="file"
+          hidden
+          onChange={handleImageUpload}
+        />
+        <button
+          type="button"
+          onClick={() => document.getElementById("imageInput").click()}
+          className="px-4 py-2 bg-gray-200 rounded"
+        >
+          {images ? "Change image" : "Upload image"}
+        </button>
+        {images && (
+          <div className="mt-2">
+            <img
+              src={URL.createObjectURL(images)}
+              alt="Preview"
+              className="h-32 w-auto rounded-lg"
+            />
+          </div>
+        )}
+      </div>
+
 
       {/* Ingredients */}
       <div className="mb-4">
@@ -134,10 +169,10 @@ export default function RecipeForm({
             if (errors.ingredients) setErrors({...errors, ingredients: ""});
           }}
         />
-        {errors.ingredients && <p className="text-red-500 text-sm mt-1">{errors.ingredients}</p>}
+        {errors.ingredients && <p className="error-text">{errors.ingredients}</p>}
       </div>
 
-      {/* Instruction */}
+      {/* Instructions */}
       <div className="mb-4">
         <label className="block mb-1 font-semibold">Instructions *</label>
         <textarea
@@ -149,10 +184,10 @@ export default function RecipeForm({
             if (errors.instruction) setErrors({...errors, instruction: ""});
           }}
         />
-        {errors.instruction && <p className="text-red-500 text-sm mt-1">{errors.instruction}</p>}
+        {errors.instruction && <p className="error-text">{errors.instruction}</p>}
       </div>
 
-      {/* Public */}
+      {/* Visibility */}
       <div className="mb-4">
         <label className="block font-semibold mb-1">Visibility</label>
         <div className="flex items-center gap-2">
