@@ -3,7 +3,7 @@ import { authenticatedFetch, publicFetch } from './api';
 export async function addRecipe(recipeData) {
   return authenticatedFetch('/recipes', {
     method: 'POST',
-    body: JSON.stringify(recipeData),
+    body: recipeData,
   });
 }
 
@@ -14,13 +14,18 @@ export async function getUserRecipes() {
 export async function updateRecipe(recipeId, recipeData) {
   return authenticatedFetch(`/recipes/${recipeId}`, {
     method: 'PUT',
-    body: JSON.stringify(recipeData),
+    body: recipeData,
   });
 }
 
 export async function deleteRecipe(recipeId) {
   return authenticatedFetch(`/recipes/${recipeId}`, {
     method: 'DELETE',
+  });
+}
+export async function getRecipeById(recipeId) {
+  return authenticatedFetch(`/recipes/${recipeId}`, {
+    method: 'GET',
   });
 }
 export async function getMyRecipes(){
@@ -30,7 +35,7 @@ export async function getMyRecipes(){
 export async function searchRecipeByIngredients(recipeData){
   return authenticatedFetch(`/recipes/search`, {
     method: 'POST',
-    body: JSON.stringify(recipeData),
+    body: recipeData,
   });
 
 }

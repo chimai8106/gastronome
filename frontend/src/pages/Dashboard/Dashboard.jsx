@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { deleteRecipe, getMyRecipes, updateRecipe } from "../../services/RecipeServices";
+import { getMyRecipeCollection, deleteRecipeCollection, updateRecipeCollection, addRecipeCollection } from "../../services/RecipeCollectionServices";
 import RecipeCard from "../../components/RecipeCard";
 import RecipeIntro from "../../components/RecipeIntro";
 import RecipeForm from "../../components/RecipeForm";
@@ -8,9 +9,12 @@ import Popup from 'reactjs-popup';
 import { toast } from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/authContext";
+
+
 export default function Dashboard() {
   const { userLoggedIn, loading: authLoading } = useAuth(); 
   const [recipes, setRecipes] = useState([]);
+  const [recipeRecipeCollections, setRecipeCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [changed, setChanged] = useState(false);
   const navigate = useNavigate();
@@ -25,6 +29,26 @@ export default function Dashboard() {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state]);
+  async function fetchRecipes() {
+      try {
+        const data = await getMyRecipes();
+        setRecipes(data);
+      } catch (err) {
+        toast.error(`Failed to load recipes: ${err?.message || err}. Please try again`);
+      } finally {
+        setLoading(false);
+      }
+    }
+  async function fetchRecipeCollections() {
+      try {
+        const data = await getMyRecipeCollection();
+        setRecipeCollections(data);
+      } catch (err) {
+        toast.error(`Failed to load recipeRecipeCollections: ${err?.message || err}. Please try again`);
+      } finally {
+        setLoading(false);
+      }
+    }
 
   useEffect(() => {
     // Don't fetch recipes until auth is ready
@@ -35,19 +59,10 @@ export default function Dashboard() {
       navigate("/login");
       return;
     }
-
-    async function fetchRecipes() {
-      try {
-        const data = await getMyRecipes();
-        setRecipes(data);
-      } catch (err) {
-        toast.error(`Failed to load recipes: ${err?.message || err}. Please try again`);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchRecipes();
+    fetchRecipeCollections();
   }, [changed, authLoading, userLoggedIn, navigate]); 
+
 
   const handleChange = async (id, recipeData) => {
     try {
@@ -80,7 +95,7 @@ export default function Dashboard() {
     return (
       <>
         <p className="text-center mt-6">You haven't added any recipes yet!</p>
-        <button onClick={() => navigate("/add-recipe")}>
+        <button onClick={() => navigate("/add")}>
           Add one now!
         </button>
       </>
@@ -109,7 +124,7 @@ export default function Dashboard() {
               Delete
             </button>
 
-            <Popup 
+            <Popup className="pop-up" overlayClassName="popup-overlay"
               trigger={<button>Update</button>} 
               modal nested>
               {close => (

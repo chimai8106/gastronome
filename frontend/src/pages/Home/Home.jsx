@@ -9,8 +9,8 @@ import {
 import { deleteRecipe, getMyRecipes, updateRecipe, getUserRecipes } from "../../services/RecipeServices";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import RecipeIntro from "../../components/RecipeIntro"; // adjust path as needed
-import RecipeForm from "../../components/RecipeForm"; // adjust path as needed
+import RecipeIntro from "../../components/RecipeIntro"; 
+import RecipeForm from "../../components/RecipeForm";
 import Popup from "reactjs-popup"; 
 export default function Home(){
    
@@ -94,7 +94,7 @@ export default function Home(){
               Delete
             </button>
 
-            <Popup 
+            <Popup  className="pop-up" overlayClassName="popup-overlay"
           trigger={<button>Update</button>} 
         modal nested>
         {close => (

@@ -15,8 +15,11 @@ import Header from "./components/Header";
 import RecipeSearch from "./services/RecipeSearch"
 import Logout from "./pages/Logout/Logout"
 import ProtectedRoute from "./components/ProtectedRoute";
-import CreateRecipe from "./pages/CreateRecipe/CreateRecipe";
+import Create from "./pages/Create/Create";
+import User from "./pages/User/User";
 import { Toaster } from "react-hot-toast";
+import Collection from "./pages/Collection/Collection"
+import RecipeCard from "./components/RecipeCard";
 
 // About Page Component 
 const About = () => (
@@ -46,7 +49,7 @@ function App() {
             <Routes>
                 <Route element={<ProtectedRoute />}>
                     <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="add-recipe" element={<CreateRecipe />} />
+                    <Route path="add" element={<Create/>} />
                 </Route>
                 <Route path="/" element={<Home />} />
                 <Route path="/recipe-search" element={<RecipeSearch />}></Route>
@@ -57,6 +60,9 @@ function App() {
                 <Route path="/login" element={<Login />}></Route>
                 <Route path="/register" element={<Register/>}></Route>
                 <Route path="/signout" element ={<Logout />}></Route>
+                <Route path="/user" element ={<User />}></Route>
+                <Route path="/collections/:id" element={<Collection />} />
+                <Route path="/recipe/:id" element={<RecipeCard />} />
 
             </Routes>
         </Router>

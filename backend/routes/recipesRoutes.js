@@ -1,23 +1,25 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { searchRecipes, getAllRecipe, getRecipeById, createRecipe, updateRecipe, deleteRecipe, getAllMyRecipe } from '../controllers/recipeController.js';
 import { verifyFirebaseToken } from '../middleware/auth.js';
 
 const router = Router();
 
-// POST /api/recipes/search
-
+// Configure multer
+const upload = multer({
+  storage: multer.memoryStorage(),
+});
 
 
 // Protected routes 
-router.post('/search',verifyFirebaseToken, searchRecipes);
-router.get('/dashboard',verifyFirebaseToken, getAllMyRecipe);
-router.post("/", verifyFirebaseToken, createRecipe); // Must be logged in to create
-router.put("/:id", verifyFirebaseToken, updateRecipe); // Must own the recipe
-router.delete("/:id", verifyFirebaseToken, deleteRecipe); // Must own the recipe
+router.post('/search', verifyFirebaseToken, searchRecipes);
+router.get('/dashboard', verifyFirebaseToken, getAllMyRecipe);
+router.post("/", verifyFirebaseToken, upload.none(), createRecipe); 
+router.put("/:id", verifyFirebaseToken, upload.none(), updateRecipe); 
+router.delete("/:id", verifyFirebaseToken, deleteRecipe);
 
 // Public routes 
-
-router.get("/", getAllRecipe); // Public recipes only
-router.get("/:id", getRecipeById); // Can view public recipes or own recipes
+router.get("/", getAllRecipe);
+router.get("/:id", getRecipeById);
 
 export default router;

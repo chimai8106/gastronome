@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import { getMyRecipeCollection, addRecipeCollection } from "../services/RecipeCollectionServices";
 
-export default function RecipeForm({ 
+export default function RecipeForm({
   initialRecipe = null,
   initialId = null,
-  onSubmit, 
-  submitButtonText = "Save Recipe" 
+  onSubmit,
+  submitButtonText = "Save Recipe",
 }) {
   const [title, setTitle] = useState("");
   const [ingredients, setIngredients] = useState("");
@@ -19,11 +20,28 @@ export default function RecipeForm({
   const [cuisine, setCuisine] = useState("");
   const [difficulty, setDifficulty] = useState(0);
   const [nutrition, setNutrition] = useState("");
-  const [errors, setErrors] = useState({});
   const [images, setImages] = useState();
-  const validFileTypes = ['image/jpg', 'image/jpeg', 'image/png'];
+  const [errors, setErrors] = useState({});
 
-  // Prepopulate form if editing
+  const [recipeCollections, setRecipeCollections] = useState([]);
+  const [selectedRecipeCollections, setSelectedRecipeCollections] = useState([]); // array of IDs
+  const [selectedRecipeCollectionNames, setSelectedRecipeCollectionNames] = useState([]); // array of names
+  const [newRecipeCollectionName, setNewRecipeCollectionName] = useState("");
+  const [creatingNewRecipeCollection, setCreatingNewRecipeCollection] = useState(false);
+  const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
+
+  useEffect(() => {
+    async function fetchRecipeCollections() {
+      try {
+        const data = await getMyRecipeCollection();
+        setRecipeCollections(data);
+      } catch (err) {
+        toast.error(`Failed to load recipe collections: ${err?.message || err}`);
+      }
+    }
+    fetchRecipeCollections();
+  }, []);
+
   useEffect(() => {
     if (initialRecipe) {
       setTitle(initialRecipe.title || "");
@@ -33,7 +51,7 @@ export default function RecipeForm({
           : initialRecipe.ingredients || ""
       );
       setInstruction(initialRecipe.instruction || "");
-      setIsPublic(initialRecipe.isPublic !== undefined ? initialRecipe.isPublic : true);
+      setIsPublic(initialRecipe.isPublic ?? true);
       setNumServings(initialRecipe.numServings || 0);
       setTimePrepared(initialRecipe.timePrepared || 0);
       setRating(initialRecipe.rating || 0);
@@ -46,10 +64,24 @@ export default function RecipeForm({
       setCuisine(initialRecipe.cuisine || "");
       setDifficulty(initialRecipe.difficulty || 0);
       setNutrition(initialRecipe.nutrition || "");
+      setSelectedRecipeCollections(initialRecipe.recipeCollectionID || []);
+      setSelectedRecipeCollectionNames(initialRecipe.recipeCollectionName || []);
     }
   }, [initialRecipe]);
 
-  const handleSubmit = (e) => {
+  const handleCollectionToggle = (collectionId, collectionName) => {
+    if (selectedRecipeCollections.includes(collectionId)) {
+      // Remove it
+      setSelectedRecipeCollections(selectedRecipeCollections.filter(id => id !== collectionId));
+      setSelectedRecipeCollectionNames(selectedRecipeCollectionNames.filter(name => name !== collectionName));
+    } else {
+      // Add it
+      setSelectedRecipeCollections([...selectedRecipeCollections, collectionId]);
+      setSelectedRecipeCollectionNames([...selectedRecipeCollectionNames, collectionName]);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
     if (!title.trim()) newErrors.title = "Title is required";
@@ -63,7 +95,6 @@ export default function RecipeForm({
     }
 
     setErrors({});
-
     const formattedIngredients = ingredients
       .split(",")
       .map((i) => i.trim())
@@ -74,7 +105,6 @@ export default function RecipeForm({
       .map((c) => c.trim())
       .filter((c) => c.length > 0);
 
-    // Use FormData for file upload
     const formData = new FormData();
     formData.append("title", title);
     formData.append("instruction", instruction);
@@ -86,214 +116,294 @@ export default function RecipeForm({
     formData.append("cuisine", cuisine);
     formData.append("difficulty", difficulty);
     formData.append("nutrition", nutrition);
-
-    // Append ingredients and comments as JSON strings
+    formData.append("recipeCollectionID", JSON.stringify(selectedRecipeCollections));
+    formData.append("recipeCollectionName", JSON.stringify(selectedRecipeCollectionNames));
     formData.append("ingredients", JSON.stringify(formattedIngredients));
     formData.append("comments", JSON.stringify(formattedComments));
 
-    // Append image if selected
     if (images) formData.append("image", images);
 
-    // Call onSubmit with FormData
-    if (initialId) {
-      onSubmit(initialId, formData);
-    } else {
-      onSubmit(formData);
-    }
-  };
-
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (validFileTypes.includes(file.type)) {
-      setImages(file);
-    } else {
-      toast.error("Invalid file type. Please upload a JPG or PNG image.");
-    }
+    if (initialId) onSubmit(initialId, formData);
+    else onSubmit(formData);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-xl mx-auto p-6 bg-white shadow-lg rounded-2xl">
-      
-      {/* Title */}
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Title *</label>
+    <form onSubmit={handleSubmit} style={{ maxHeight: '80vh', overflowY: 'auto', padding: '20px' }}>
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Title *</label>
         <input
-          className={`w-full p-2 border rounded-lg ${errors.title ? 'border-red-500' : ''}`}
-          placeholder="Recipe Title"
+          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          placeholder="Recipe title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        {errors.title && <p className="error-text">{errors.title}</p>}
+        {errors.title && <p style={{ color: 'red', margin: '5px 0 0 0' }}>{errors.title}</p>}
       </div>
 
-      {/* Image */}
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Image</label>
-        <input
-          id="imageInput"
-          type="file"
-          hidden
-          onChange={handleImageUpload}
-        />
-        <button
-          type="button"
-          onClick={() => document.getElementById("imageInput").click()}
-          className="px-4 py-2 bg-gray-200 rounded"
-        >
-          {images ? "Change image" : "Upload image"}
-        </button>
-        {images && (
-          <div className="mt-2">
-            <img
-              src={URL.createObjectURL(images)}
-              alt="Preview"
-              className="h-32 w-auto rounded-lg"
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          Recipe Collections
+        </label>
+        
+        {/* Display selected collections */}
+        <div style={{ marginBottom: '8px' }}>
+          {selectedRecipeCollectionNames.length > 0 ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {selectedRecipeCollectionNames.map((name, idx) => (
+                <span 
+                  key={idx}
+                  style={{ 
+                    background: '#e0e0e0', 
+                    padding: '4px 8px', 
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                >
+                  {name}
+                  <button
+                    type="button"
+                    onClick={() => handleCollectionToggle(selectedRecipeCollections[idx], name)}
+                    style={{ 
+                      marginLeft: '6px', 
+                      background: 'none', 
+                      border: 'none', 
+                      cursor: 'pointer',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>No collections selected</p>
+          )}
+        </div>
+
+        {!creatingNewRecipeCollection ? (
+          <>
+            <button 
+              type="button" 
+              onClick={() => setShowCollectionDropdown(!showCollectionDropdown)}
+              style={{ 
+                padding: '8px 12px', 
+                cursor: 'pointer',
+                marginRight: '8px',
+                background: '#f0f0f0',
+                border: '1px solid #ccc',
+                borderRadius: '4px'
+              }}
+            >
+              {showCollectionDropdown ? '− Hide Collections' : '+ Add to Collection'}
+            </button>
+            
+            <button 
+              type="button" 
+              onClick={() => setCreatingNewRecipeCollection(true)}
+              style={{ 
+                padding: '8px 12px', 
+                cursor: 'pointer',
+                background: '#f0f0f0',
+                border: '1px solid #ccc',
+                borderRadius: '4px'
+              }}
+            >
+              + Create New Collection
+            </button>
+
+            {showCollectionDropdown && (
+              <div style={{ 
+                marginTop: '8px', 
+                border: '1px solid #ccc', 
+                borderRadius: '4px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                background: 'white'
+              }}>
+                {recipeCollections.map((c) => (
+                  <div 
+                    key={c._id}
+                    onClick={() => handleCollectionToggle(c._id, c.title)}
+                    style={{ 
+                      padding: '10px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid #eee',
+                      background: selectedRecipeCollections.includes(c._id) ? '#e3f2fd' : 'white',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedRecipeCollections.includes(c._id)}
+                      onChange={() => {}}
+                      style={{ marginRight: '8px' }}
+                    />
+                    {c.title}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{ marginTop: '8px' }}>
+            <input
+              type="text"
+              placeholder="New recipe collection name"
+              value={newRecipeCollectionName}
+              onChange={(e) => setNewRecipeCollectionName(e.target.value)}
+              style={{ width: '100%', padding: '8px', marginBottom: '8px', boxSizing: 'border-box' }}
             />
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const newCol = await addRecipeCollection({
+                    title: newRecipeCollectionName,
+                    description: "",
+                    isPublic: false,
+                  });
+                  setRecipeCollections([...recipeCollections, newCol]);
+                  setSelectedRecipeCollections([...selectedRecipeCollections, newCol._id]);
+                  setSelectedRecipeCollectionNames([...selectedRecipeCollectionNames, newCol.title]);
+                  setCreatingNewRecipeCollection(false);
+                  setNewRecipeCollectionName("");
+                  toast.success("RecipeCollection created!");
+                } catch (err) {
+                  toast.error(`Failed to create recipe collection: ${err?.message || err}`);
+                }
+              }}
+              style={{ marginRight: '8px', padding: '6px 12px', cursor: 'pointer' }}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCreatingNewRecipeCollection(false);
+                setNewRecipeCollectionName("");
+              }}
+              style={{ padding: '6px 12px', cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
           </div>
         )}
       </div>
 
-
-      {/* Ingredients */}
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Ingredients *</label>
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Ingredients *</label>
         <input
-          className={`w-full p-2 border rounded-lg ${errors.ingredients ? 'border-red-500' : ''}`}
-          placeholder="Comma-separated"
+          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          placeholder="Comma-separated list"
           value={ingredients}
-          onChange={(e) => {
-            setIngredients(e.target.value);
-            if (errors.ingredients) setErrors({...errors, ingredients: ""});
-          }}
+          onChange={(e) => setIngredients(e.target.value)}
         />
-        {errors.ingredients && <p className="error-text">{errors.ingredients}</p>}
+        {errors.ingredients && <p style={{ color: 'red', margin: '5px 0 0 0' }}>{errors.ingredients}</p>}
       </div>
 
-      {/* Instructions */}
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Instructions *</label>
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Instructions *</label>
         <textarea
-          className={`w-full p-2 border rounded-lg ${errors.instruction ? 'border-red-500' : ''}`}
+          style={{ width: '100%', padding: '8px', minHeight: '100px', boxSizing: 'border-box' }}
           placeholder="Step-by-step instructions"
           value={instruction}
-          onChange={(e) => {
-            setInstruction(e.target.value);
-            if (errors.instruction) setErrors({...errors, instruction: ""});
-          }}
+          onChange={(e) => setInstruction(e.target.value)}
         />
-        {errors.instruction && <p className="error-text">{errors.instruction}</p>}
+        {errors.instruction && <p style={{ color: 'red', margin: '5px 0 0 0' }}>{errors.instruction}</p>}
       </div>
 
-      {/* Visibility */}
-      <div className="mb-4">
-        <label className="block font-semibold mb-1">Visibility</label>
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={isPublic}
-            onChange={(e) => setIsPublic(e.target.checked)}
-          />
-          <span>Public</span>
-        </div>
-      </div>
-
-      {/* Number fields */}
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Number of Servings</label>
-        <input
-          type="number"
-          className="w-full p-2 border rounded-lg"
-          placeholder="e.g. 4"
-          value={numServings}
-          onChange={(e) => setNumServings(Number(e.target.value))}
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Servings</label>
+        <input 
+          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          type="number" 
+          value={numServings} 
+          onChange={(e) => setNumServings(e.target.value)} 
         />
       </div>
 
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Time to Prepare (minutes)</label>
-        <input
-          type="number"
-          className="w-full p-2 border rounded-lg"
-          placeholder="e.g. 30"
-          value={timePrepared}
-          onChange={(e) => setTimePrepared(Number(e.target.value))}
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Time (mins)</label>
+        <input 
+          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          type="number" 
+          value={timePrepared} 
+          onChange={(e) => setTimePrepared(e.target.value)} 
         />
       </div>
 
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Rating (0-5)</label>
-        <input
-          type="number"
-          className="w-full p-2 border rounded-lg"
-          placeholder="e.g. 4"
-          value={rating}
-          onChange={(e) => setRating(Number(e.target.value))}
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Cuisine</label>
+        <input 
+          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          value={cuisine} 
+          onChange={(e) => setCuisine(e.target.value)} 
         />
       </div>
 
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Likes</label>
-        <input
-          type="number"
-          className="w-full p-2 border rounded-lg"
-          placeholder="e.g. 100"
-          value={likes}
-          onChange={(e) => setLikes(Number(e.target.value))}
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Difficulty (1–5)</label>
+        <input 
+          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          type="number" 
+          value={difficulty} 
+          onChange={(e) => setDifficulty(e.target.value)} 
         />
       </div>
 
-      {/* Comments */}
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Comments</label>
-        <input
-          className="w-full p-2 border rounded-lg"
-          placeholder="Comma-separated"
-          value={comments}
-          onChange={(e) => setComments(e.target.value)}
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Rating (0–5)</label>
+        <input 
+          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          type="number" 
+          value={rating} 
+          onChange={(e) => setRating(e.target.value)} 
         />
       </div>
 
-      {/* Cuisine */}
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Cuisine</label>
-        <input
-          className="w-full p-2 border rounded-lg"
-          placeholder="e.g. Italian, Mexican"
-          value={cuisine}
-          onChange={(e) => setCuisine(e.target.value)}
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Likes</label>
+        <input 
+          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          type="number" 
+          value={likes} 
+          onChange={(e) => setLikes(e.target.value)} 
         />
       </div>
 
-      {/* Difficulty */}
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Difficulty (1-5)</label>
-        <input
-          type="number"
-          className="w-full p-2 border rounded-lg"
-          placeholder="e.g. 3"
-          value={difficulty}
-          onChange={(e) => setDifficulty(Number(e.target.value))}
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Nutrition Info</label>
+        <textarea 
+          style={{ width: '100%', padding: '8px', minHeight: '80px', boxSizing: 'border-box' }}
+          value={nutrition} 
+          onChange={(e) => setNutrition(e.target.value)} 
         />
       </div>
 
-      {/* Nutrition */}
-      <div className="mb-6">
-        <label className="block mb-1 font-semibold">Nutrition Info</label>
-        <input
-          className="w-full p-2 border rounded-lg"
-          placeholder="e.g. 500 calories per serving"
-          value={nutrition}
-          onChange={(e) => setNutrition(e.target.value)}
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Comments</label>
+        <input 
+          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          placeholder="Comma-separated comments" 
+          value={comments} 
+          onChange={(e) => setComments(e.target.value)} 
         />
       </div>
 
-      {/* Submit */}
-      <button
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'inline-block', marginRight: '10px', fontWeight: 'bold' }}>Public?</label>
+        <input 
+          type="checkbox" 
+          checked={isPublic} 
+          onChange={(e) => setIsPublic(e.target.checked)} 
+        />
+      </div>
+
+      <button 
         type="submit"
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+        style={{ padding: '10px 20px', cursor: 'pointer', fontWeight: 'bold' }}
       >
         {submitButtonText}
       </button>

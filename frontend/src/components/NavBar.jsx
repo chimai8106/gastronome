@@ -25,10 +25,10 @@ export default function NavBar(){
                         <Link to="/dashboard">Dashboard</Link>
                     </li>
                     <li>
-                        <Link to="/recipe-search">Today's Menu</Link>
+                        <Link to="/recipe-search">Kitchen Remix</Link>
                     </li>
                     <li> 
-                        <Link to ="/add-recipe">Create</Link>
+                        <Link to ="/add">Create</Link>
                     </li>
                     
                     {!userLoggedIn && <>
@@ -44,7 +44,9 @@ export default function NavBar(){
                     }
                     {userLoggedIn && (
                     <>
-                    <li className ="greeting">{userName}</li>
+                    <li className="greeting"> 
+                        <Link to ="/user">{userName}</Link>
+                    </li>
                     <li> 
                         <Link to ="/signout">Log Out</Link>
                     </li>

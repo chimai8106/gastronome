@@ -46,7 +46,7 @@ const recipeSchema = new mongoose.Schema({
         type: Number
     },
     likedBy: 
-    [{ type: String, ref: "User", select: false }],
+    [{ type: String, ref: "User"}],
 
     comments:{
         type: [String]
@@ -59,7 +59,9 @@ const recipeSchema = new mongoose.Schema({
     },
     nutrition:{
         type: String
-    }
+    },
+    recipeCollectionID:[{type: String}],
+    recipeCollectionName:[{type: String}]
 
 },
 { timestamps : true});

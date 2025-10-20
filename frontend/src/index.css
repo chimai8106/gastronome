@@ -1,3 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 :root {
   font-family: 'Fredoka', sans-serif; 
   line-height: 1.5;
@@ -76,6 +79,20 @@ h3{
 }
 
 
+
+/* Dark overlay behind popup */
+.popup-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+/* Dark popup for readability */
+.pop-up {
+  background-color: #F5EFE7;       /* dark background */
+  color: #654321;                  /* white text */
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

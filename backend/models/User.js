@@ -13,10 +13,10 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
   },
-  recipeCollections: [
+  recipeRecipeCollections: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Collection",
+      ref: "RecipeCollection",
     },
   ],
   createdAt: {

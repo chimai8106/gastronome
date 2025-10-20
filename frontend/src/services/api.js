@@ -1,6 +1,6 @@
 import { auth } from '../firebase/firebase';
-const BASE_URL = import.meta.env.MODE === "development"? 'http://localhost:5001/api' : "/api"
 
+const BASE_URL = import.meta.env.MODE === "development" ? 'http://localhost:5001/api' : "/api"
 const API_BASE_URL = BASE_URL;
 
 // Wait for auth to be ready
@@ -19,7 +19,7 @@ function waitForAuth() {
 
 //Get the current user's token
 export async function getAuthToken() {
-  const user = await waitForAuth(); // Wait for auth to be ready
+  const user = await waitForAuth();
   if (!user) return null;
   
   const token = await user.getIdToken();
@@ -34,13 +34,23 @@ export async function authenticatedFetch(endpoint, options = {}) {
     throw new Error("You must be logged in");
   }
 
+  // Check if body is FormData 
+  // if it is, don't set Content-Type
+  const isFormData = options.body instanceof FormData;
+  
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    ...options.headers,
+  };
+
+  // Only add Content-Type if not FormData
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      ...options.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -49,14 +59,23 @@ export async function authenticatedFetch(endpoint, options = {}) {
   return response.json();
 }
 
-//Public fetch 
+//Public fetch
 export async function publicFetch(endpoint, options = {}) {
+  // Check if body is FormData
+  const isFormData = options.body instanceof FormData;
+  
+  const headers = {
+    ...options.headers,
+  };
+
+  // Only add Content-Type if not FormData
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {
