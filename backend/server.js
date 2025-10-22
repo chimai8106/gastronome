@@ -13,10 +13,6 @@ const upload = multer({
 
 const app = express()
 const __dirname = path.resolve()
-
-//middleware
-app.use(express.json());
-app.use(rateLimiter)
 if (process.env.NODE_ENV === "production"){
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
   
@@ -29,6 +25,10 @@ if (process.env.NODE_ENV === "production"){
     origin : "http://localhost:5173"
   }));
 }
+//middleware
+app.use(express.json());
+app.use(rateLimiter)
+
 
 app.use("/api/recipes", recipes);
 app.use("/api/recipeRecipeCollections", recipeCollections);

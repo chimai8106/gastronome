@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./Header.css";
 import { useAuth } from "../contexts/authContext";
-
+import Create from "../pages/Create/Create"
 export default function NavBar(){
     const { userLoggedIn, isSigningIn, userName } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -27,9 +27,7 @@ export default function NavBar(){
                     <li>
                         <Link to="/recipe-search">Kitchen Remix</Link>
                     </li>
-                    <li> 
-                        <Link to ="/add">Create</Link>
-                    </li>
+                    
                     
                     {!userLoggedIn && <>
                     <li>
@@ -47,12 +45,12 @@ export default function NavBar(){
                     <li className="greeting"> 
                         <Link to ="/user">{userName}</Link>
                     </li>
-                    <li> 
-                        <Link to ="/signout">Log Out</Link>
-                    </li>
                     </>
                     )
                     }
+                    <li> 
+                        <Create />
+                    </li>
 
                     
 

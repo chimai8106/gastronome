@@ -1,0 +1,282 @@
+/* User Collections Page Styles */
+
+.user-collections-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.user-collections-header {
+  margin-bottom: 2rem;
+}
+
+.user-collections-header h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.empty-collections {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.empty-collections p {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.add-collection-btn {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.add-collection-btn:hover {
+  background-color: #1d4ed8;
+}
+
+/* Collection Section */
+.collection-section {
+  margin-bottom: 3rem;
+  background-color: #f9fafb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.collection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.collection-info {
+  flex: 1;
+}
+
+.collection-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.collection-title:hover {
+  color: #2563eb;
+}
+
+.collection-description {
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.collection-author {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+.collection-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.recipe-count {
+  font-weight: 500;
+}
+
+.collection-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.update-collection-btn,
+.delete-collection-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.update-collection-btn {
+  background-color: #2563eb;
+  color: white;
+}
+
+.update-collection-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.delete-collection-btn {
+  background-color: #dc2626;
+  color: white;
+}
+
+.delete-collection-btn:hover {
+  background-color: #b91c1c;
+}
+
+/* Recipes Grid */
+.collection-recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .collection-recipes-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .collection-recipes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.empty-recipes-message {
+  text-align: center;
+  padding: 2rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Show More Button */
+.show-more-container {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.show-more-btn {
+  background-color: #4b5563;
+  color: white;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.show-more-btn:hover {
+  background-color: #374151;
+}
+
+.show-more-btn::after {
+  content: '→';
+  font-size: 1.25rem;
+}
+
+/* Logout Button */
+.logout-container {
+  text-align: center;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.logout-btn {
+  background-color: #6b7280;
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #4b5563;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
+
+.loading-spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid #e5e7eb;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .user-collections-container {
+    padding: 1rem;
+  }
+
+  .collection-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .collection-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .collection-recipes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .collection-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .update-collection-btn,
+  .delete-collection-btn {
+    width: 100%;
+  }
+}

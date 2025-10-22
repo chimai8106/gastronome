@@ -49,9 +49,9 @@ export const createRecipe = async (req, res) => {
       instruction,
       isPublic,
       numServings,
+      sourceName,
       timePrepared,
       rating,
-      likes,
       cuisine,
       difficulty,
       nutrition,
@@ -62,6 +62,7 @@ export const createRecipe = async (req, res) => {
     } = req.body;
 
     // Parse JSON strings back to arrays (with safety checks)
+    const likes =0;
     let parsedIngredients = [];
     let parsedComments = [];
     let parseRecipeCollectionID = [];
@@ -98,9 +99,10 @@ export const createRecipe = async (req, res) => {
       comments: parsedComments,
       isPublic: isPublic === 'true' || isPublic === true,
       numServings: Number(numServings),
+      sourceName,
       timePrepared: Number(timePrepared),
       rating: Number(rating),
-      likes: Number(likes),
+      likes: 0,
       cuisine,
       difficulty: Number(difficulty),
       nutrition,
@@ -113,7 +115,7 @@ export const createRecipe = async (req, res) => {
 
     const newRecipe = await recipe.save();
 
-    // Add recipe preview data to all selected collections (HYBRID APPROACH)
+    //Add recipe preview data to all selected collections 
     if (parseRecipeCollectionID.length > 0) {
       const recipePreview = {
         _id: newRecipe._id,
@@ -122,7 +124,8 @@ export const createRecipe = async (req, res) => {
         cuisine: newRecipe.cuisine,
         difficulty: newRecipe.difficulty,
         timePrepared: newRecipe.timePrepared,
-        rating: newRecipe.rating
+        rating: newRecipe.rating,
+        likes: newRecipe.likes
       };
 
       await Promise.all(
@@ -196,13 +199,13 @@ export async function updateRecipe(req, res) {
     if (!existingRecipe) {
       return res.status(404).json({ message: "Recipe not found or you don't have permission" });
     }
-
     // Extract and parse fields from FormData
     const {
       title,
       instruction,
       isPublic,
       numServings,
+      sourceName,
       timePrepared,
       rating,
       likes,
@@ -223,9 +226,9 @@ export async function updateRecipe(req, res) {
     if (instruction) updateData.instruction = instruction;
     if (isPublic !== undefined) updateData.isPublic = isPublic === 'true' || isPublic === true;
     if (numServings) updateData.numServings = Number(numServings);
+    if (sourceName) updateData.sourceName = sourceName;
     if (timePrepared) updateData.timePrepared = Number(timePrepared);
     if (rating) updateData.rating = Number(rating);
-    if (likes) updateData.likes = Number(likes);
     if (cuisine) updateData.cuisine = cuisine;
     if (difficulty) updateData.difficulty = Number(difficulty);
     if (nutrition) updateData.nutrition = nutrition;
@@ -292,7 +295,7 @@ export async function updateRecipe(req, res) {
         collectionsToRemoveFrom.map(async (collectionId) => {
           await RecipeCollection.findByIdAndUpdate(
             collectionId,
-            { $pull: { recipes: { _id: req.params.id } } } // Remove by _id in subdocument
+            { $pull: { recipes: { _id: req.params.id } } } 
           );
         })
       );

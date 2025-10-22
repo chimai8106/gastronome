@@ -1,65 +1,53 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import Popup from "reactjs-popup";
-import { toast } from "react-hot-toast";
+import React, { useState, useRef, useEffect } from 'react';
+import { useCreate } from '../../contexts/CreateContext';
+import './Create.css';
 
-import RecipeForm from "../../components/RecipeForm";
-import RecipeCollectionForm from "../../components/RecipeCollectionForm"; 
-import { addRecipe } from "../../services/RecipeServices";
-import { addRecipeCollection } from "../../services/RecipeCollectionServices";
+export default function CreateDropdown() {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { openRecipePopup, openCollectionPopup } = useCreate();
+  const dropdownRef = useRef(null);
 
-export default function Create() {
-  const navigate = useNavigate();
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
 
-  const handleSubmitRecipe = async (recipeData) => {
-    try {
-      await addRecipe(recipeData);
-      navigate("/dashboard", {
-        state: { message: "Successfully created recipe!" },
-      });
-    } catch (err) {
-      toast.error(err?.message || "Failed to create recipe");
-    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleRecipeClick = () => {
+    setIsDropdownOpen(false);
+    openRecipePopup();
   };
 
-  const handleSubmitRecipeCollection = async (recipeRecipeCollectionData) => {
-    try {
-      await addRecipeCollection(recipeRecipeCollectionData);
-      navigate("/user", {
-        state: { message: "Successfully created recipeRecipeCollection!" },
-      });
-    } catch (err) {
-      toast.error(err?.message || "Failed to create recipeRecipeCollection");
-    }
+  const handleCollectionClick = () => {
+    setIsDropdownOpen(false);
+    openCollectionPopup();
   };
 
   return (
-    <div className="flex flex-col items-center gap-6 mt-8">
-      {/* Create Recipe */}
-      <Popup className="pop-up" overlayClassName="popup-overlay" trigger={<button className="btn">Create a new Recipe</button>} modal nested>
-        {(close) => (
-          <RecipeForm
-            onSubmit={async (data) => {
-              await handleSubmitRecipe(data);
-              close();
-            }}
-            submitButtonText="Create Recipe"
-          />
-        )}
-      </Popup>
+    <div className="create-dropdown-container" ref={dropdownRef}>
+      <button
+        className="create-nav-btn"
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+      >
+        Create +
+      </button>
 
-      {/* Create RecipeCollection */}
-      <Popup className="pop-up" overlayClassName="popup-overlay" trigger={<button className="btn">Create a new Recipe Collection</button>} modal nested>
-        {(close) => (
-          <RecipeCollectionForm
-            onSubmit={async (data) => {
-              await handleSubmitRecipeCollection(data);
-              close();
-            }}
-            submitButtonText="Create RecipeCollection"
-          />
-        )}
-      </Popup>
+      {isDropdownOpen && (
+        <div className="dropdown-menu">
+          <button className="dropdown-item" onClick={handleRecipeClick}>
+            Recipe
+          </button>
+
+          <button className="dropdown-item" onClick={handleCollectionClick}>
+            Recipe Collection
+          </button>
+        </div>
+      )}
     </div>
   );
 }

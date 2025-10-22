@@ -1,0 +1,91 @@
+.recipe-collection-form {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.recipe-collection-form-group {
+  margin-bottom: 20px;
+}
+
+.recipe-collection-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.recipe-collection-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.recipe-collection-input:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.recipe-collection-error-text {
+  color: #d32f2f;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.recipe-collection-checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recipe-collection-checkbox {
+  width: auto;
+  cursor: pointer;
+}
+
+.recipe-collection-checkbox-label {
+  margin: 0;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.recipe-collection-button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.recipe-collection-submit-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  background-color: #4a90e2;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.recipe-collection-submit-button:hover {
+  background-color: #357abd;
+}
+
+.recipe-collection-delete-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  background-color: #d32f2f;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.recipe-collection-delete-button:hover {
+  background-color: #b71c1c;
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { getMyRecipeCollection, addRecipeCollection } from "../services/RecipeCollectionServices";
+import "./RecipeForm.css";
 
 export default function RecipeForm({
   initialRecipe = null,
@@ -15,14 +16,13 @@ export default function RecipeForm({
   const [numServings, setNumServings] = useState(0);
   const [timePrepared, setTimePrepared] = useState(0);
   const [rating, setRating] = useState(0);
-  const [likes, setLikes] = useState(0);
+  const [sourceName, setSourceName] = useState("");
   const [comments, setComments] = useState("");
   const [cuisine, setCuisine] = useState("");
   const [difficulty, setDifficulty] = useState(0);
   const [nutrition, setNutrition] = useState("");
   const [images, setImages] = useState();
   const [errors, setErrors] = useState({});
-
   const [recipeCollections, setRecipeCollections] = useState([]);
   const [selectedRecipeCollections, setSelectedRecipeCollections] = useState([]); // array of IDs
   const [selectedRecipeCollectionNames, setSelectedRecipeCollectionNames] = useState([]); // array of names
@@ -41,6 +41,7 @@ export default function RecipeForm({
     }
     fetchRecipeCollections();
   }, []);
+  //prepopulate the form with the existing data if updating
 
   useEffect(() => {
     if (initialRecipe) {
@@ -53,9 +54,10 @@ export default function RecipeForm({
       setInstruction(initialRecipe.instruction || "");
       setIsPublic(initialRecipe.isPublic ?? true);
       setNumServings(initialRecipe.numServings || 0);
+      setSourceName(initialRecipe.sourceName || "");
       setTimePrepared(initialRecipe.timePrepared || 0);
       setRating(initialRecipe.rating || 0);
-      setLikes(initialRecipe.likes || 0);
+      setSourceName(initialRecipe.sourceName || "");
       setComments(
         Array.isArray(initialRecipe.comments)
           ? initialRecipe.comments.join(", ")
@@ -69,13 +71,14 @@ export default function RecipeForm({
     }
   }, [initialRecipe]);
 
+  //drop-down menu handling for collections
   const handleCollectionToggle = (collectionId, collectionName) => {
     if (selectedRecipeCollections.includes(collectionId)) {
-      // Remove it
+      //remove it
       setSelectedRecipeCollections(selectedRecipeCollections.filter(id => id !== collectionId));
       setSelectedRecipeCollectionNames(selectedRecipeCollectionNames.filter(name => name !== collectionName));
     } else {
-      // Add it
+      //add it
       setSelectedRecipeCollections([...selectedRecipeCollections, collectionId]);
       setSelectedRecipeCollectionNames([...selectedRecipeCollectionNames, collectionName]);
     }
@@ -83,6 +86,7 @@ export default function RecipeForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    //error handling
     const newErrors = {};
     if (!title.trim()) newErrors.title = "Title is required";
     if (!ingredients.trim()) newErrors.ingredients = "Ingredients are required";
@@ -95,6 +99,7 @@ export default function RecipeForm({
     }
 
     setErrors({});
+    //append data to the FormData
     const formattedIngredients = ingredients
       .split(",")
       .map((i) => i.trim())
@@ -112,7 +117,7 @@ export default function RecipeForm({
     formData.append("numServings", numServings);
     formData.append("timePrepared", timePrepared);
     formData.append("rating", rating);
-    formData.append("likes", likes);
+    formData.append("sourceName", sourceName);
     formData.append("cuisine", cuisine);
     formData.append("difficulty", difficulty);
     formData.append("nutrition", nutrition);
@@ -128,48 +133,32 @@ export default function RecipeForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxHeight: '80vh', overflowY: 'auto', padding: '20px' }}>
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Title *</label>
+    <form onSubmit={handleSubmit} className="recipe-form">
+      <div className="form-group">
+        <label className="form-label">Title *</label>
         <input
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          className="form-input"
           placeholder="Recipe title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        {errors.title && <p style={{ color: 'red', margin: '5px 0 0 0' }}>{errors.title}</p>}
+        {errors.title && <p className="error-message">{errors.title}</p>}
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-          Recipe Collections
-        </label>
+      <div className="form-group">
+        <label className="form-label">Recipe Collections</label>
         
         {/* Display selected collections */}
-        <div style={{ marginBottom: '8px' }}>
+        <div className="selected-collections-container">
           {selectedRecipeCollectionNames.length > 0 ? (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            <div className="selected-collections">
               {selectedRecipeCollectionNames.map((name, idx) => (
-                <span 
-                  key={idx}
-                  style={{ 
-                    background: '#e0e0e0', 
-                    padding: '4px 8px', 
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
-                >
+                <span key={idx} className="collection-tag">
                   {name}
                   <button
                     type="button"
                     onClick={() => handleCollectionToggle(selectedRecipeCollections[idx], name)}
-                    style={{ 
-                      marginLeft: '6px', 
-                      background: 'none', 
-                      border: 'none', 
-                      cursor: 'pointer',
-                      fontWeight: 'bold'
-                    }}
+                    className="collection-tag-remove"
                   >
                     ×
                   </button>
@@ -177,7 +166,7 @@ export default function RecipeForm({
               ))}
             </div>
           ) : (
-            <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>No collections selected</p>
+            <p className="no-collections-text">No collections selected</p>
           )}
         </div>
 
@@ -186,14 +175,7 @@ export default function RecipeForm({
             <button 
               type="button" 
               onClick={() => setShowCollectionDropdown(!showCollectionDropdown)}
-              style={{ 
-                padding: '8px 12px', 
-                cursor: 'pointer',
-                marginRight: '8px',
-                background: '#f0f0f0',
-                border: '1px solid #ccc',
-                borderRadius: '4px'
-              }}
+              className="collection-button"
             >
               {showCollectionDropdown ? '− Hide Collections' : '+ Add to Collection'}
             </button>
@@ -201,44 +183,24 @@ export default function RecipeForm({
             <button 
               type="button" 
               onClick={() => setCreatingNewRecipeCollection(true)}
-              style={{ 
-                padding: '8px 12px', 
-                cursor: 'pointer',
-                background: '#f0f0f0',
-                border: '1px solid #ccc',
-                borderRadius: '4px'
-              }}
+              className="collection-button"
             >
               + Create New Collection
             </button>
 
             {showCollectionDropdown && (
-              <div style={{ 
-                marginTop: '8px', 
-                border: '1px solid #ccc', 
-                borderRadius: '4px',
-                maxHeight: '200px',
-                overflowY: 'auto',
-                background: 'white'
-              }}>
+              <div className="collection-dropdown">
                 {recipeCollections.map((c) => (
                   <div 
                     key={c._id}
                     onClick={() => handleCollectionToggle(c._id, c.title)}
-                    style={{ 
-                      padding: '10px',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #eee',
-                      background: selectedRecipeCollections.includes(c._id) ? '#e3f2fd' : 'white',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}
+                    className={`collection-item ${selectedRecipeCollections.includes(c._id) ? 'selected' : ''}`}
                   >
                     <input
                       type="checkbox"
                       checked={selectedRecipeCollections.includes(c._id)}
                       onChange={() => {}}
-                      style={{ marginRight: '8px' }}
+                      className="collection-checkbox"
                     />
                     {c.title}
                   </div>
@@ -247,13 +209,13 @@ export default function RecipeForm({
             )}
           </>
         ) : (
-          <div style={{ marginTop: '8px' }}>
+          <div className="new-collection-container">
             <input
               type="text"
               placeholder="New recipe collection name"
               value={newRecipeCollectionName}
               onChange={(e) => setNewRecipeCollectionName(e.target.value)}
-              style={{ width: '100%', padding: '8px', marginBottom: '8px', boxSizing: 'border-box' }}
+              className="new-collection-input"
             />
             <button
               type="button"
@@ -274,7 +236,7 @@ export default function RecipeForm({
                   toast.error(`Failed to create recipe collection: ${err?.message || err}`);
                 }
               }}
-              style={{ marginRight: '8px', padding: '6px 12px', cursor: 'pointer' }}
+              className="new-collection-button"
             >
               Save
             </button>
@@ -284,7 +246,7 @@ export default function RecipeForm({
                 setCreatingNewRecipeCollection(false);
                 setNewRecipeCollectionName("");
               }}
-              style={{ padding: '6px 12px', cursor: 'pointer' }}
+              className="new-collection-cancel"
             >
               Cancel
             </button>
@@ -292,108 +254,108 @@ export default function RecipeForm({
         )}
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Ingredients *</label>
+      <div className="form-group">
+        <label className="form-label">Ingredients *</label>
         <input
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          className="form-input"
           placeholder="Comma-separated list"
           value={ingredients}
           onChange={(e) => setIngredients(e.target.value)}
         />
-        {errors.ingredients && <p style={{ color: 'red', margin: '5px 0 0 0' }}>{errors.ingredients}</p>}
+        {errors.ingredients && <p className="error-message">{errors.ingredients}</p>}
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Instructions *</label>
+      <div className="form-group">
+        <label className="form-label">Instructions *</label>
         <textarea
-          style={{ width: '100%', padding: '8px', minHeight: '100px', boxSizing: 'border-box' }}
+          className="form-textarea"
           placeholder="Step-by-step instructions"
           value={instruction}
           onChange={(e) => setInstruction(e.target.value)}
         />
-        {errors.instruction && <p style={{ color: 'red', margin: '5px 0 0 0' }}>{errors.instruction}</p>}
+        {errors.instruction && <p className="error-message">{errors.instruction}</p>}
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Servings</label>
+      <div className="form-group">
+        <label className="form-label">Servings</label>
         <input 
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          className="form-input"
           type="number" 
           value={numServings} 
           onChange={(e) => setNumServings(e.target.value)} 
         />
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Time (mins)</label>
+      <div className="form-group">
+        <label className="form-label">Time (mins)</label>
         <input 
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          className="form-input"
           type="number" 
           value={timePrepared} 
           onChange={(e) => setTimePrepared(e.target.value)} 
         />
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Cuisine</label>
+      <div className="form-group">
+        <label className="form-label">Cuisine</label>
         <input 
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          className="form-input"
           value={cuisine} 
           onChange={(e) => setCuisine(e.target.value)} 
         />
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Difficulty (1–5)</label>
+      <div className="form-group">
+        <label className="form-label">Difficulty (1–5)</label>
         <input 
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          className="form-input"
           type="number" 
           value={difficulty} 
           onChange={(e) => setDifficulty(e.target.value)} 
         />
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Rating (0–5)</label>
+      <div className="form-group">
+        <label className="form-label">Rating (0–5)</label>
         <input 
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          className="form-input"
           type="number" 
           value={rating} 
           onChange={(e) => setRating(e.target.value)} 
         />
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Likes</label>
+      <div className="form-group">
+        <label className="form-label">Source</label>
         <input 
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-          type="number" 
-          value={likes} 
-          onChange={(e) => setLikes(e.target.value)} 
+          className="form-input"
+          type="form-input" 
+          value={sourceName} 
+          onChange={(e) => setSourceName(e.target.value)} 
         />
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Nutrition Info</label>
+      <div className="form-group">
+        <label className="form-label">Nutrition Info</label>
         <textarea 
-          style={{ width: '100%', padding: '8px', minHeight: '80px', boxSizing: 'border-box' }}
+          className="form-textarea-small"
           value={nutrition} 
           onChange={(e) => setNutrition(e.target.value)} 
         />
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Comments</label>
+      <div className="form-group">
+        <label className="form-label">Comments</label>
         <input 
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          className="form-input"
           placeholder="Comma-separated comments" 
           value={comments} 
           onChange={(e) => setComments(e.target.value)} 
         />
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'inline-block', marginRight: '10px', fontWeight: 'bold' }}>Public?</label>
+      <div className="inline-checkbox-container">
+        <label className="inline-label">Public?</label>
         <input 
           type="checkbox" 
           checked={isPublic} 
@@ -401,10 +363,7 @@ export default function RecipeForm({
         />
       </div>
 
-      <button 
-        type="submit"
-        style={{ padding: '10px 20px', cursor: 'pointer', fontWeight: 'bold' }}
-      >
+      <button type="submit" className="submit-button">
         {submitButtonText}
       </button>
     </form>

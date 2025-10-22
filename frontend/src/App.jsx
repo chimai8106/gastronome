@@ -1,10 +1,8 @@
 import React from "react";
 import {
-    BrowserRouter as Router,
     Routes,
     Route,
     Link,
-    useNavigate,
     Outlet,
 } from "react-router-dom";
 import Home from "./pages/Home/Home";
@@ -44,7 +42,6 @@ const Company = () => <h2>Company Page</h2>;
 function App() {
     return (
         <>
-        <Router>
             <Header />
             <Routes>
                 <Route element={<ProtectedRoute />}>
@@ -63,12 +60,9 @@ function App() {
                 <Route path="/user" element ={<User />}></Route>
                 <Route path="/collections/:id" element={<Collection />} />
                 <Route path="/recipe/:id" element={<RecipeCard />} />
-
             </Routes>
-        </Router>
-        <Toaster position="top-center" />
-
-         </>
+            <Toaster position="top-center" />
+        </>
     );
 }
 

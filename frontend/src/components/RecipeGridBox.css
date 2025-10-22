@@ -1,0 +1,435 @@
+.recipe-grid-box {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.3s;
+  margin-bottom: 24px;
+}
+
+.recipe-grid-box:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Recipe Image */
+.recipe-image-container {
+  width: 100%;
+  height: 200px;
+  background-color: #f0f0f0;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recipe-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recipe-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #999;
+}
+
+.no-image-text {
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* Recipe Content */
+.recipe-content {
+  flex-grow: 1;
+  margin-bottom: 12px;
+}
+
+.recipe-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Collection Dropdown */
+.collection-dropdown-container {
+  position: relative;
+}
+
+.toggle-collection-btn {
+  width: 100%;
+  padding: 8px 12px;
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.toggle-collection-btn:hover {
+  background-color: #15803d;
+}
+
+.collection-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+}
+
+/* Dropdown Header */
+.dropdown-header {
+  padding: 10px;
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #e5e7eb;
+  background-color: #f9fafb;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.new-collection-header-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background-color: #e5e7eb;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.new-collection-header-btn:hover {
+  background-color: #d1d5db;
+}
+
+.add-selected-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.add-selected-btn:hover:not(.disabled) {
+  background-color: #15803d;
+}
+
+.add-selected-btn.disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Temp Selections Preview */
+.temp-selections-preview {
+  padding: 8px;
+  background-color: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+}
+
+.temp-selections-label {
+  font-size: 11px;
+  color: #1e40af;
+  margin-bottom: 4px;
+  margin-top: 0;
+  font-weight: 600;
+}
+
+.temp-selections-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.temp-selection-tag {
+  background: #3b82f6;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Saved Collections inside dropdown */
+.saved-collections-in-dropdown {
+  padding: 10px;
+  background-color: #fef3c7;
+  border-bottom: 1px solid #fcd34d;
+}
+
+.saved-collections-label {
+  font-size: 11px;
+  color: #78350f;
+  margin-bottom: 6px;
+  margin-top: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.saved-collections-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.saved-collection-tag {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #fcd34d;
+  font-weight: 500;
+}
+
+.collection-tag-name {
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.collection-tag-name:hover {
+  color: #78350f;
+  text-decoration: underline;
+}
+
+.remove-collection-btn {
+  background: rgba(146, 64, 14, 0.15);
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  color: #92400e;
+  padding: 0;
+  margin-left: 2px;
+  line-height: 1;
+  transition: all 0.2s;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.remove-collection-btn:hover {
+  background: rgba(146, 64, 14, 0.3);
+  transform: scale(1.15);
+}
+
+/* Collection List */
+.collection-list {
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+.empty-collections {
+  padding: 20px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.collection-item {
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.collection-item-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.collection-item:hover:not(.already-saved) .collection-item-main {
+  background-color: #f9fafb;
+}
+
+.collection-item.selected {
+  background-color: #dbeafe;
+}
+
+.collection-item.already-saved {
+  background-color: #f3f4f6;
+}
+
+.collection-item.already-saved .collection-item-main {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.collection-checkbox {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.collection-checkbox:disabled {
+  cursor: not-allowed;
+}
+
+.collection-name {
+  flex: 1;
+}
+
+.already-saved-badge {
+  margin-left: 8px;
+  font-size: 11px;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.remove-from-list-btn {
+  padding: 6px 12px;
+  margin-right: 10px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.remove-from-list-btn:hover {
+  background-color: #dc2626;
+}
+
+/* New Collection Form */
+.new-collection-form {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  padding: 10px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.new-collection-input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.new-collection-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.save-new-collection-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.save-new-collection-btn:hover {
+  background-color: #15803d;
+}
+
+.cancel-new-collection-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background-color: #9ca3af;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.cancel-new-collection-btn:hover {
+  background-color: #6b7280;
+}
+
+/* Action Buttons */
+.update-recipe-btn,
+.delete-recipe-btn,
+.view-details-btn {
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.update-recipe-btn {
+  background-color: #2563eb;
+  color: white;
+}
+
+.update-recipe-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.delete-recipe-btn {
+  background-color: #dc2626;
+  color: white;
+}
+
+.delete-recipe-btn:hover {
+  background-color: #b91c1c;
+}
+
+.view-details-btn {
+  background-color: #2563eb;
+  color: white;
+}
+
+.view-details-btn:hover {
+  background-color: #1d4ed8;
+}

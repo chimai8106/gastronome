@@ -11,6 +11,9 @@ const recipeSchema = new mongoose.Schema({
     image:{
         type: String
     },
+    sourceName:{
+        type: String
+    },
     authorName:{
         type: String,
         required: true
@@ -46,7 +49,7 @@ const recipeSchema = new mongoose.Schema({
         type: Number
     },
     likedBy: 
-    [{ type: String, ref: "User"}],
+    [{ type: String}],
 
     comments:{
         type: [String]

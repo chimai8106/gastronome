@@ -6,6 +6,7 @@ import {
   updateRecipeCollection,
   deleteRecipeCollection,
 } from "../services/RecipeCollectionServices";
+import "./RecipeCollectionForm.css";
 
 export default function RecipeCollectionForm({
   initialRecipeCollection = null,
@@ -63,10 +64,10 @@ export default function RecipeCollectionForm({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="recipe-collection-form">
       {/* TITLE */}
-      <div>
-        <label>Name *</label>
+      <div className="recipe-collection-form-group">
+        <label className="recipe-collection-label">Name *</label>
         <input
           type="text"
           placeholder="RecipeCollection Title"
@@ -75,42 +76,49 @@ export default function RecipeCollectionForm({
             setTitle(e.target.value);
             if (errors.title) setErrors({ ...errors, title: "" });
           }}
+          className="recipe-collection-input"
         />
-        {errors.title && <p className="error-text">{errors.title}</p>}
+        {errors.title && <p className="recipe-collection-error-text">{errors.title}</p>}
       </div>
 
       {/* DESCRIPTION */}
-      <div>
-        <label>Description</label>
+      <div className="recipe-collection-form-group">
+        <label className="recipe-collection-label">Description</label>
         <input
           type="text"
           placeholder="Short description..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          className="recipe-collection-input"
         />
       </div>
 
       {/* VISIBILITY */}
-      <div>
-        <label>Visibility</label>
-        <div>
+      <div className="recipe-collection-form-group">
+        <label className="recipe-collection-label">Visibility</label>
+        <div className="recipe-collection-checkbox-container">
           <input
             type="checkbox"
             checked={isPublic}
             onChange={(e) => setIsPublic(e.target.checked)}
+            className="recipe-collection-checkbox"
           />
-          <span>Public</span>
+          <span className="recipe-collection-checkbox-label">Public</span>
         </div>
       </div>
 
       {/* BUTTONS */}
-      <div>
-        <button type="submit">
+      <div className="recipe-collection-button-group">
+        <button type="submit" className="recipe-collection-submit-button">
           {initialId ? "Update RecipeCollection" : "Create RecipeCollection"}
         </button>
 
         {initialId && (
-          <button type="button" onClick={handleDelete}>
+          <button 
+            type="button" 
+            onClick={handleDelete}
+            className="recipe-collection-delete-button"
+          >
             Delete
           </button>
         )}

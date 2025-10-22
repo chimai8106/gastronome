@@ -35,7 +35,6 @@ export async function getMyRecipes(){
 export async function searchRecipeByIngredients(recipeData){
   return authenticatedFetch(`/recipes/search`, {
     method: 'POST',
-    body: recipeData,
+    body: JSON.stringify(recipeData),
   });
-
 }

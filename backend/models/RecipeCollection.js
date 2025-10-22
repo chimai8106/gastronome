@@ -53,6 +53,10 @@ const recipeCollectionSchema = new mongoose.Schema(
         rating: {
           type: Number,
           default: 0,
+        },
+        like: {
+          type: Number,
+          default: 0
         }
       }
     ],

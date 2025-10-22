@@ -9,15 +9,18 @@ export function AuthProvider({ children }) {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserLoggedIn(true);
         setUserName(user.displayName || user.email); 
+        setUserId(user.uid);
       } else {
         setUserLoggedIn(false);
         setUserName("");
+        setUserId(null);
       }
       setLoading(false);
     });
@@ -27,7 +30,7 @@ export function AuthProvider({ children }) {
   //let components handle loading themselves
   return (
     <AuthContext.Provider
-      value={{ userLoggedIn, setUserLoggedIn, isSigningIn, setIsSigningIn, userName, setUserName, loading }}
+      value={{ userLoggedIn, setUserLoggedIn, isSigningIn, setIsSigningIn, userName, setUserName, loading, uid: userId }}
     >
       {children}
     </AuthContext.Provider>

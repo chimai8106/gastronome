@@ -33,6 +33,11 @@ export default function RecipeIntro({ recipe }) {
               <strong>Author:</strong> {recipe.authorName}
             </p>
           )}
+          {recipe.sourceName&& (
+            <p>
+              <strong>Source:</strong> {recipe.sourceName}
+            </p>
+          )}
           {(recipe.timePrepared > 0 || recipe.readyInMinutes > 0) && (
             <p>
               <strong>Ready in:</strong>{" "}

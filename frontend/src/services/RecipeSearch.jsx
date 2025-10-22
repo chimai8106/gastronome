@@ -18,6 +18,7 @@ export default function SearchByIngredients() {
   const handleSearch = async () => {
     try {
       const recipeData = { ingredients: formattedIngredients, number, ranking, ignorePantry };
+      
       const data = await searchRecipeByIngredients(recipeData);
       setRecipes(data);
       return true;

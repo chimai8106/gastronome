@@ -1,0 +1,14 @@
+.popup-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.pop-up {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 1000;
+}
