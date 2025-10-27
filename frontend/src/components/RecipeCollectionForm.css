@@ -63,15 +63,21 @@
   font-size: 14px;
   font-weight: bold;
   color: white;
-  background-color: #4a90e2;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.recipe-collection-submit-button:hover {
-  background-color: #357abd;
+/* Update button in Collection form*/
+.recipe-collection-submit-button{
+  background-color: #8B7355;
+  color: #FFFFFF;
+  border: none;
+}
+.recipe-collection-submit-button:hover{
+  background-color: #6F5B42;
+  border-color: transparent;
 }
 
 .recipe-collection-delete-button {
@@ -79,7 +85,7 @@
   font-size: 14px;
   font-weight: bold;
   color: white;
-  background-color: #d32f2f;
+  background-color: #C85A54;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -87,5 +93,5 @@
 }
 
 .recipe-collection-delete-button:hover {
-  background-color: #b71c1c;
+  background-color: #B04943;
 }

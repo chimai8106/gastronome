@@ -1,8 +1,8 @@
 .recipe-grid-box {
-  border: 1px solid #ddd;
+  border: 1px solid #D4C4B0;
   border-radius: 8px;
   padding: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(101, 67, 33, 0.1);
   background-color: white;
   display: flex;
   flex-direction: column;
@@ -11,14 +11,34 @@
 }
 
 .recipe-grid-box:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(101, 67, 33, 0.15);
+}
+
+/* Recipe Actions Table Styling */
+.recipe-actions-grid-box { 
+  margin-right: auto; /* Push table to the right */
+  border-collapse: separate; /* Change from collapse to separate for spacing */
+  border-spacing: 0 5px; /* Add horizontal spacing between cells */
+  width: 100%;
+  display: block;
+  table-layout: fixed;
+  position: relative;
+}
+
+.recipe-actions-grid-box tr {
+  width: 100%;
+}
+
+.recipe-actions-grid-box td {
+  width: 100%;
+  padding: 0;
 }
 
 /* Recipe Image */
 .recipe-image-container {
   width: 100%;
   height: 200px;
-  background-color: #f0f0f0;
+  background-color: #F5EFE7;
   border-radius: 6px;
   margin-bottom: 12px;
   overflow: hidden;
@@ -37,7 +57,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #999;
+  color: #8B7355;
 }
 
 .no-image-text {
@@ -55,28 +75,29 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  justify-content: center;
+  align-items: center;
 }
-
-/* Collection Dropdown */
-.collection-dropdown-container {
-  position: relative;
-}
-
-.toggle-collection-btn {
+table {
+  border-collapse: collapse;
   width: 100%;
-  padding: 8px 12px;
-  background-color: #16a34a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: background-color 0.2s;
 }
 
-.toggle-collection-btn:hover {
-  background-color: #15803d;
+.tbody-grid-box tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed; /* ensures cells share equal width */
+}
+.view-details-btn {
+    width: 100%;
+}
+
+td {
+  text-align: center;
+}
+
+td button {
+  padding: 10px 16px;
 }
 
 .collection-dropdown {
@@ -84,15 +105,26 @@
   top: 100%;
   left: 0;
   right: 0;
+  width: 100%;
   margin-top: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid #D4C4B0;
   border-radius: 4px;
   background: white;
   z-index: 10;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(101, 67, 33, 0.1);
   display: flex;
   flex-direction: column;
   max-height: 320px;
+}
+
+/* Prevent overflow on left side */
+@media (max-width: 768px) {
+  .collection-dropdown {
+    left: 0;
+    right: 0;
+    transform: none;
+    width: auto;
+  }
 }
 
 /* Dropdown Header */
@@ -100,8 +132,8 @@
   padding: 10px;
   display: flex;
   gap: 8px;
-  border-bottom: 2px solid #e5e7eb;
-  background-color: #f9fafb;
+  border-bottom: 2px solid #D4C4B0;
+  background-color: #F5EFE7;
   position: sticky;
   top: 0;
   z-index: 1;
@@ -110,8 +142,9 @@
 .new-collection-header-btn {
   flex: 1;
   padding: 8px 12px;
-  background-color: #e5e7eb;
-  border: none;
+  background-color: #E8D5C4;
+  color: #654321;
+  border: 1px solid #D4C4B0;
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
@@ -120,13 +153,13 @@
 }
 
 .new-collection-header-btn:hover {
-  background-color: #d1d5db;
+  background-color: #DCC8B3;
 }
 
 .add-selected-btn {
   flex: 1;
   padding: 8px 12px;
-  background-color: #16a34a;
+  background-color: #7A9B76;
   color: white;
   border: none;
   border-radius: 4px;
@@ -137,24 +170,25 @@
 }
 
 .add-selected-btn:hover:not(.disabled) {
-  background-color: #15803d;
+  background-color: #688760;
 }
 
 .add-selected-btn.disabled {
-  background-color: #9ca3af;
+  background-color: #D4C4B0;
+  color: #8B7355;
   cursor: not-allowed;
 }
 
 /* Temp Selections Preview */
 .temp-selections-preview {
   padding: 8px;
-  background-color: #eff6ff;
-  border-bottom: 1px solid #bfdbfe;
+  background-color: #FFF8F0;
+  border-bottom: 1px solid #E8D5C4;
 }
 
 .temp-selections-label {
   font-size: 11px;
-  color: #1e40af;
+  color: #654321;
   margin-bottom: 4px;
   margin-top: 0;
   font-weight: 600;
@@ -167,10 +201,10 @@
 }
 
 .temp-selection-tag {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #D4A574 0%, #A67C52 100%);
   color: white;
   padding: 3px 8px;
-  border-radius: 3px;
+  border-radius: 12px;
   font-size: 11px;
   font-weight: 500;
 }
@@ -178,13 +212,13 @@
 /* Saved Collections inside dropdown */
 .saved-collections-in-dropdown {
   padding: 10px;
-  background-color: #fef3c7;
-  border-bottom: 1px solid #fcd34d;
+  background-color: #F5EFE7;
+  border-bottom: 1px solid #D4C4B0;
 }
 
 .saved-collections-label {
   font-size: 11px;
-  color: #78350f;
+  color: #654321;
   margin-bottom: 6px;
   margin-top: 0;
   font-weight: 600;
@@ -199,15 +233,15 @@
 }
 
 .saved-collection-tag {
-  background: #fef3c7;
-  color: #92400e;
+  background: #E8D5C4;
+  color: #654321;
   padding: 6px 10px;
   border-radius: 16px;
   font-size: 13px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid #fcd34d;
+  border: 1px solid #D4C4B0;
   font-weight: 500;
 }
 
@@ -218,23 +252,24 @@
 }
 
 .collection-tag-name:hover {
-  color: #78350f;
+  color: #8B7355;
   text-decoration: underline;
 }
 
+/* FIXED: Much smaller X button - like a small dot */
 .remove-collection-btn {
-  background: rgba(146, 64, 14, 0.15);
+  background: rgba(101, 67, 33, 0.15);
   border: none;
   cursor: pointer;
   font-weight: bold;
-  font-size: 16px;
-  color: #92400e;
+  font-size: 10px;
+  color: #654321;
   padding: 0;
   margin-left: 2px;
   line-height: 1;
   transition: all 0.2s;
-  width: 18px;
-  height: 18px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -243,7 +278,7 @@
 }
 
 .remove-collection-btn:hover {
-  background: rgba(146, 64, 14, 0.3);
+  background: rgba(101, 67, 33, 0.3);
   transform: scale(1.15);
 }
 
@@ -256,12 +291,12 @@
 .empty-collections {
   padding: 20px;
   text-align: center;
-  color: #9ca3af;
+  color: #8B7355;
   font-size: 13px;
 }
 
 .collection-item {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #E8D5C4;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -278,15 +313,16 @@
 }
 
 .collection-item:hover:not(.already-saved) .collection-item-main {
-  background-color: #f9fafb;
+  background-color: #FFF8F0;
 }
 
 .collection-item.selected {
-  background-color: #dbeafe;
+  background-color: #FFF8F0;
+  border-left: 3px solid #D4A574;
 }
 
 .collection-item.already-saved {
-  background-color: #f3f4f6;
+  background-color: #F5EFE7;
 }
 
 .collection-item.already-saved .collection-item-main {
@@ -305,30 +341,34 @@
 
 .collection-name {
   flex: 1;
+  color: #654321;
 }
 
 .already-saved-badge {
   margin-left: 8px;
   font-size: 11px;
-  color: #10b981;
+  color: #7A9B76;
   font-weight: 600;
 }
 
+/* FIXED: Smaller Remove button positioned on the right */
 .remove-from-list-btn {
-  padding: 6px 12px;
-  margin-right: 10px;
-  background-color: #ef4444;
+  padding: 4px 8px;
+  margin-left: 8px;
+  background-color: #C85A54;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   transition: background-color 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .remove-from-list-btn:hover {
-  background-color: #dc2626;
+  background-color: #B04943;
 }
 
 /* New Collection Form */
@@ -340,10 +380,10 @@
   margin-top: 4px;
   padding: 10px;
   background-color: white;
-  border: 1px solid #ccc;
+  border: 1px solid #D4C4B0;
   border-radius: 4px;
   z-index: 10;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(101, 67, 33, 0.1);
 }
 
 .new-collection-input {
@@ -352,7 +392,7 @@
   margin-bottom: 8px;
   box-sizing: border-box;
   border-radius: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid #D4C4B0;
   font-size: 14px;
 }
 
@@ -364,7 +404,7 @@
 .save-new-collection-btn {
   flex: 1;
   padding: 8px 12px;
-  background-color: #16a34a;
+  background-color: #D4A574;
   color: white;
   border: none;
   border-radius: 4px;
@@ -374,13 +414,13 @@
 }
 
 .save-new-collection-btn:hover {
-  background-color: #15803d;
+  background-color: #C69463;
 }
 
 .cancel-new-collection-btn {
   flex: 1;
   padding: 8px 12px;
-  background-color: #9ca3af;
+  background-color: #A69080;
   color: white;
   border: none;
   border-radius: 4px;
@@ -390,46 +430,49 @@
 }
 
 .cancel-new-collection-btn:hover {
-  background-color: #6b7280;
+  background-color: #8F7A6A;
 }
 
-/* Action Buttons */
-.update-recipe-btn,
-.delete-recipe-btn,
-.view-details-btn {
-  width: 100%;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s;
+/* Action Buttons - Force uniform sizing */
+.recipe-grid-box .recipe-actions button {
+  width: 100% !important;
+  padding: 8px 16px !important;
+  border: none !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  transition: background-color 0.2s !important;
+  box-sizing: border-box !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
 }
 
-.update-recipe-btn {
-  background-color: #2563eb;
+.recipe-actions .btn {
+  background-color: #8B7355;
   color: white;
 }
 
-.update-recipe-btn:hover {
-  background-color: #1d4ed8;
+.recipe-actions .btn:hover {
+  background-color: #6F5B42;
 }
 
-.delete-recipe-btn {
-  background-color: #dc2626;
-  color: white;
+.recipe-actions .delete-recipe-btn {
+  background-color: #C85A54 !important;
+  color: white !important;
 }
 
-.delete-recipe-btn:hover {
-  background-color: #b91c1c;
+.recipe-actions .delete-recipe-btn:hover {
+  background-color: #B04943 !important;
+  border-color: #B04943 !important;
 }
 
-.view-details-btn {
-  background-color: #2563eb;
-  color: white;
+.recipe-actions .view-details-btn {
+  background-color: #7A9B76 !important;
+  color: white !important;
 }
 
-.view-details-btn:hover {
-  background-color: #1d4ed8;
+.recipe-actions .view-details-btn:hover {
+  background-color: #688760 !important;
+  border-color: #688760 !important;
 }

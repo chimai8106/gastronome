@@ -19,6 +19,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.13",
     "body-parser": "^2.2.0",
+    "bootstrap": "^5.3.8",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "mongoose": "^8.19.1",

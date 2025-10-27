@@ -1,26 +1,31 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMyRecipeCollection, deleteRecipeCollection, updateRecipeCollection } from "../../services/RecipeCollectionServices";
+import { getMyRecipeCollection, deleteRecipeCollection, updateRecipeCollection, addRecipeCollection } from "../../services/RecipeCollectionServices";
+import { getRecipeById, updateRecipe, deleteRecipe } from "../../services/RecipeServices";
 import Popup from 'reactjs-popup';
 import { toast } from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/authContext";
 import RecipeCollectionForm from "../../components/RecipeCollectionForm";
 import RecipeGridBox from "../../components/RecipeGridBox";
-import "./User.css"; // Import the CSS file
+import "./User.css"; 
+import { useAddToCollection } from "../../contexts/AddToCollectionContext";
+import { useCreate } from "../../contexts/CreateContext";
 
 export default function User() {
-  const { userLoggedIn, loading: authLoading, currentUser } = useAuth(); 
+  const { userLoggedIn, loading: authLoading, uid } = useAuth();
   const [recipeCollections, setRecipeCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [changed, setChanged] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const hasShownToast = useRef(false);
-
+  const { openRecipePopup, openUpdateRecipePopup } = useCreate();
+  const currentUserId = uid;
+  const { toggleCollectionDropdown, isDropdownOpen, closeCollectionDropdown } = useAddToCollection();
+  
   // States for RecipeGridBox functionality
   const [selectedCollections, setSelectedCollections] = useState({});
-  const [showCollectionDropdown, setShowCollectionDropdown] = useState({});
   const [creatingNewCollection, setCreatingNewCollection] = useState({});
   const [newCollectionName, setNewCollectionName] = useState({});
   
@@ -74,91 +79,108 @@ export default function User() {
     }
   };
 
+  const handleRecipeDelete = async (recipeId) => {
+    try {
+      await deleteRecipe(recipeId);
+      setChanged(!changed);
+      toast.success("Successfully deleted recipe!");
+    } catch (err) {
+      toast.error(`Failed to delete recipe: ${err?.message || err}`);
+    }
+  };
+
   // RecipeGridBox handler functions
   const isOwner = (recipe) => {
-    return currentUser && recipe.userId === currentUser.uid;
+    return recipe.uid === uid;
   };
 
   const handleCollectionToggle = (recipeId, collectionId, collectionName) => {
-    setSelectedCollections(prev => {
-      const current = prev[recipeId] || { ids: [], names: [] };
-      const isSelected = current.ids.includes(collectionId);
-      
-      if (isSelected) {
-        return {
-          ...prev,
-          [recipeId]: {
-            ids: current.ids.filter(id => id !== collectionId),
-            names: current.names.filter(name => name !== collectionName)
-          }
-        };
-      } else {
-        return {
-          ...prev,
-          [recipeId]: {
-            ids: [...current.ids, collectionId],
-            names: [...current.names, collectionName]
-          }
-        };
-      }
-    });
+    const currentSelections = selectedCollections[recipeId] || { ids: [], names: [] };
+    
+    if (currentSelections.ids.includes(collectionId)) {
+      setSelectedCollections({
+        ...selectedCollections,
+        [recipeId]: {
+          ids: currentSelections.ids.filter(id => id !== collectionId),
+          names: currentSelections.names.filter(name => name !== collectionName)
+        }
+      });
+    } else {
+      setSelectedCollections({
+        ...selectedCollections,
+        [recipeId]: {
+          ids: [...currentSelections.ids, collectionId],
+          names: [...currentSelections.names, collectionName]
+        }
+      });
+    }
   };
 
   const handleRemoveCollection = async (recipeId, collectionId) => {
-    // Implement your remove from collection logic here
-    toast.success("Removed from collection!");
-    setChanged(!changed);
+    try {
+      const recipe = await getRecipeById(recipeId);
+      
+      const updatedCollectionIds = (recipe.recipeCollectionID || []).filter(id => id !== collectionId);
+      const collectionIndex = (recipe.recipeCollectionID || []).indexOf(collectionId);
+      const updatedCollectionNames = (recipe.recipeCollectionName || []).filter((_, idx) => idx !== collectionIndex);
+      
+      const formData = new FormData();
+      formData.append("title", recipe.title);
+      formData.append("instruction", recipe.instruction);
+      formData.append("isPublic", recipe.isPublic);
+      formData.append("numServings", recipe.numServings);
+      formData.append("timePrepared", recipe.timePrepared);
+      formData.append("sourceName", recipe.sourceName);
+      formData.append("rating", recipe.rating);
+      formData.append("likes", recipe.likes);
+      formData.append("cuisine", recipe.cuisine);
+      formData.append("difficulty", recipe.difficulty);
+      formData.append("nutrition", recipe.nutrition);
+      formData.append("recipeCollectionID", JSON.stringify(updatedCollectionIds));
+      formData.append("recipeCollectionName", JSON.stringify(updatedCollectionNames));
+      formData.append("ingredients", JSON.stringify(recipe.ingredients));
+      formData.append("comments", JSON.stringify(recipe.comments));
+      
+      await updateRecipe(recipeId, formData);
+      toast.success("Removed from collection!");
+      setChanged(!changed);
+    } catch (err) {
+      toast.error(`Failed to remove from collection: ${err?.message || err}`);
+    }
   };
 
-  const handleShowCollectionDropdown = (recipeId) => {
-    setShowCollectionDropdown(prev => ({
-      ...prev,
-      [recipeId]: !prev[recipeId]
-    }));
-  };
-
-  const handleAddToCollections = async (recipeId) => {
-    // Implement your add to collections logic here
-    toast.success("Added to collections!");
-    setSelectedCollections(prev => ({
-      ...prev,
-      [recipeId]: { ids: [], names: [] }
-    }));
-    setChanged(!changed);
-  };
-
+  
   const handleCreateNewCollection = async (recipeId) => {
-    const name = newCollectionName[recipeId];
-    if (!name || !name.trim()) {
-      toast.error("Collection name cannot be empty");
+    const collectionName = newCollectionName[recipeId];
+    if (!collectionName || collectionName.trim() === '') {
+      toast.error("Please enter a collection name");
       return;
     }
-    // Implement your create collection logic here
-    toast.success("Collection created!");
-    setCreatingNewCollection(prev => ({ ...prev, [recipeId]: false }));
-    setNewCollectionName(prev => ({ ...prev, [recipeId]: "" }));
-    setChanged(!changed);
-  };
 
-  const handleSetCreatingNewCollection = (recipeId, value) => {
-    setCreatingNewCollection(prev => ({ ...prev, [recipeId]: value }));
-  };
-
-  const handleSetNewCollectionName = (recipeId, value) => {
-    setNewCollectionName(prev => ({ ...prev, [recipeId]: value }));
-  };
-
-  const handleRecipeUpdate = async (id, recipeData) => {
-    // Implement your recipe update logic here
-    toast.success("Recipe updated!");
-    setChanged(!changed);
-    return true;
-  };
-
-  const handleRecipeDelete = async (recipeId) => {
-    // Implement your recipe delete logic here
-    toast.success("Recipe deleted!");
-    setChanged(!changed);
+    try {
+      const newCol = await addRecipeCollection({
+        title: collectionName,
+        description: "",
+        isPublic: false,
+      });
+      
+      setRecipeCollections([...recipeCollections, newCol]);
+      
+      const currentSelections = selectedCollections[recipeId] || { ids: [], names: [] };
+      setSelectedCollections({
+        ...selectedCollections,
+        [recipeId]: {
+          ids: [...currentSelections.ids, newCol._id],
+          names: [...currentSelections.names, newCol.title]
+        }
+      });
+      
+      setCreatingNewCollection({ ...creatingNewCollection, [recipeId]: false });
+      setNewCollectionName({ ...newCollectionName, [recipeId]: "" });
+      toast.success("Collection created and selected!");
+    } catch (err) {
+      toast.error(`Failed to create collection: ${err?.message || err}`);
+    }
   };
 
   if (authLoading || loading) {
@@ -245,23 +267,34 @@ export default function User() {
                     <RecipeGridBox
                       key={recipe._id}
                       recipe={recipe}
-                      currentUserId={currentUser?.uid}
+                      currentUserId={uid}
                       isOwner={isOwner}
                       selectedCollections={selectedCollections}
-                      showCollectionDropdown={showCollectionDropdown}
+                      showCollectionDropdown={isDropdownOpen(recipe._id)}
                       creatingNewCollection={creatingNewCollection}
                       newCollectionName={newCollectionName}
                       recipeCollections={recipeCollections}
                       onCollectionToggle={handleCollectionToggle}
                       onRemoveCollection={handleRemoveCollection}
-                      onShowCollectionDropdown={handleShowCollectionDropdown}
-                      onAddToCollections={handleAddToCollections}
+                      onShowCollectionDropdown={() => toggleCollectionDropdown(recipe._id)}
+                      onAddToCollections={null}
                       onCreateNewCollection={handleCreateNewCollection}
-                      onSetCreatingNewCollection={handleSetCreatingNewCollection}
-                      onSetNewCollectionName={handleSetNewCollectionName}
-                      onUpdate={handleRecipeUpdate}
+                      onSetCreatingNewCollection={(recipeId, value) => setCreatingNewCollection({ 
+                        ...creatingNewCollection, 
+                        [recipeId]: value 
+                      })}
+                      onSetNewCollectionName={(recipeId, value) => setNewCollectionName({ 
+                        ...newCollectionName, 
+                        [recipeId]: value 
+                      })}
+                      onUpdate={() => {
+                        openUpdateRecipePopup(recipe, () => {
+                          setChanged(!changed); 
+                        });
+                      }}
                       onDelete={handleRecipeDelete}
                       onNavigate={navigate}
+                      disabledButton = {true}
                     />
                   ))}
                 </div>

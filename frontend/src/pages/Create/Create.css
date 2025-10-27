@@ -4,9 +4,8 @@
 
 .create-nav-btn {
   padding: 0.5rem 1rem;
-  background: #4CAF50;
-  color: white;
-  border: none;
+  background-color: #8B7355;
+  color: #FFFFFF;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
@@ -15,8 +14,8 @@
 }
 
 .create-nav-btn:hover {
-  background: #45a049;
-}
+background-color: #6F5B42;
+  border-color: transparent;}
 
 .dropdown-menu {
   position: absolute;

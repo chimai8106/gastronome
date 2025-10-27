@@ -6,6 +6,9 @@ import App from './App.jsx'
 import { AuthProvider } from "./contexts/authContext";
 import { BrowserRouter } from 'react-router-dom'
 import { CreateProvider } from './contexts/CreateContext';
+import { AddToCollectionProvider } from './contexts/AddToCollectionContext.jsx'
+
+
 
 
 createRoot(document.getElementById('root')).render(
@@ -13,7 +16,9 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <AuthProvider>
         <CreateProvider>
+        <AddToCollectionProvider>
           <App />
+        </AddToCollectionProvider>
         </CreateProvider>
       </AuthProvider>
     </BrowserRouter>

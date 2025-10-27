@@ -10,8 +10,9 @@ import "./RecipeCollectionForm.css";
 
 export default function RecipeCollectionForm({
   initialRecipeCollection = null,
-  initialId = null,
   onSuccess,
+  onSubmit,
+  submitButtonText,
 }) {
   const navigate = useNavigate();
   const [title, setTitle] = useState(initialRecipeCollection?.title || "");
@@ -34,32 +35,40 @@ export default function RecipeCollectionForm({
     }
 
     setErrors({});
-    const recipeRecipeCollectionData = { title, description, isPublic };
+    const recipeCollectionData = { title, description, isPublic };
 
     try {
-      if (initialId) {
-        await updateRecipeCollection(initialId, recipeRecipeCollectionData);
-        toast.success("RecipeCollection updated successfully!");
+      if (initialRecipeCollection) {
+        // If onSubmit prop is provided, use it (for popup forms)
+        if (onSubmit) {
+          await onSubmit(initialRecipeCollection._id, recipeCollectionData);
+        } else {
+          // Otherwise use the service directly
+          await updateRecipeCollection(initialRecipeCollection._id, recipeCollectionData);
+          toast.success("RecipeCollection updated successfully!");
+          if (onSuccess) onSuccess();
+          navigate("/user");
+        }
       } else {
-        await addRecipeCollection(recipeRecipeCollectionData);
+        await addRecipeCollection(recipeCollectionData);
         toast.success("RecipeCollection created successfully!");
+        if (onSuccess) onSuccess();
+        navigate("/user");
       }
-      if (onSuccess) onSuccess();
-      navigate("/user");
     } catch (err) {
-      toast.error(`Failed to save recipeRecipeCollection: ${err?.message || err}`);
+      toast.error(`Failed to save RecipeCollection: ${err?.message || err}`);
     }
   };
 
   const handleDelete = async () => {
-    if (!initialId) return;
+    if (!initialRecipeCollection) return;
     try {
-      await deleteRecipeCollection(initialId);
+      await deleteRecipeCollection(initialRecipeCollection._id);
       toast.success("RecipeCollection deleted successfully!");
       if (onSuccess) onSuccess();
       navigate("/user");
     } catch (err) {
-      toast.error(`Failed to delete recipeRecipeCollection: ${err?.message || err}`);
+      toast.error(`Failed to delete RecipeCollection: ${err?.message || err}`);
     }
   };
 
@@ -110,10 +119,10 @@ export default function RecipeCollectionForm({
       {/* BUTTONS */}
       <div className="recipe-collection-button-group">
         <button type="submit" className="recipe-collection-submit-button">
-          {initialId ? "Update RecipeCollection" : "Create RecipeCollection"}
+          {submitButtonText || (initialRecipeCollection ? "Update RecipeCollection" : "Create RecipeCollection")}
         </button>
 
-        {initialId && (
+        {initialRecipeCollection && (
           <button 
             type="button" 
             onClick={handleDelete}

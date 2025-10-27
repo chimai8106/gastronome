@@ -1,4 +1,111 @@
-/* RecipeCard.css */
+/* Palette-matching buttons */
+.btn {
+  background-color: #D4A574;
+  color: white;
+}
+
+.btn:hover {
+  background-color: #C69463;
+}
+
+/* Recipe Actions Table Styling */
+.recipe-actions-card { 
+  margin-right: auto; /* Push table to the right */
+  border-collapse: separate; /* Change from collapse to separate for spacing */
+  border-spacing: 20px 10px; /* Add horizontal spacing between cells */
+  position: relative;
+  width: 10%
+}
+
+.recipe-actions-card td {
+  vertical-align: top; /* Align content to top */
+  position: relative;
+}
+
+.update-recipe-btn {
+  background-color: #8B7355 !important;
+  color: white !important;
+  width: 100%;
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+.update-recipe-btn:hover {
+  background-color: #6F5B42 !important;
+}
+
+.delete-recipe-btn {
+  background-color: #C85A54 !important;
+  color: white !important;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.delete-recipe-btn:hover {
+  background-color: #B04943 !important;
+}
+
+.toggle-collection-btn {
+  background-color: #D4B89A !important;
+  color: white !important;
+  border: 1px solid #D4C4B0 !important;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.toggle-collection-btn:hover {
+  background-color: #C6A27F !important;
+  border-color: #C6B39F !important;
+}
+
+.new-collection-header-btn {
+  background-color: #E8D5C4 !important;
+  color: #654321 !important;
+  border: 1px solid #D4C4B0 !important;
+}
+
+.new-collection-header-btn:hover {
+  background-color: #DCC8B3 !important;
+}
+
+.add-selected-btn {
+  background-color: #7A9B76 !important;
+  color: white !important;
+}
+
+.add-selected-btn:hover:not(.disabled) {
+  background-color: #688760 !important;
+}
+
+.save-new-collection-btn {
+  background-color: #D4A574 !important;
+  color: white !important;
+}
+
+.save-new-collection-btn:hover {
+  background-color: #C69463 !important;
+}
+
+.cancel-new-collection-btn {
+  background-color: #A69080 !important;
+  color: white !important;
+}
+
+.cancel-new-collection-btn:hover {
+  background-color: #8F7A6A !important;
+}
+
+.remove-from-list-btn {
+  background-color: #C85A54 !important;
+  color: white !important;
+}
+
+.remove-from-list-btn:hover {
+  background-color: #B04943 !important;
+}
+
+.collection-tag:hover {
+  background-color: #DCC8B3 !important;
+}
 
 /* Container */
 .recipe-container {
@@ -45,13 +152,7 @@
   font-weight: bold;
   color: #111827;
   margin: 0;
-}
-
-.recipe-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  flex: 1; /* Allow title to take available space */
 }
 
 /* Buttons */
@@ -70,57 +171,9 @@
   cursor: not-allowed;
 }
 
-.update-recipe-btn {
-  padding: 0.5rem 1rem;
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 0.875rem;
-}
-
-.update-recipe-btn:hover {
-  background-color: #1d4ed8;
-}
-
-.delete-recipe-btn {
-  padding: 0.5rem 1rem;
-  background-color: #dc2626;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 0.875rem;
-}
-
-.delete-recipe-btn:hover {
-  background-color: #b91c1c;
-}
-
 /* Collection Dropdown Styles */
 .collection-dropdown-container {
   position: relative;
-}
-
-.toggle-collection-btn {
-  padding: 0.5rem 1rem;
-  background-color: #16a34a;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 0.875rem;
-}
-
-.toggle-collection-btn:hover {
-  background-color: #15803d;
 }
 
 .collection-dropdown {
@@ -147,6 +200,15 @@
     transform: translateX(-50%);
     min-width: 300px;
     max-width: 90vw;
+  }
+  
+  .recipe-title-section {
+    flex-direction: column;
+  }
+  
+  .recipe-actions {
+    margin-left: 0;
+    width: 100%;
   }
 }
 
@@ -264,19 +326,28 @@
   opacity: 0.8;
 }
 
+/* FIXED: Much smaller X button - like a small dot */
 .remove-collection-btn {
-  background: none;
+  background: rgba(220, 38, 38, 0.2);
   border: none;
-  color: #dc2626;
-  font-size: 1.25rem;
+  color: #991b1b;
+  font-size: 10px;
   line-height: 1;
   cursor: pointer;
   padding: 0;
-  transition: color 0.2s;
+  transition: all 0.2s;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .remove-collection-btn:hover {
-  color: #991b1b;
+  background: rgba(220, 38, 38, 0.4);
+  transform: scale(1.1);
 }
 
 .collection-list {
@@ -340,21 +411,6 @@
   color: #16a34a;
   font-weight: 600;
   margin-left: auto;
-}
-
-.remove-from-list-btn {
-  padding: 0.375rem 0.75rem;
-  background-color: #dc2626;
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.remove-from-list-btn:hover {
-  background-color: #b91c1c;
 }
 
 .empty-collections {
@@ -464,42 +520,6 @@
   
   .recipe-title {
     font-size: 1.875rem;
-  }
-  
-  .collection-dropdown {
-    right: auto;
-    left: 50%;
-    transform: translateX(-50%);
-    min-width: 300px;
-    max-width: 90vw;
-  }
-}
-
-/* Force dropdown to stay within viewport */
-.collection-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 0.5rem;
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  z-index: 100;
-  width: 400px;
-  max-height: 600px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Alternative positioning if needed */
-@media (min-width: 769px) {
-  .recipe-actions {
-    position: relative;
-  }
-  
-  .collection-dropdown {
-    right: 0;
-    left: auto;
   }
 }
 
@@ -646,4 +666,93 @@
 .detail-recipe {
   max-height: 80vh;
   overflow-y: auto;
+}
+
+/* --- Consistent Action Buttons --- */
+.update-recipe-btn,
+.delete-recipe-btn,
+.toggle-collection-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s ease-in-out;
+  font-size: 0.875rem;
+  min-width: 110px;
+  text-align: center;
+}
+
+/* Collection Dropdown Styles */
+.collection-dropdown-container {
+  position: relative;
+}
+
+.collection-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 350px;
+  max-width: 450px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Prevent dropdown from overflowing right side of screen */
+@media (min-width: 769px) {
+  .collection-dropdown {
+    /* Check if dropdown would overflow right edge */
+    right: 0;
+  }
+  
+  /* If the button is on the right side of screen, align dropdown to right edge of button */
+  .recipe-actions .collection-dropdown {
+    right: 0;
+    left: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .collection-dropdown {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 300px;
+    max-width: 90vw;
+  }
+  
+  .recipe-title-section {
+    flex-direction: column;
+  }
+  
+  .recipe-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* FIXED: Smaller Remove button positioned on the right */
+.remove-from-list-btn {
+  padding: 4px 8px;
+  margin-left: 8px;
+  background-color: #C85A54;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.remove-from-list-btn:hover {
+  background-color: #B04943;
 }

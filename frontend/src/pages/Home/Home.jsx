@@ -5,8 +5,8 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import RecipeGridBox from "../../components/RecipeGridBox";
 import { useAuth } from "../../contexts/authContext";
-import {useCreate} from "../../contexts/CreateContext"
-
+import { useCreate } from "../../contexts/CreateContext";
+import { useAddToCollection } from "../../contexts/AddToCollectionContext";
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
@@ -14,24 +14,18 @@ export default function Home() {
   const [changed, setChanged] = useState(false);
   const [recipeCollections, setRecipeCollections] = useState([]);
   const [selectedCollections, setSelectedCollections] = useState({}); 
-  const [showCollectionDropdown, setShowCollectionDropdown] = useState({});
   const [creatingNewCollection, setCreatingNewCollection] = useState({});
   const [newCollectionName, setNewCollectionName] = useState({});
   const navigate = useNavigate();
   const { uid } = useAuth();
   const currentUserId = uid;
-  const { openRecipePopup } = useCreate();
-  const handleChange = async (id, recipeData) => {
-    try {
-      await updateRecipe(id, recipeData);
-      setChanged(!changed);
-      toast.success("Successfully updated recipe!");
-      return true;
-    } catch (err) {
-      toast.error(`Failed to update recipe: ${err?.message || err}`);
-      return false;
-    }
+  const { openRecipePopup, openUpdateRecipePopup } = useCreate();
+  const { toggleCollectionDropdown, isDropdownOpen, closeCollectionDropdown } = useAddToCollection();
+
+  const isOwner = (recipe) => {
+    return recipe.uid === currentUserId;
   };
+  
 
   const handleDelete = async (recipeId) => {
     try {
@@ -43,7 +37,6 @@ export default function Home() {
     }
   };
 
-  // Remove a collection from the recipe (saved to database)
   const handleRemoveCollection = async (recipeId, collectionId) => {
     try {
       const recipe = await getRecipeById(recipeId);
@@ -59,7 +52,6 @@ export default function Home() {
       formData.append("numServings", recipe.numServings);
       formData.append("timePrepared", recipe.timePrepared);
       formData.append("sourceName", recipe.sourceName);
-
       formData.append("rating", recipe.rating);
       formData.append("likes", recipe.likes);
       formData.append("cuisine", recipe.cuisine);
@@ -78,7 +70,6 @@ export default function Home() {
     }
   };
 
-  // Toggle temporary selection in dropdown
   const handleCollectionToggle = (recipeId, collectionId, collectionName) => {
     const currentSelections = selectedCollections[recipeId] || { ids: [], names: [] };
     
@@ -112,7 +103,6 @@ export default function Home() {
     try {
       const recipe = await getRecipeById(recipeId);
       
-      // Merge existing collections with new selections (avoid duplicates)
       const existingCollectionIds = recipe.recipeCollectionID || [];
       const existingCollectionNames = recipe.recipeCollectionName || [];
       
@@ -139,7 +129,7 @@ export default function Home() {
       await updateRecipe(recipeId, formData);
       
       toast.success(`Added to ${selections.names.length} collection(s)!`);
-      setShowCollectionDropdown({ ...showCollectionDropdown, [recipeId]: false });
+      closeCollectionDropdown(); // Close after adding
       setSelectedCollections({ ...selectedCollections, [recipeId]: { ids: [], names: [] } });
       setChanged(!changed);
     } catch (err) {
@@ -180,10 +170,6 @@ export default function Home() {
     }
   };
 
-  const isOwner = (recipe) => {
-    return recipe.uid === currentUserId;
-  };
-
   useEffect(() => {
     async function fetchData() {
       try {
@@ -207,14 +193,14 @@ export default function Home() {
   }
 
   if (recipes.length === 0) {
-  return (
-    <div className="no-recipe-error-container">
-      <p>Sorry we haven't added any recipes yet!</p>
-      <button onClick={openRecipePopup} className="btn">
-        Add one now!
-      </button>
-    </div>
-  );
+    return (
+      <div className="no-recipe-error-container">
+        <p>Sorry we haven't added any recipes yet!</p>
+        <button onClick={openRecipePopup} className="btn">
+          Add one now!
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -227,16 +213,13 @@ export default function Home() {
             currentUserId={currentUserId}
             isOwner={isOwner}
             selectedCollections={selectedCollections}
-            showCollectionDropdown={showCollectionDropdown}
+            showCollectionDropdown={isDropdownOpen(recipe._id)} // Context returns true/false
             creatingNewCollection={creatingNewCollection}
             newCollectionName={newCollectionName}
             recipeCollections={recipeCollections}
             onCollectionToggle={handleCollectionToggle}
             onRemoveCollection={handleRemoveCollection}
-            onShowCollectionDropdown={(recipeId) => setShowCollectionDropdown({
-              ...showCollectionDropdown, 
-              [recipeId]: !showCollectionDropdown[recipeId]
-            })}
+            onShowCollectionDropdown={() => toggleCollectionDropdown(recipe._id)} // Context handles it
             onAddToCollections={handleAddToCollections}
             onCreateNewCollection={handleCreateNewCollection}
             onSetCreatingNewCollection={(recipeId, value) => setCreatingNewCollection({ 
@@ -247,7 +230,11 @@ export default function Home() {
               ...newCollectionName, 
               [recipeId]: value 
             })}
-            onUpdate={handleChange}
+            onUpdate={() => {
+              openUpdateRecipePopup(recipe, () => {
+                setChanged(!changed); 
+              });
+            }}
             onDelete={handleDelete}
             onNavigate={navigate}
           />

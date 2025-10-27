@@ -1,7 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   font-family: 'Fredoka', sans-serif;
   line-height: 1.5;
@@ -78,6 +74,7 @@ p {
 
 h3 {
   color: black;
+  font-size: 2em
 }
 
 .error-text {
@@ -217,4 +214,103 @@ h3 {
   button {
     background-color: #f9f9f9;
   }
+}
+/* Primary Action Buttons (Create, Add, Save) */
+.btn,
+.submit-button,
+.save-new-collection-btn,
+.new-collection-button,
+.add-selected-btn {
+  background-color: #D4A574;
+  color: #FFFFFF;
+  border: none;
+}
+
+.btn:hover,
+.submit-button:hover,
+.save-new-collection-btn:hover,
+.new-collection-button:hover,
+.add-selected-btn:hover {
+  background-color: #C69463;
+  border-color: transparent;
+}
+
+/* Update/Edit Buttons */
+.update-btn {
+  background-color: #8B7355;
+  color: #FFFFFF;
+  border: none;
+}
+
+.update-btn:hover {
+  background-color: #6F5B42;
+  border-color: transparent;
+}
+
+
+/* Delete/Remove Buttons */
+.delete-recipe-btn,
+.remove-collection-btn,
+.remove-from-list-btn {
+  background-color: #C85A54;
+  color: #FFFFFF;
+  border: none;
+}
+
+.delete-recipe-btn:hover,
+.remove-collection-btn:hover,
+.remove-from-list-btn:hover {
+  background-color: #B04943;
+  border-color: transparent;
+}
+
+/* Cancel/Secondary Buttons */
+.cancel-new-collection-btn,
+.new-collection-cancel {
+  background-color: #A69080;
+  color: #FFFFFF;
+  border: none;
+}
+
+.cancel-new-collection-btn:hover,
+.new-collection-cancel:hover {
+  background-color: #8F7A6A;
+  border-color: transparent;
+}
+
+/* Toggle/Info Buttons */
+.toggle-collection-btn,
+.collection-button,
+.new-collection-header-btn {
+  background-color: #D4B89A;
+  color: white;
+  border: 1px solid #D4C4B0;
+}
+
+.toggle-collection-btn:hover,
+.collection-button:hover,
+.new-collection-header-btn:hover {
+  background-color: #C6A27F;
+  border-color: #C6B39F;
+}
+
+/* View/Details Buttons */
+.view-details-btn {
+  background-color: #7A9B76;
+  color: #FFFFFF;
+  border: none;
+}
+
+.view-details-btn:hover {
+  background-color: #688760;
+  border-color: transparent;
+}
+
+/* Disabled State */
+.add-selected-btn.disabled,
+button:disabled {
+  background-color: #D4C4B0;
+  color: #8B7355;
+  cursor: not-allowed;
+  opacity: 0.6;
 }

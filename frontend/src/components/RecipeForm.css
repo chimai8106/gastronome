@@ -1,6 +1,13 @@
 .recipe-form {
   padding: 20px;
-  /* Removed max-height and overflow-y to prevent double scrollbar */
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* When form is inside a popup, remove the scroll from form */
+.detail-recipe .recipe-form {
+  max-height: none;
+  overflow-y: visible;
 }
 
 .form-group {
@@ -140,4 +147,79 @@
   padding: 10px 20px;
   cursor: pointer;
   font-weight: bold;
+}
+
+/* Ingredient Tags Styling */
+.ingredients-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ingredient-tag {
+  background: linear-gradient(135deg, #D4A574 0%, #A67C52 100%);
+  color: #FFFFFF;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(101, 67, 33, 0.15);
+  transition: all 0.2s ease;
+}
+
+.ingredient-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(101, 67, 33, 0.2);
+  background: linear-gradient(135deg, #C69463 0%, #956A43 100%);
+}
+
+.ingredient-tag-text {
+  line-height: 1;
+  color: #FFFFFF;
+}
+
+.ingredient-remove-btn {
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  color: #FFFFFF !important;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.ingredient-remove-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+  color: #FFFFFF !important;
+}
+
+/* Alternative color schemes matching your palette */
+.ingredient-tag.cinnamon {
+  background: linear-gradient(135deg, #C85A54 0%, #A04842 100%);
+}
+
+.ingredient-tag.herb {
+  background: linear-gradient(135deg, #7A9B76 0%, #5F7A5C 100%);
+}
+
+.ingredient-tag.mocha {
+  background: linear-gradient(135deg, #8B7355 0%, #6F5B42 100%);
+}
+
+.ingredient-tag.taupe {
+  background: linear-gradient(135deg, #A69080 0%, #8F7A6A 100%);
 }

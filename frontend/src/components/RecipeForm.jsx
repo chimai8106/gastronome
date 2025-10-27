@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { getMyRecipeCollection, addRecipeCollection } from "../services/RecipeCollectionServices";
 import "./RecipeForm.css";
@@ -7,6 +7,7 @@ export default function RecipeForm({
   initialRecipe = null,
   initialId = null,
   onSubmit,
+  onFormChange = () => {},
   submitButtonText = "Save Recipe",
 }) {
   const [title, setTitle] = useState("");
@@ -29,6 +30,9 @@ export default function RecipeForm({
   const [newRecipeCollectionName, setNewRecipeCollectionName] = useState("");
   const [creatingNewRecipeCollection, setCreatingNewRecipeCollection] = useState(false);
   const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
+  
+  // Track if we've already initialized from initialRecipe
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
     async function fetchRecipeCollections() {
@@ -41,10 +45,36 @@ export default function RecipeForm({
     }
     fetchRecipeCollections();
   }, []);
-  //prepopulate the form with the existing data if updating
 
+  // Close dropdown when clicking outside
   useEffect(() => {
-    if (initialRecipe) {
+    const handleClickOutside = (event) => {
+      const dropdownContainers = document.querySelectorAll('.collection-container');
+      let clickedInside = false;
+
+      dropdownContainers.forEach(container => {
+        if (container.contains(event.target)) {
+          clickedInside = true;
+        }
+      });
+
+      if (!clickedInside) {
+        setShowCollectionDropdown({});
+        setCreatingNewCollection({});
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Prepopulate the form with the existing data - ONLY ONCE
+  useEffect(() => {
+    if (initialRecipe && !hasInitialized.current) {
+      hasInitialized.current = true;
+      
       setTitle(initialRecipe.title || "");
       setIngredients(
         Array.isArray(initialRecipe.ingredients)
@@ -57,7 +87,6 @@ export default function RecipeForm({
       setSourceName(initialRecipe.sourceName || "");
       setTimePrepared(initialRecipe.timePrepared || 0);
       setRating(initialRecipe.rating || 0);
-      setSourceName(initialRecipe.sourceName || "");
       setComments(
         Array.isArray(initialRecipe.comments)
           ? initialRecipe.comments.join(", ")
@@ -71,22 +100,34 @@ export default function RecipeForm({
     }
   }, [initialRecipe]);
 
-  //drop-down menu handling for collections
+  // Call onFormChange whenever any field changes (just to set the flag, no state passing)
+  const notifyFormChange = () => {
+    onFormChange();
+  };
+
+  // Wrapper to track changes
+  const handleChange = (setter) => (value) => {
+    setter(value);
+    notifyFormChange();
+  };
+
+  // Drop-down menu handling for collections
   const handleCollectionToggle = (collectionId, collectionName) => {
     if (selectedRecipeCollections.includes(collectionId)) {
-      //remove it
+      // Remove it
       setSelectedRecipeCollections(selectedRecipeCollections.filter(id => id !== collectionId));
       setSelectedRecipeCollectionNames(selectedRecipeCollectionNames.filter(name => name !== collectionName));
     } else {
-      //add it
+      // Add it
       setSelectedRecipeCollections([...selectedRecipeCollections, collectionId]);
       setSelectedRecipeCollectionNames([...selectedRecipeCollectionNames, collectionName]);
     }
+    notifyFormChange();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    //error handling
+    // Error handling
     const newErrors = {};
     if (!title.trim()) newErrors.title = "Title is required";
     if (!ingredients.trim()) newErrors.ingredients = "Ingredients are required";
@@ -99,7 +140,7 @@ export default function RecipeForm({
     }
 
     setErrors({});
-    //append data to the FormData
+    // Append data to the FormData
     const formattedIngredients = ingredients
       .split(",")
       .map((i) => i.trim())
@@ -140,12 +181,13 @@ export default function RecipeForm({
           className="form-input"
           placeholder="Recipe title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => handleChange(setTitle)(e.target.value)}
         />
         {errors.title && <p className="error-message">{errors.title}</p>}
       </div>
 
       <div className="form-group">
+        <div className = "collection-container">
         <label className="form-label">Recipe Collections</label>
         
         {/* Display selected collections */}
@@ -174,7 +216,10 @@ export default function RecipeForm({
           <>
             <button 
               type="button" 
-              onClick={() => setShowCollectionDropdown(!showCollectionDropdown)}
+              onClick={() => {
+                setShowCollectionDropdown(!showCollectionDropdown);
+                notifyFormChange();
+              }}
               className="collection-button"
             >
               {showCollectionDropdown ? '− Hide Collections' : '+ Add to Collection'}
@@ -182,7 +227,10 @@ export default function RecipeForm({
             
             <button 
               type="button" 
-              onClick={() => setCreatingNewRecipeCollection(true)}
+              onClick={() => {
+                setCreatingNewRecipeCollection(true);
+                notifyFormChange();
+              }}
               className="collection-button"
             >
               + Create New Collection
@@ -214,7 +262,10 @@ export default function RecipeForm({
               type="text"
               placeholder="New recipe collection name"
               value={newRecipeCollectionName}
-              onChange={(e) => setNewRecipeCollectionName(e.target.value)}
+              onChange={(e) => {
+                setNewRecipeCollectionName(e.target.value);
+                notifyFormChange();
+              }}
               className="new-collection-input"
             />
             <button
@@ -232,6 +283,7 @@ export default function RecipeForm({
                   setCreatingNewRecipeCollection(false);
                   setNewRecipeCollectionName("");
                   toast.success("RecipeCollection created!");
+                  notifyFormChange();
                 } catch (err) {
                   toast.error(`Failed to create recipe collection: ${err?.message || err}`);
                 }
@@ -245,6 +297,7 @@ export default function RecipeForm({
               onClick={() => {
                 setCreatingNewRecipeCollection(false);
                 setNewRecipeCollectionName("");
+                notifyFormChange();
               }}
               className="new-collection-cancel"
             >
@@ -253,17 +306,47 @@ export default function RecipeForm({
           </div>
         )}
       </div>
-
-      <div className="form-group">
-        <label className="form-label">Ingredients *</label>
-        <input
-          className="form-input"
-          placeholder="Comma-separated list"
-          value={ingredients}
-          onChange={(e) => setIngredients(e.target.value)}
-        />
-        {errors.ingredients && <p className="error-message">{errors.ingredients}</p>}
       </div>
+
+    <div className="form-group">
+  <label className="form-label">Ingredients *</label>
+  <input
+    className="form-input"
+    placeholder="Comma-separated list"
+    value={ingredients}
+    onChange={(e) => handleChange(setIngredients)(e.target.value)}
+  />
+  {errors.ingredients && <p className="error-message">{errors.ingredients}</p>}
+  
+  <ul className="ingredients-list">
+    {ingredients
+      .split(",")
+      .map(item => item.trim())
+      .filter(item => item.length > 0) 
+      .map((item, index) => (
+        <li key={index} className="ingredient-tag">
+          <span className="ingredient-tag-text">{item}</span>
+          <button
+            type="button"
+            className="ingredient-remove-btn"
+            onClick={() => {
+              setIngredients(prev =>
+                prev
+                  .split(",")
+                  .map(i => i.trim())
+                  .filter((_, i) => i !== index)
+                  .join(", ")
+              );
+              notifyFormChange();
+            }}
+            title="Remove ingredient"
+          >
+            ×
+          </button>
+        </li>
+      ))}
+  </ul>
+</div>
 
       <div className="form-group">
         <label className="form-label">Instructions *</label>
@@ -271,7 +354,7 @@ export default function RecipeForm({
           className="form-textarea"
           placeholder="Step-by-step instructions"
           value={instruction}
-          onChange={(e) => setInstruction(e.target.value)}
+          onChange={(e) => handleChange(setInstruction)(e.target.value)}
         />
         {errors.instruction && <p className="error-message">{errors.instruction}</p>}
       </div>
@@ -282,7 +365,7 @@ export default function RecipeForm({
           className="form-input"
           type="number" 
           value={numServings} 
-          onChange={(e) => setNumServings(e.target.value)} 
+          onChange={(e) => handleChange(setNumServings)(e.target.value)}
         />
       </div>
 
@@ -292,7 +375,7 @@ export default function RecipeForm({
           className="form-input"
           type="number" 
           value={timePrepared} 
-          onChange={(e) => setTimePrepared(e.target.value)} 
+          onChange={(e) => handleChange(setTimePrepared)(e.target.value)}
         />
       </div>
 
@@ -301,7 +384,7 @@ export default function RecipeForm({
         <input 
           className="form-input"
           value={cuisine} 
-          onChange={(e) => setCuisine(e.target.value)} 
+          onChange={(e) => handleChange(setCuisine)(e.target.value)}
         />
       </div>
 
@@ -311,7 +394,7 @@ export default function RecipeForm({
           className="form-input"
           type="number" 
           value={difficulty} 
-          onChange={(e) => setDifficulty(e.target.value)} 
+          onChange={(e) => handleChange(setDifficulty)(e.target.value)}
         />
       </div>
 
@@ -321,7 +404,7 @@ export default function RecipeForm({
           className="form-input"
           type="number" 
           value={rating} 
-          onChange={(e) => setRating(e.target.value)} 
+          onChange={(e) => handleChange(setRating)(e.target.value)}
         />
       </div>
 
@@ -329,9 +412,9 @@ export default function RecipeForm({
         <label className="form-label">Source</label>
         <input 
           className="form-input"
-          type="form-input" 
+          type="text" 
           value={sourceName} 
-          onChange={(e) => setSourceName(e.target.value)} 
+          onChange={(e) => handleChange(setSourceName)(e.target.value)}
         />
       </div>
 
@@ -340,7 +423,7 @@ export default function RecipeForm({
         <textarea 
           className="form-textarea-small"
           value={nutrition} 
-          onChange={(e) => setNutrition(e.target.value)} 
+          onChange={(e) => handleChange(setNutrition)(e.target.value)}
         />
       </div>
 
@@ -350,7 +433,7 @@ export default function RecipeForm({
           className="form-input"
           placeholder="Comma-separated comments" 
           value={comments} 
-          onChange={(e) => setComments(e.target.value)} 
+          onChange={(e) => handleChange(setComments)(e.target.value)}
         />
       </div>
 
@@ -359,7 +442,10 @@ export default function RecipeForm({
         <input 
           type="checkbox" 
           checked={isPublic} 
-          onChange={(e) => setIsPublic(e.target.checked)} 
+          onChange={(e) => {
+            setIsPublic(e.target.checked);
+            notifyFormChange();
+          }}
         />
       </div>
 

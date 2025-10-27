@@ -17,6 +17,7 @@
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
+  color: #654321;
 }
 
 .empty-collections {
@@ -26,12 +27,12 @@
 
 .empty-collections p {
   font-size: 1.125rem;
-  color: #6b7280;
+  color: #8B7355;
   margin-bottom: 1rem;
 }
 
 .add-collection-btn {
-  background-color: #2563eb;
+  background-color: #D4A574;
   color: white;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
@@ -42,19 +43,19 @@
 }
 
 .add-collection-btn:hover {
-  background-color: #1d4ed8;
+  background-color: #C69463;
 }
 
 /* Collection Section */
 .collection-section {
   margin-bottom: 3rem;
-  background-color: #f9fafb;
+  background-color: #FFF8F0;
   border-radius: 0.75rem;
   padding: 1.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #D4C4B0;
   width: 100%;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .collection-header {
@@ -63,7 +64,7 @@
   align-items: flex-start;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid #D4C4B0;
 }
 
 .collection-info {
@@ -73,24 +74,24 @@
 .collection-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: #654321;
   margin-bottom: 0.5rem;
   cursor: pointer;
   transition: color 0.2s;
 }
 
 .collection-title:hover {
-  color: #2563eb;
+  color: #D4A574;
 }
 
 .collection-description {
-  color: #6b7280;
+  color: #8B7355;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
 }
 
 .collection-author {
-  color: #9ca3af;
+  color: #A69080;
   font-size: 0.875rem;
   font-style: italic;
 }
@@ -100,7 +101,7 @@
   align-items: center;
   gap: 0.5rem;
   margin-top: 0.5rem;
-  color: #6b7280;
+  color: #8B7355;
   font-size: 0.875rem;
 }
 
@@ -126,21 +127,21 @@
 }
 
 .update-collection-btn {
-  background-color: #2563eb;
+  background-color: #8B7355;
   color: white;
 }
 
 .update-collection-btn:hover {
-  background-color: #1d4ed8;
+  background-color: #6F5B42;
 }
 
 .delete-collection-btn {
-  background-color: #dc2626;
+  background-color: #C85A54;
   color: white;
 }
 
 .delete-collection-btn:hover {
-  background-color: #b91c1c;
+  background-color: #B04943;
 }
 
 /* Recipes Grid */
@@ -168,7 +169,7 @@
 .empty-recipes-message {
   text-align: center;
   padding: 2rem;
-  color: #9ca3af;
+  color: #A69080;
   font-style: italic;
 }
 
@@ -179,7 +180,7 @@
 }
 
 .show-more-btn {
-  background-color: #4b5563;
+  background-color: #8B7355;
   color: white;
   padding: 0.625rem 1.5rem;
   border-radius: 0.5rem;
@@ -194,7 +195,7 @@
 }
 
 .show-more-btn:hover {
-  background-color: #374151;
+  background-color: #6F5B42;
 }
 
 .show-more-btn::after {
@@ -207,11 +208,11 @@
   text-align: center;
   margin-top: 3rem;
   padding-top: 2rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #D4C4B0;
 }
 
 .logout-btn {
-  background-color: #6b7280;
+  background-color: #A69080;
   color: white;
   padding: 0.75rem 2rem;
   border-radius: 0.5rem;
@@ -222,7 +223,7 @@
 }
 
 .logout-btn:hover {
-  background-color: #4b5563;
+  background-color: #8F7A6A;
 }
 
 /* Loading State */
@@ -236,8 +237,8 @@
 .loading-spinner {
   width: 3rem;
   height: 3rem;
-  border: 4px solid #e5e7eb;
-  border-top-color: #2563eb;
+  border: 4px solid #E8D5C4;
+  border-top-color: #D4A574;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

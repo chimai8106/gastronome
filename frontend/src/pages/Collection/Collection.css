@@ -1,0 +1,210 @@
+/* Collection Page Styles */
+
+.collection-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+.collection-not-found {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.125rem;
+  color: #8B7355;
+}
+
+/* Collection Header */
+.collection-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #D4C4B0;
+  background-color: #FFF8F0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #D4C4B0;
+}
+
+.collection-page-info {
+  flex: 1;
+}
+
+.collection-page-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #654321;
+  margin-bottom: 0.75rem;
+}
+
+.collection-page-description {
+  font-size: 1rem;
+  color: #8B7355;
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.collection-page-author {
+  font-size: 0.875rem;
+  color: #A69080;
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+
+.collection-page-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.collection-page-recipe-count {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #8B7355;
+  background-color: #E8D5C4;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+}
+
+/* Action Buttons */
+.collection-page-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.collection-page-update-btn,
+.collection-page-delete-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.collection-page-update-btn {
+  background-color: #8B7355;
+  color: white;
+}
+
+.collection-page-update-btn:hover {
+  background-color: #6F5B42;
+}
+
+.collection-page-delete-btn {
+  background-color: #C85A54;
+  color: white;
+}
+
+.collection-page-delete-btn:hover {
+  background-color: #B04943;
+}
+
+/* Recipes Grid */
+.collection-page-recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+@media (min-width: 768px) {
+  .collection-page-recipes-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .collection-page-recipes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.collection-page-empty {
+  text-align: center;
+  padding: 3rem;
+  color: #A69080;
+  font-style: italic;
+  font-size: 1.125rem;
+  background-color: #FFF8F0;
+  border-radius: 0.5rem;
+  border: 1px dashed #D4C4B0;
+}
+
+/* Show More Button */
+.collection-page-show-more {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.collection-page-show-more-btn {
+  background-color: #8B7355;
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.collection-page-show-more-btn:hover {
+  background-color: #6F5B42;
+}
+
+.collection-page-show-more-btn::after {
+  content: '↓';
+  font-size: 1.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .collection-page-container {
+    padding: 1rem;
+  }
+
+  .collection-page-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .collection-page-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .collection-page-recipes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .collection-page-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .collection-page-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .collection-page-update-btn,
+  .collection-page-delete-btn {
+    width: 100%;
+  }
+}

@@ -6,6 +6,8 @@ import { toast } from "react-hot-toast";
 import RecipeGridBox from "../../components/RecipeGridBox";
 import { useAuth } from "../../contexts/authContext";
 import { useLocation } from "react-router-dom";
+import { useAddToCollection } from "../../contexts/AddToCollectionContext";
+import {useCreate} from "../../contexts/CreateContext";
 
 export default function Dashboard() {
   const { userLoggedIn, loading: authLoading, uid } = useAuth();
@@ -14,13 +16,14 @@ export default function Dashboard() {
   const [changed, setChanged] = useState(false);
   const [recipeCollections, setRecipeCollections] = useState([]);
   const [selectedCollections, setSelectedCollections] = useState({});
-  const [showCollectionDropdown, setShowCollectionDropdown] = useState({});
   const [creatingNewCollection, setCreatingNewCollection] = useState({});
   const [newCollectionName, setNewCollectionName] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
+  const { toggleCollectionDropdown, isDropdownOpen, closeCollectionDropdown } = useAddToCollection();
   const hasShownToast = useRef(false);
   const currentUserId = uid;
+  const { openRecipePopup, openUpdateRecipePopup } = useCreate();
 
   useEffect(() => {
     if (location.state?.message && !hasShownToast.current) {
@@ -147,7 +150,7 @@ export default function Dashboard() {
       await updateRecipe(recipeId, formData);
       
       toast.success(`Added to ${selections.names.length} collection(s)!`);
-      setShowCollectionDropdown({ ...showCollectionDropdown, [recipeId]: false });
+      closeCollectionDropdown();
       setSelectedCollections({ ...selectedCollections, [recipeId]: { ids: [], names: [] } });
       setChanged(!changed);
     } catch (err) {
@@ -249,16 +252,13 @@ export default function Dashboard() {
             currentUserId={currentUserId}
             isOwner={isOwner}
             selectedCollections={selectedCollections}
-            showCollectionDropdown={showCollectionDropdown}
+            showCollectionDropdown={isDropdownOpen(recipe._id)} // Context returns true/false
             creatingNewCollection={creatingNewCollection}
             newCollectionName={newCollectionName}
             recipeCollections={recipeCollections}
             onCollectionToggle={handleCollectionToggle}
             onRemoveCollection={handleRemoveCollection}
-            onShowCollectionDropdown={(recipeId) => setShowCollectionDropdown({
-              ...showCollectionDropdown, 
-              [recipeId]: !showCollectionDropdown[recipeId]
-            })}
+            onShowCollectionDropdown={() => toggleCollectionDropdown(recipe._id)} // Context handles it
             onAddToCollections={handleAddToCollections}
             onCreateNewCollection={handleCreateNewCollection}
             onSetCreatingNewCollection={(recipeId, value) => setCreatingNewCollection({ 
@@ -269,7 +269,11 @@ export default function Dashboard() {
               ...newCollectionName, 
               [recipeId]: value 
             })}
-            onUpdate={handleChange}
+            onUpdate={() => {
+              openUpdateRecipePopup(recipe, () => {
+                setChanged(!changed); 
+              });
+            }}
             onDelete={handleDelete}
             onNavigate={navigate}
           />
