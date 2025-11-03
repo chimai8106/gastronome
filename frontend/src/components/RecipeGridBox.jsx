@@ -26,7 +26,6 @@ export default function RecipeGridBox({
 }) {
   const recipeId = recipe._id;
   const currentSelections = selectedCollections[recipeId] || { ids: [], names: [] };
-  
   // These are the SAVED collections (persisted in database)
   const savedCollectionIds = recipe.recipeCollectionID || [];
   const savedCollectionNames = recipe.recipeCollectionName || [];
@@ -35,9 +34,9 @@ export default function RecipeGridBox({
     <div className="recipe-grid-box">
       {/* Recipe Image */}
       <div className="recipe-image-container">
-        {recipe.imageUrl ? (
+        {recipe.image!=null ? (
           <img 
-            src={recipe.imageUrl} 
+            src={recipe.image} 
             alt={recipe.title}
             className="recipe-image"
           />

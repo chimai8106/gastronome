@@ -22,7 +22,7 @@ export default function RecipeForm({
   const [cuisine, setCuisine] = useState("");
   const [difficulty, setDifficulty] = useState(0);
   const [nutrition, setNutrition] = useState("");
-  const [images, setImages] = useState();
+  const [image, setImage] = useState();
   const [errors, setErrors] = useState({});
   const [recipeCollections, setRecipeCollections] = useState([]);
   const [selectedRecipeCollections, setSelectedRecipeCollections] = useState([]); // array of IDs
@@ -30,6 +30,7 @@ export default function RecipeForm({
   const [newRecipeCollectionName, setNewRecipeCollectionName] = useState("");
   const [creatingNewRecipeCollection, setCreatingNewRecipeCollection] = useState(false);
   const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
+  const validFileTypes = ['image/jpg', 'image/jpeg', 'image/png']
   
   // Track if we've already initialized from initialRecipe
   const hasInitialized = useRef(false);
@@ -59,8 +60,8 @@ export default function RecipeForm({
       });
 
       if (!clickedInside) {
-        setShowCollectionDropdown({});
-        setCreatingNewCollection({});
+        setShowCollectionDropdown(false);  // Changed from {} to false
+        setCreatingNewRecipeCollection(false);  // Changed from {} to false (and fixed the function name)
       }
     };
 
@@ -125,6 +126,19 @@ export default function RecipeForm({
     notifyFormChange();
   };
 
+  const handleUploadImage =(e) => {
+    const file = e.target.files[0];
+    if (!validFileTypes.find(type => type ===file.type)){
+      setErrors(prev => ({ ...prev, image: "File must be JPG/PNG" }));
+    
+    }
+    else{
+      setErrors(prev => ({ ...prev, image: undefined }));
+      setImage(file);
+      toast.success("Image added");
+    }
+  } 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Error handling
@@ -153,6 +167,7 @@ export default function RecipeForm({
 
     const formData = new FormData();
     formData.append("title", title);
+    if (image) formData.append("image", image);
     formData.append("instruction", instruction);
     formData.append("isPublic", isPublic);
     formData.append("numServings", numServings);
@@ -166,8 +181,6 @@ export default function RecipeForm({
     formData.append("recipeCollectionName", JSON.stringify(selectedRecipeCollectionNames));
     formData.append("ingredients", JSON.stringify(formattedIngredients));
     formData.append("comments", JSON.stringify(formattedComments));
-
-    if (images) formData.append("image", images);
 
     if (initialId) onSubmit(initialId, formData);
     else onSubmit(formData);
@@ -307,46 +320,54 @@ export default function RecipeForm({
         )}
       </div>
       </div>
+      <div className="form-group">
+        <label className="form-label">Image</label>
+        <input id='image' type='file' hidden onChange={handleUploadImage}></input>
+        <label htmlFor='image' className='btn' style={{cursor: 'pointer'}}>Upload</label>
+        {errors.image && <p className="error-message">{errors.image}</p>}
+      </div>
+    
 
-    <div className="form-group">
-  <label className="form-label">Ingredients *</label>
-  <input
-    className="form-input"
-    placeholder="Comma-separated list"
-    value={ingredients}
-    onChange={(e) => handleChange(setIngredients)(e.target.value)}
-  />
-  {errors.ingredients && <p className="error-message">{errors.ingredients}</p>}
+
+      <div className="form-group">
+        <label className="form-label">Ingredients *</label>
+        <input
+          className="form-input"
+          placeholder="Comma-separated list"
+          value={ingredients}
+          onChange={(e) => handleChange(setIngredients)(e.target.value)}
+        />
+        {errors.ingredients && <p className="error-message">{errors.ingredients}</p>}
   
-  <ul className="ingredients-list">
-    {ingredients
-      .split(",")
-      .map(item => item.trim())
-      .filter(item => item.length > 0) 
-      .map((item, index) => (
-        <li key={index} className="ingredient-tag">
-          <span className="ingredient-tag-text">{item}</span>
-          <button
-            type="button"
-            className="ingredient-remove-btn"
-            onClick={() => {
-              setIngredients(prev =>
-                prev
-                  .split(",")
-                  .map(i => i.trim())
-                  .filter((_, i) => i !== index)
-                  .join(", ")
-              );
-              notifyFormChange();
-            }}
-            title="Remove ingredient"
-          >
-            ×
-          </button>
-        </li>
-      ))}
-  </ul>
-</div>
+        <ul className="ingredients-list">
+          {ingredients
+            .split(",")
+            .map(item => item.trim())
+            .filter(item => item.length > 0) 
+            .map((item, index) => (
+              <li key={index} className="ingredient-tag">
+                <span className="ingredient-tag-text">{item}</span>
+                <button
+                  type="button"
+                  className="ingredient-remove-btn"
+                  onClick={() => {
+                    setIngredients(prev =>
+                      prev
+                        .split(",")
+                        .map(i => i.trim())
+                        .filter((_, i) => i !== index)
+                        .join(", ")
+                    );
+                    notifyFormChange();
+                  }}
+                  title="Remove ingredient"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+        </ul>
+      </div>
 
       <div className="form-group">
         <label className="form-label">Instructions *</label>

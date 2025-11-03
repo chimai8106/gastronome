@@ -24,9 +24,6 @@ export default function RecipeIntro({ recipe }) {
         {recipe.title}
       </h3>
       <div className="recipe-info flex gap-4">
-        {recipe.image && (
-          <img src={recipe.image} alt={recipe.title} width={200} />
-        )}
         <div className="recipe-details flex flex-col gap-1">
           {recipe.authorName && (
             <p>

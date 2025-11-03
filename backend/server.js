@@ -6,7 +6,11 @@ import 'dotenv/config';
 import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import path from "path";
-import multer from "multer";
+import multer, {memoryStorage} from "multer";
+import { uploadToS3 } from "./db/s3.mjs";
+
+
+const storage = memoryStorage()
 const upload = multer({
   storage: multer.memoryStorage(), 
 });

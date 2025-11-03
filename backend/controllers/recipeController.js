@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import Recipe from '../models/Recipe.js';
 import RecipeCollection from '../models/RecipeCollection.js';
+import { getImagePresignedUrl, uploadToS3, deleteImage, addPresignedUrlToRecipe, addPresignedUrlsToRecipes } from '../db/s3.mjs';
 
 //search recipe based on ingredients
 export const searchRecipes = async (req, res) => {
@@ -9,13 +10,12 @@ export const searchRecipes = async (req, res) => {
     res.status(401).json({ message: "You need to log in to search recipe" });
   }
   const apiKey = process.env.SPOONACULAR_API_KEY;
-  //1. Call Spoonacular API
+  
   const basicResponse = await fetch(
     `https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=${number}&ranking=${ranking}&ignorePantry=${ignorePantry}&apiKey=${apiKey}`
   );
   const basicData = await basicResponse.json();
 
-  //2. Get detailed recipe info  
   const detailedData = await Promise.all(
     basicData.map(async (recipe) => {
       const detailResponse = await fetch(
@@ -25,7 +25,6 @@ export const searchRecipes = async (req, res) => {
     })
   );
 
-  //3. Merge the data
   const mergedRecipes = detailedData.map((detail) => {
     const match = basicData.find((r) => r.id === detail.id);
     return {
@@ -35,34 +34,34 @@ export const searchRecipes = async (req, res) => {
     };
   });
 
-  //4. Send back to frontend
   res.json(mergedRecipes);
 };
 
 //create a new recipe
 export const createRecipe = async (req, res) => {
   try {
-
-    // Extract and parse fields from FormData
     const {
-      title,
-      instruction,
-      isPublic,
-      numServings,
-      sourceName,
-      timePrepared,
-      rating,
-      cuisine,
-      difficulty,
-      nutrition,
-      ingredients,
-      comments,
-      recipeCollectionID,
-      recipeCollectionName
+      title, instruction, isPublic, numServings, sourceName,
+      timePrepared, rating, cuisine, difficulty, nutrition,
+      ingredients, comments, recipeCollectionID, recipeCollectionName
     } = req.body;
-
-    // Parse JSON strings back to arrays (with safety checks)
-    const likes =0;
+    
+    const file = req.file;
+    let imageKey = null;
+    
+    if (file) {
+      // Upload to S3 and get the KEY (not URL)
+      const { error, key } = await uploadToS3({ file, uid: req.user.uid });
+      if (error) {
+        return res.status(500).json({ 
+          message: "Internal server error", 
+          error: error.message 
+        });
+      }
+      imageKey = key; // Store ONLY the key in database
+    }
+    
+    // Parse JSON arrays
     let parsedIngredients = [];
     let parsedComments = [];
     let parseRecipeCollectionID = [];
@@ -95,6 +94,7 @@ export const createRecipe = async (req, res) => {
     const recipe = new Recipe({
       title,
       instruction,
+      imageKey, // Store the S3 key, not the URL
       ingredients: parsedIngredients,
       comments: parsedComments,
       isPublic: isPublic === 'true' || isPublic === true,
@@ -108,19 +108,21 @@ export const createRecipe = async (req, res) => {
       nutrition,
       uid: req.user.uid,
       authorName: req.user.displayName,
-      image: req.file ? req.file.path : null,
       recipeCollectionID: parseRecipeCollectionID,
       recipeCollectionName: parseRecipeCollectionName
     });
 
     const newRecipe = await recipe.save();
+    
+    // Generate presigned URL before sending to frontend
+    const recipeWithUrl = await addPresignedUrlToRecipe(newRecipe.toObject());
 
-    //Add recipe preview data to all selected collections 
+    // Add to collections with imageKey (not presigned URL)
     if (parseRecipeCollectionID.length > 0) {
       const recipePreview = {
         _id: newRecipe._id,
         title: newRecipe.title,
-        image: newRecipe.image,
+        imageKey: newRecipe.imageKey, // Store KEY, not URL
         cuisine: newRecipe.cuisine,
         difficulty: newRecipe.difficulty,
         timePrepared: newRecipe.timePrepared,
@@ -132,14 +134,14 @@ export const createRecipe = async (req, res) => {
         parseRecipeCollectionID.map(async (collectionId) => {
           await RecipeCollection.findByIdAndUpdate(
             collectionId,
-            { $addToSet: { recipes: recipePreview } }, // $addToSet prevents duplicates
+            { $addToSet: { recipes: recipePreview } },
             { new: true }
           );
         })
       );
     }
 
-    res.status(201).json(newRecipe);
+    res.status(201).json(recipeWithUrl);
   } catch (error) {
     console.error("Error in createRecipe controller", error);
     res.status(500).json({ message: "Internal server error", error: error.message });
@@ -149,8 +151,10 @@ export const createRecipe = async (req, res) => {
 //get all public recipe
 export async function getAllRecipe(_, res) {
   try {
-    const recipe = await Recipe.find({ isPublic: true }).sort({ likes: -1 });
-    res.status(200).json(recipe);
+    const recipes = await Recipe.find({ isPublic: true }).sort({ likes: -1 });
+    // Generate presigned URLs for all recipes before sending
+    const recipesWithUrls = await addPresignedUrlsToRecipes(recipes.map(r => r.toObject()));
+    res.status(200).json(recipesWithUrls);
   } catch (error) {
     console.error("Error in getAllRecipe controller", error);
     res.status(500).json({ message: "Internal server error" });
@@ -161,7 +165,9 @@ export async function getAllRecipe(_, res) {
 export async function getAllMyRecipe(req, res) {
   try {
     const recipes = await Recipe.find({ uid: req.user.uid }).sort({ likes: -1 });
-    res.status(200).json(recipes);
+    // Generate presigned URLs for all recipes before sending
+    const recipesWithUrls = await addPresignedUrlsToRecipes(recipes.map(r => r.toObject()));
+    res.status(200).json(recipesWithUrls);
   } catch (error) {
     console.error("Error in getAllMyRecipe controller", error);
     res.status(500).json({ message: "Internal server error" });
@@ -174,12 +180,13 @@ export async function getRecipeById(req, res) {
     const recipe = await Recipe.findById(req.params.id);
     if (!recipe) return res.status(404).json({ message: "Recipe not found!" });
     
-    // Check if user is authenticated before checking uid
     if (!recipe.isPublic && (!req.user || recipe.uid !== req.user.uid)) {
       return res.status(403).json({ message: "You are not allowed to view this recipe" });
     }
     
-    res.json(recipe);
+    // Generate presigned URL before sending
+    const recipeWithUrl = await addPresignedUrlToRecipe(recipe.toObject());
+    res.json(recipeWithUrl);
   } catch (error) {
     console.error("Error in getRecipeById controller", error);
     res.status(500).json({ message: "Internal server error" });
@@ -189,8 +196,6 @@ export async function getRecipeById(req, res) {
 //update my recipe
 export async function updateRecipe(req, res) {
   try {
-
-    // First check if the recipe belongs to the user
     const existingRecipe = await Recipe.findOne({
       _id: req.params.id,
       uid: req.user.uid
@@ -199,42 +204,48 @@ export async function updateRecipe(req, res) {
     if (!existingRecipe) {
       return res.status(404).json({ message: "Recipe not found or you don't have permission" });
     }
-    // Extract and parse fields from FormData
+
     const {
-      title,
-      instruction,
-      isPublic,
-      numServings,
-      sourceName,
-      timePrepared,
-      rating,
-      likes,
-      cuisine,
-      difficulty,
-      nutrition,
-      ingredients,
-      comments,
-      recipeCollectionID,
-      recipeCollectionName
+      title, instruction, isPublic, numServings, sourceName,
+      timePrepared, rating, likes, cuisine, difficulty, nutrition,
+      ingredients, comments, recipeCollectionID, recipeCollectionName
     } = req.body;
 
-    const updateData = {
-      uid: req.user.uid,
-    };
-
-    if (title) updateData.title = title;
-    if (instruction) updateData.instruction = instruction;
-    if (isPublic !== undefined) updateData.isPublic = isPublic === 'true' || isPublic === true;
-    if (numServings) updateData.numServings = Number(numServings);
-    if (sourceName) updateData.sourceName = sourceName;
-    if (timePrepared) updateData.timePrepared = Number(timePrepared);
-    if (rating) updateData.rating = Number(rating);
-    if (cuisine) updateData.cuisine = cuisine;
-    if (difficulty) updateData.difficulty = Number(difficulty);
-    if (nutrition) updateData.nutrition = nutrition;
+    const updateData = { uid: req.user.uid };
+    const file = req.file;
     
-    // Handle ingredients with safety check
-    if (ingredients) {
+    // Handle image upload
+    if (file) {
+      // Delete old image if exists
+      if (existingRecipe.imageKey) {
+        await deleteImage(existingRecipe.imageKey);
+      }
+
+      // Upload new image
+      const { error, key } = await uploadToS3({ file, uid: req.user.uid });
+      if (error) {
+        return res.status(500).json({ 
+          message: "Internal server error", 
+          error: error.message 
+        });
+      }
+      updateData.imageKey = key; // Store the new key
+    }
+
+    // Update other fields
+    if (title !== undefined) updateData.title = title;
+    if (instruction !== undefined) updateData.instruction = instruction;
+    if (isPublic !== undefined) updateData.isPublic = isPublic === 'true' || isPublic === true;
+    if (numServings !== undefined) updateData.numServings = Number(numServings);
+    if (sourceName !== undefined) updateData.sourceName = sourceName;
+    if (timePrepared !== undefined) updateData.timePrepared = Number(timePrepared);
+    if (rating !== undefined) updateData.rating = Number(rating);
+    if (likes !== undefined) updateData.likes = Number(likes);
+    if (cuisine !== undefined) updateData.cuisine = cuisine;
+    if (difficulty !== undefined) updateData.difficulty = Number(difficulty);
+    if (nutrition !== undefined) updateData.nutrition = nutrition;
+    
+    if (ingredients !== undefined) {
       try {
         updateData.ingredients = typeof ingredients === 'string' ? JSON.parse(ingredients) : ingredients;
       } catch (e) {
@@ -242,8 +253,7 @@ export async function updateRecipe(req, res) {
       }
     }
     
-    // Handle comments with safety check
-    if (comments) {
+    if (comments !== undefined) {
       try {
         updateData.comments = typeof comments === 'string' ? JSON.parse(comments) : comments;
       } catch (e) {
@@ -254,7 +264,6 @@ export async function updateRecipe(req, res) {
     let parseRecipeCollectionID = [];
     let parseRecipeCollectionName = [];
 
-    // Handle recipeCollectionID with safety check
     if (recipeCollectionID !== undefined) {
       try {
         parseRecipeCollectionID = typeof recipeCollectionID === 'string' ? JSON.parse(recipeCollectionID) : recipeCollectionID || [];
@@ -265,7 +274,6 @@ export async function updateRecipe(req, res) {
       }
     }
 
-    // Handle recipeCollectionName with safety check
     if (recipeCollectionName !== undefined) {
       try {
         parseRecipeCollectionName = typeof recipeCollectionName === 'string' ? JSON.parse(recipeCollectionName) : recipeCollectionName || [];
@@ -276,42 +284,47 @@ export async function updateRecipe(req, res) {
       }
     }
 
-    if (req.file) updateData.image = req.file.path;
-
     const updatedRecipe = await Recipe.findByIdAndUpdate(
       req.params.id,
       updateData,
-      { new: true }
+      { new: true, runValidators: true }
     );
 
-    // Update collections: Remove from old collections and add to new ones (HYBRID APPROACH)
+    if (!updatedRecipe) {
+      return res.status(404).json({ message: "Recipe not found after update" });
+    }
+
+    // Generate presigned URL before sending
+    const recipeWithUrl = await addPresignedUrlToRecipe(updatedRecipe.toObject());
+
+    // Update collections
     if (recipeCollectionID !== undefined) {
       const oldCollectionIDs = existingRecipe.recipeCollectionID || [];
-      
-      // Remove recipe from old collections that are no longer selected
       const collectionsToRemoveFrom = oldCollectionIDs.filter(id => !parseRecipeCollectionID.includes(id));
       
-      await Promise.all(
-        collectionsToRemoveFrom.map(async (collectionId) => {
-          await RecipeCollection.findByIdAndUpdate(
-            collectionId,
-            { $pull: { recipes: { _id: req.params.id } } } 
-          );
-        })
-      );
+      if (collectionsToRemoveFrom.length > 0) {
+        await Promise.all(
+          collectionsToRemoveFrom.map(async (collectionId) => {
+            await RecipeCollection.findByIdAndUpdate(
+              collectionId,
+              { $pull: { recipes: { _id: req.params.id } } } 
+            );
+          })
+        );
+      }
 
-      // Add recipe to new collections with preview data
       const collectionsToAddTo = parseRecipeCollectionID.filter(id => !oldCollectionIDs.includes(id));
       
       if (collectionsToAddTo.length > 0) {
         const recipePreview = {
           _id: updatedRecipe._id,
           title: updatedRecipe.title,
-          image: updatedRecipe.image,
+          imageKey: updatedRecipe.imageKey, // Store KEY, not URL
           cuisine: updatedRecipe.cuisine,
           difficulty: updatedRecipe.difficulty,
           timePrepared: updatedRecipe.timePrepared,
-          rating: updatedRecipe.rating
+          rating: updatedRecipe.rating,
+          likes: updatedRecipe.likes
         };
 
         await Promise.all(
@@ -324,23 +337,22 @@ export async function updateRecipe(req, res) {
         );
       }
 
-      // Update preview data in existing collections (in case title/image/etc changed)
       const collectionsToUpdate = parseRecipeCollectionID.filter(id => oldCollectionIDs.includes(id));
       
       if (collectionsToUpdate.length > 0) {
         const recipePreview = {
           _id: updatedRecipe._id,
           title: updatedRecipe.title,
-          image: updatedRecipe.image,
+          imageKey: updatedRecipe.imageKey, // Store KEY, not URL
           cuisine: updatedRecipe.cuisine,
           difficulty: updatedRecipe.difficulty,
           timePrepared: updatedRecipe.timePrepared,
-          rating: updatedRecipe.rating
+          rating: updatedRecipe.rating,
+          likes: updatedRecipe.likes
         };
 
         await Promise.all(
           collectionsToUpdate.map(async (collectionId) => {
-            // Remove old version and add updated version
             await RecipeCollection.findByIdAndUpdate(
               collectionId,
               { $pull: { recipes: { _id: req.params.id } } }
@@ -354,7 +366,7 @@ export async function updateRecipe(req, res) {
       }
     }
 
-    res.status(200).json(updatedRecipe);
+    res.status(200).json(recipeWithUrl);
   } catch (error) {
     console.error("Error in updateRecipe controller", error);
     res.status(500).json({ message: "Internal server error", error: error.message });
@@ -373,16 +385,25 @@ export async function deleteRecipe(req, res) {
       return res.status(404).json({ message: "Recipe not found or you don't have permission" });
     }
 
-    // Remove recipe from all collections before deleting (HYBRID APPROACH)
+    // Remove recipe from all collections
     if (recipe.recipeCollectionID && recipe.recipeCollectionID.length > 0) {
       await Promise.all(
         recipe.recipeCollectionID.map(async (collectionId) => {
           await RecipeCollection.findByIdAndUpdate(
             collectionId,
-            { $pull: { recipes: { _id: req.params.id } } } // Remove by _id in subdocument
+            { $pull: { recipes: { _id: req.params.id } } }
           );
         })
       );
+    }
+    
+    // Delete image from S3 using the KEY (not URL)
+    if (recipe.imageKey) {
+      const result = await deleteImage(recipe.imageKey);
+      if (result.error) {
+        console.error('Failed to delete image:', result.error);
+        // Continue with recipe deletion even if image delete fails
+      }
     }
 
     await Recipe.findByIdAndDelete(req.params.id);

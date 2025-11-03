@@ -1,11 +1,39 @@
 import fetch from 'node-fetch';
 import RecipeCollection from '../models/RecipeCollection.js';
 import User from "../models/User.js";
+import { getImagePresignedUrl } from '../db/s3.mjs';
+
+// Helper: Add presigned URLs to recipes in a collection
+const addPresignedUrlsToCollection = async (collection) => {
+  if (!collection) return collection;
+  
+  // Convert to plain object if it's a mongoose document
+  const collectionObj = collection.toObject ? collection.toObject() : collection;
+  
+  // Generate presigned URLs for each recipe in the collection
+  if (collectionObj.recipes && collectionObj.recipes.length > 0) {
+    collectionObj.recipes = await Promise.all(
+      collectionObj.recipes.map(async (recipe) => {
+        if (recipe.imageKey) {
+          recipe.image = await getImagePresignedUrl(recipe.imageKey);
+        }
+        return recipe;
+      })
+    );
+  }
+  
+  return collectionObj;
+};
+
+// Helper: Add presigned URLs to multiple collections
+const addPresignedUrlsToCollections = async (collections) => {
+  if (!collections || collections.length === 0) return collections;
+  return Promise.all(collections.map(col => addPresignedUrlsToCollection(col)));
+};
 
 //create a new recipeCollection
 export const createRecipeCollection = async (req, res) => {
   try {
-
     // Extract fields from FormData
     const { title, description, isPublic } = req.body;
 
@@ -30,7 +58,11 @@ export const createRecipeCollection = async (req, res) => {
 export async function getAllRecipeCollection(_, res) {
   try {
     const recipeCollections = await RecipeCollection.find({ isPublic: true }).sort({ likes: -1 });
-    res.status(200).json(recipeCollections);
+    
+    // Generate presigned URLs for recipe images in each collection
+    const collectionsWithUrls = await addPresignedUrlsToCollections(recipeCollections);
+    
+    res.status(200).json(collectionsWithUrls);
   } catch (error) {
     console.error("Error in getAllRecipeCollection controller", error);
     res.status(500).json({ message: "Internal server error" });
@@ -41,7 +73,11 @@ export async function getAllRecipeCollection(_, res) {
 export async function getAllMyRecipeCollection(req, res) {
   try {
     const recipeCollections = await RecipeCollection.find({ uid: req.user.uid }).sort({ likes: -1 });
-    res.status(200).json(recipeCollections);
+    
+    // Generate presigned URLs for recipe images in each collection
+    const collectionsWithUrls = await addPresignedUrlsToCollections(recipeCollections);
+    
+    res.status(200).json(collectionsWithUrls);
   } catch (error) {
     console.error("Error in getAllMyRecipeCollection controller", error);
     res.status(500).json({ message: "Internal server error" });
@@ -59,7 +95,10 @@ export async function getRecipeCollectionById(req, res) {
       return res.status(403).json({ message: "You are not allowed to view this recipeCollection" });
     }
     
-    res.json(recipeCollection);
+    // Generate presigned URLs for recipe images
+    const collectionWithUrls = await addPresignedUrlsToCollection(recipeCollection);
+    
+    res.json(collectionWithUrls);
   } catch (error) {
     console.error("Error in getRecipeCollectionById controller", error);
     res.status(500).json({ message: "Internal server error" });
@@ -69,7 +108,6 @@ export async function getRecipeCollectionById(req, res) {
 //update my recipeCollection
 export async function updateRecipeCollection(req, res) {
   try {
-    
     // First check if the collection belongs to the user
     const existingCollection = await RecipeCollection.findOne({
       _id: req.params.id,
@@ -85,9 +123,6 @@ export async function updateRecipeCollection(req, res) {
     
     const updateData = {
       uid: req.user.uid,
-      title,
-      description,
-      isPublic,
       authorName: req.user.displayName
     };
 
@@ -102,7 +137,10 @@ export async function updateRecipeCollection(req, res) {
       { new: true }
     );
 
-    res.status(200).json(updatedRecipeCollection);
+    // Generate presigned URLs before sending
+    const collectionWithUrls = await addPresignedUrlsToCollection(updatedRecipeCollection);
+
+    res.status(200).json(collectionWithUrls);
   } catch (error) {
     console.error("Error in updateRecipeCollection controller", error);
     res.status(500).json({ message: "Internal server error", error: error.message });

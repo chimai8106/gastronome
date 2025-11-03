@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import multer from 'multer';
+import multer, {memoryStorage} from 'multer';
 import { searchRecipes, getAllRecipe, getRecipeById, createRecipe, updateRecipe, deleteRecipe, getAllMyRecipe } from '../controllers/recipeController.js';
 import { verifyFirebaseToken } from '../middleware/auth.js';
 
@@ -14,8 +14,8 @@ const upload = multer({
 // Protected routes 
 router.post('/search', verifyFirebaseToken, searchRecipes);
 router.get('/dashboard', verifyFirebaseToken, getAllMyRecipe);
-router.post("/", verifyFirebaseToken, upload.none(), createRecipe); 
-router.put("/:id", verifyFirebaseToken, upload.none(), updateRecipe); 
+router.post("/", verifyFirebaseToken, upload.single("image"), createRecipe); 
+router.put("/:id", verifyFirebaseToken, upload.single("image"), updateRecipe); 
 router.delete("/:id", verifyFirebaseToken, deleteRecipe);
 
 // Public routes 

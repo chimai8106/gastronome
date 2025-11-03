@@ -12,6 +12,7 @@ import "./User.css";
 import { useAddToCollection } from "../../contexts/AddToCollectionContext";
 import { useCreate } from "../../contexts/CreateContext";
 
+
 export default function User() {
   const { userLoggedIn, loading: authLoading, uid } = useAuth();
   const [recipeCollections, setRecipeCollections] = useState([]);
@@ -192,9 +193,9 @@ export default function User() {
       <div className="user-collections-container">
         <div className="empty-collections">
           <p>You haven't added any Recipe Collections yet!</p>
-          <button onClick={() => navigate("/add")} className="add-collection-btn">
+          <button onClick={openRecipePopup} className="btn">
             Add one now!
-          </button>
+        </button>
         </div>
       </div>
     );

@@ -8,6 +8,7 @@ import RecipeCollectionForm from '../components/RecipeCollectionForm';
 import { addRecipe, updateRecipe } from '../services/RecipeServices';
 import { addRecipeCollection } from '../services/RecipeCollectionServices';
 import './CreateContext.css';
+import {useAddMutation, useUpdateMutation} from "../hooks/useMutation"
 
 const CreateContext = createContext();
 
@@ -20,6 +21,9 @@ export const useCreate = () => {
 };
 
 export const CreateProvider = ({ children }) => {
+  //mutation
+  const { mutate: addMutation } = useAddMutation();
+  const { mutate: updateMutation } = useUpdateMutation();
   const [isRecipePopupOpen, setIsRecipePopupOpen] = useState(false);
   const [isCollectionPopupOpen, setIsCollectionPopupOpen] = useState(false);
   
@@ -67,7 +71,7 @@ export const CreateProvider = ({ children }) => {
     try {
       // If two arguments, it's UPDATE mode: (id, formData)
       if (recipeData) {
-        await updateRecipe(recipeIdOrData, recipeData);
+        await updateMutation(recipeIdOrData, recipeData);
         toast.success('Successfully updated recipe!');
         
         handleRecipePopupClose();
@@ -79,13 +83,17 @@ export const CreateProvider = ({ children }) => {
       } 
       // If one argument, it's CREATE mode: (formData)
       else {
-        await addRecipe(recipeIdOrData);
+       
+        await addMutation(recipeIdOrData);
         toast.success('Successfully created recipe!');
         
         // Use forceClose to bypass the warning check
         handleRecipePopupClose();
         
-        navigate('/dashboard');
+        navigate('/dashboard', { 
+        state: { refresh: true },
+        replace: true 
+        });
       }
     } catch (err) {
       toast.error(err?.message || 'Failed to save recipe');

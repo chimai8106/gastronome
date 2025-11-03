@@ -26,12 +26,20 @@ export default function Dashboard() {
   const { openRecipePopup, openUpdateRecipePopup } = useCreate();
 
   useEffect(() => {
-    if (location.state?.message && !hasShownToast.current) {
-      toast.success(location.state.message);
-      hasShownToast.current = true;
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state, navigate, location.pathname]);
+  //check for refresh flag first
+  if (location.state?.refresh) {
+    setChanged(prev => !prev);
+    navigate(location.pathname, { replace: true, state: {} });
+    return;
+  }
+  
+  // Handle toast separately
+  if (location.state?.message && !hasShownToast.current) {
+    toast.success(location.state.message);
+    hasShownToast.current = true;
+    navigate(location.pathname, { replace: true, state: {} });
+  }
+}, [location.state, navigate, location.pathname]);
 
   const handleChange = async (id, recipeData) => {
     try {
@@ -231,10 +239,7 @@ export default function Dashboard() {
     return (
       <div className="no-recipe-error-container">
         <p className="mb-4">You haven't added any recipes yet!</p>
-        <button 
-          onClick={() => navigate("/add")}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
+        <button onClick={openRecipePopup} className="btn">
           Add one now!
         </button>
       </div>

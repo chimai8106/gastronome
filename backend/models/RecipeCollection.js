@@ -34,7 +34,7 @@ const recipeCollectionSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
-        image: {
+        imageKey: {
           type: String,
           default: null,
         },
