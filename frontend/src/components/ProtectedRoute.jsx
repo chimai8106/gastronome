@@ -1,13 +1,17 @@
 import React from 'react'
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from "../contexts/authContext";
 import { toast } from "react-hot-toast";
+import { useEffect } from 'react';
 
-function ProtectedRoute() {
+export default function ProtectedRoute() {
 
   const { userLoggedIn, loading} = useAuth(); 
+  const navigate = useNavigate();
   
-  // Wait until auth is confirmed before making decisions
+  useEffect(() => {
+    if (!userLoggedIn) navigate("/login");
+  }, [userLoggedIn, navigate]);  
   if (loading) {
     return null; 
   }
@@ -19,5 +23,3 @@ function ProtectedRoute() {
     return <Navigate to='/login' replace />;
   }
 }
-
-export default ProtectedRoute;

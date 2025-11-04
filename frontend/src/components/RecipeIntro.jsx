@@ -6,15 +6,10 @@ export default function RecipeIntro({ recipe }) {
 
   if (!recipe) return null;
 
-  const collections = Array.isArray(recipe.recipeCollectionName)
-    ? recipe.recipeCollectionName.map((name, i) => ({
-        name,
-        id: recipe.recipeCollectionID[i],
-      }))
-    : recipe.recipeCollectionName
-    ? [{ name: recipe.recipeCollectionName, id: recipe.recipeCollectionID }]
-    : [];
-
+  const savedCollections = recipe.myCollections || [];
+  const savedCollectionIds = savedCollections.map(c => c._id);
+  const savedCollectionNames = savedCollections.map(c => c.title);
+  
   return (
     <div className="recipe-intro">
       <h3
@@ -37,13 +32,13 @@ export default function RecipeIntro({ recipe }) {
           )}
           {(recipe.timePrepared > 0 || recipe.readyInMinutes > 0) && (
             <p>
-              <strong>Ready in:</strong>{" "}
+              <strong>⏱️ Ready in:</strong>{" "}
               {recipe.timePrepared || recipe.readyInMinutes} minutes
             </p>
           )}
           {(recipe.numServings > 0 || recipe.servings > 0) && (
             <p>
-              <strong>Servings:</strong> {recipe.numServings || recipe.servings}
+              <strong>🍽️ Servings:</strong> {recipe.numServings || recipe.servings}
             </p>
           )}
           {recipe.ingredients?.length > 0 && (
@@ -86,14 +81,14 @@ export default function RecipeIntro({ recipe }) {
               <strong>Likes:</strong> {recipe.likes}
             </p>
           )}
-          {collections.length > 0 && (
+          {savedCollections.length > 0 && (
             <div className="mt-2">
               <strong className="block mb-2">Collections:</strong>
               <div className="flex flex-wrap gap-2">
-                {collections.map((collection) => (
+                {savedCollections.map((collection) => (
                   <Link
-                    key={collection.id}
-                    to={`/collections/${collection.id}`}
+                    key={collection._id}
+                    to={`/collections/${collection._id}`}
                     style={{
                       display: 'inline-block',
                       backgroundColor: '#fef08a',
@@ -108,7 +103,7 @@ export default function RecipeIntro({ recipe }) {
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#fde047'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#fef08a'}
                   >
-                    {collection.name}
+                    {collection.title}
                   </Link>
                 ))}
               </div>

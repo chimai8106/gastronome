@@ -1,40 +1,137 @@
-import { authenticatedFetch, publicFetch } from './api';
+import { authenticatedFetch, optionalAuthFetch } from "./api";
+import { toast } from "react-hot-toast";
 
-export async function addRecipe(recipeData) {
-  return authenticatedFetch('/recipes', {
-    method: 'POST',
-    body: recipeData,
-  });
+/**
+ * Add a new recipe
+ */
+export async function addRecipe(recipeData, onNavigate) {
+  try {
+    const isFormData = recipeData instanceof FormData;
+    const res = await authenticatedFetch("/recipes", {
+      method: "POST",
+      headers: isFormData ? undefined : { "Content-Type": "application/json" },
+      body: isFormData ? recipeData : JSON.stringify(recipeData),
+    });
+    return res;
+  } catch (err) {
+    handleAuthError(err, onNavigate);
+  }
 }
 
+/**
+ * Get all recipes for the logged-in user (if authenticated)
+ */
 export async function getUserRecipes() {
-  return publicFetch('/recipes');
+  try {
+    return await optionalAuthFetch("/recipes");
+  } catch (err) {
+    toast.error(err.message);
+  }
 }
 
-export async function updateRecipe(recipeId, recipeData) {
-  return authenticatedFetch(`/recipes/${recipeId}`, {
-    method: 'PUT',
-    body: recipeData,
-  });
+/**
+ * Update an existing recipe
+ */
+export async function updateRecipe(recipeId, recipeData, onNavigate) {
+  try {
+    const isFormData = recipeData instanceof FormData;
+    const res = await authenticatedFetch(`/recipes/${recipeId}`, {
+      method: "PUT",
+      headers: isFormData ? undefined : { "Content-Type": "application/json" },
+      body: isFormData ? recipeData : JSON.stringify(recipeData),
+    });
+    return res;
+  } catch (err) {
+    handleAuthError(err, onNavigate);
+  }
 }
 
-export async function deleteRecipe(recipeId) {
-  return authenticatedFetch(`/recipes/${recipeId}`, {
-    method: 'DELETE',
-  });
-}
-export async function getRecipeById(recipeId) {
-  return authenticatedFetch(`/recipes/${recipeId}`, {
-    method: 'GET',
-  });
-}
-export async function getMyRecipes(){
-  return authenticatedFetch('/recipes/dashboard');
+/**
+ * Delete a recipe by ID
+ */
+export async function deleteRecipe(recipeId, onNavigate) {
+  try {
+    return await authenticatedFetch(`/recipes/${recipeId}`, { method: "DELETE" });
+  } catch (err) {
+    handleAuthError(err, onNavigate);
+  }
 }
 
-export async function searchRecipeByIngredients(recipeData){
-  return authenticatedFetch(`/recipes/search`, {
-    method: 'POST',
-    body: JSON.stringify(recipeData),
-  });
+/**
+ * Get a recipe by ID
+ */
+export async function getRecipeById(recipeId, onNavigate) {
+  try {
+    return await optionalAuthFetch(`/recipes/${recipeId}`, { method: "GET" });
+  } catch (err) {
+    handleAuthError(err, onNavigate);
+  }
+}
+
+/**
+ * Get all recipes for dashboard view
+ */
+export async function getMyRecipes(onNavigate) {
+  try {
+    return await authenticatedFetch("/recipes/dashboard");
+  } catch (err) {
+    handleAuthError(err, onNavigate);
+  }
+}
+
+/**
+ * Search for recipes by ingredients
+ */
+export async function searchRecipeByIngredients(recipeData, onNavigate) {
+  try {
+    return await authenticatedFetch("/recipes/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(recipeData),
+    });
+  } catch (err) {
+    handleAuthError(err, onNavigate);
+  }
+}
+
+/**
+ * Add a recipe to a collection
+ */
+export async function addRecipeToCollection(recipeId, collectionId, onNavigate) {
+  try {
+    return await authenticatedFetch("/recipes/add-to-collection", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipeId, collectionId }),
+    });
+  } catch (err) {
+    handleAuthError(err, onNavigate);
+  }
+}
+
+/**
+ * Remove a recipe from a collection
+ */
+export async function removeRecipeFromCollection(recipeId, collectionId, onNavigate) {
+  try {
+    return await authenticatedFetch("/recipes/remove-from-collection", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipeId, collectionId }),
+    });
+  } catch (err) {
+    handleAuthError(err, onNavigate);
+  }
+}
+
+/**
+ * Helper for login-required actions
+ */
+function handleAuthError(err, onNavigate) {
+  if (err.message.includes("logged in")) {
+    toast.error("Please log in to continue");
+    if (onNavigate) onNavigate("/login");
+  } else {
+    toast.error(err.message);
+  }
 }

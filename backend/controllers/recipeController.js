@@ -31,6 +31,8 @@ export const searchRecipes = async (req, res) => {
       ...detail,
       usedIngredients: match.usedIngredients,
       missedIngredients: match.missedIngredients,
+      authorName: "Kitchen Remix",
+      uid: 1111
     };
   });
 
@@ -50,7 +52,7 @@ export const createRecipe = async (req, res) => {
     let imageKey = null;
     
     if (file) {
-      // Upload to S3 and get the KEY (not URL)
+      //Upload to S3 and get the key 
       const { error, key } = await uploadToS3({ file, uid: req.user.uid });
       if (error) {
         return res.status(500).json({ 
@@ -58,14 +60,13 @@ export const createRecipe = async (req, res) => {
           error: error.message 
         });
       }
-      imageKey = key; // Store ONLY the key in database
+      imageKey = key; 
     }
     
     // Parse JSON arrays
     let parsedIngredients = [];
     let parsedComments = [];
     let parseRecipeCollectionID = [];
-    let parseRecipeCollectionName = [];
 
     try {
       parsedIngredients = typeof ingredients === 'string' ? JSON.parse(ingredients) : ingredients || [];
@@ -85,16 +86,10 @@ export const createRecipe = async (req, res) => {
       parseRecipeCollectionID = [];
     }
 
-    try {
-      parseRecipeCollectionName = typeof recipeCollectionName === 'string' ? JSON.parse(recipeCollectionName) : recipeCollectionName || [];
-    } catch (e) {
-      parseRecipeCollectionName = [];
-    }
-
     const recipe = new Recipe({
       title,
       instruction,
-      imageKey, // Store the S3 key, not the URL
+      imageKey,
       ingredients: parsedIngredients,
       comments: parsedComments,
       isPublic: isPublic === 'true' || isPublic === true,
@@ -107,9 +102,7 @@ export const createRecipe = async (req, res) => {
       difficulty: Number(difficulty),
       nutrition,
       uid: req.user.uid,
-      authorName: req.user.displayName,
-      recipeCollectionID: parseRecipeCollectionID,
-      recipeCollectionName: parseRecipeCollectionName
+      authorName: req.user.displayName
     });
 
     const newRecipe = await recipe.save();
@@ -117,29 +110,43 @@ export const createRecipe = async (req, res) => {
     // Generate presigned URL before sending to frontend
     const recipeWithUrl = await addPresignedUrlToRecipe(newRecipe.toObject());
 
-    // Add to collections with imageKey (not presigned URL)
+    // Add to my collections only (verify they belong to me)
     if (parseRecipeCollectionID.length > 0) {
       const recipePreview = {
         _id: newRecipe._id,
         title: newRecipe.title,
-        imageKey: newRecipe.imageKey, // Store KEY, not URL
+        imageKey: newRecipe.imageKey, 
         cuisine: newRecipe.cuisine,
         difficulty: newRecipe.difficulty,
         timePrepared: newRecipe.timePrepared,
         rating: newRecipe.rating,
-        likes: newRecipe.likes
+        likes: newRecipe.likes,
+        uid: newRecipe.uid, // Keep original owner's uid
+        authorName: newRecipe.authorName // Keep original author name
       };
 
       await Promise.all(
         parseRecipeCollectionID.map(async (collectionId) => {
-          await RecipeCollection.findByIdAndUpdate(
-            collectionId,
+          // Only update collections that belong to me
+          await RecipeCollection.findOneAndUpdate(
+            { _id: collectionId, uid: req.user.uid },
             { $addToSet: { recipes: recipePreview } },
             { new: true }
           );
         })
       );
     }
+
+    // Add myCollections info
+    const myCollections = await RecipeCollection.find({
+      uid: req.user.uid,
+      'recipes._id': newRecipe._id
+    }).select('_id title');
+    
+    recipeWithUrl.myCollections = myCollections.map(col => ({
+      _id: col._id,
+      title: col.title
+    }));
 
     res.status(201).json(recipeWithUrl);
   } catch (error) {
@@ -149,11 +156,30 @@ export const createRecipe = async (req, res) => {
 }
 
 //get all public recipe
-export async function getAllRecipe(_, res) {
+export async function getAllRecipe(req, res) {
   try {
     const recipes = await Recipe.find({ isPublic: true }).sort({ likes: -1 });
     // Generate presigned URLs for all recipes before sending
     const recipesWithUrls = await addPresignedUrlsToRecipes(recipes.map(r => r.toObject()));
+    
+    // If user is logged in, add which collections contain each recipe
+    if (req.user) {
+      const myCollections = await RecipeCollection.find({ uid: req.user.uid });
+      
+      recipesWithUrls.forEach(recipe => {
+        recipe.myCollections = myCollections
+          .filter(col => col.recipes.some(r => r._id.toString() === recipe._id.toString()))
+          .map(col => ({
+            _id: col._id,
+            title: col.title
+          }));
+      });
+    } else {
+      recipesWithUrls.forEach(recipe => {
+        recipe.myCollections = [];
+      });
+    }
+    
     res.status(200).json(recipesWithUrls);
   } catch (error) {
     console.error("Error in getAllRecipe controller", error);
@@ -167,6 +193,19 @@ export async function getAllMyRecipe(req, res) {
     const recipes = await Recipe.find({ uid: req.user.uid }).sort({ likes: -1 });
     // Generate presigned URLs for all recipes before sending
     const recipesWithUrls = await addPresignedUrlsToRecipes(recipes.map(r => r.toObject()));
+    
+    // Add which of my collections contain each recipe
+    const myCollections = await RecipeCollection.find({ uid: req.user.uid });
+    
+    recipesWithUrls.forEach(recipe => {
+      recipe.myCollections = myCollections
+        .filter(col => col.recipes.some(r => r._id.toString() === recipe._id.toString()))
+        .map(col => ({
+          _id: col._id,
+          title: col.title
+        }));
+    });
+    
     res.status(200).json(recipesWithUrls);
   } catch (error) {
     console.error("Error in getAllMyRecipe controller", error);
@@ -186,6 +225,22 @@ export async function getRecipeById(req, res) {
     
     // Generate presigned URL before sending
     const recipeWithUrl = await addPresignedUrlToRecipe(recipe.toObject());
+    
+    // Find which of MY collections contain this recipe
+    if (req.user) {
+      const myCollections = await RecipeCollection.find({
+        uid: req.user.uid,
+        'recipes._id': req.params.id
+      }).select('_id title');
+      
+      recipeWithUrl.myCollections = myCollections.map(col => ({
+        _id: col._id,
+        title: col.title
+      }));
+    } else {
+      recipeWithUrl.myCollections = [];
+    }
+    
     res.json(recipeWithUrl);
   } catch (error) {
     console.error("Error in getRecipeById controller", error);
@@ -208,10 +263,10 @@ export async function updateRecipe(req, res) {
     const {
       title, instruction, isPublic, numServings, sourceName,
       timePrepared, rating, likes, cuisine, difficulty, nutrition,
-      ingredients, comments, recipeCollectionID, recipeCollectionName
+      ingredients, comments, recipeCollectionID
     } = req.body;
 
-    const updateData = { uid: req.user.uid };
+    const updateData = {};
     const file = req.file;
     
     // Handle image upload
@@ -261,29 +316,6 @@ export async function updateRecipe(req, res) {
       }
     }
 
-    let parseRecipeCollectionID = [];
-    let parseRecipeCollectionName = [];
-
-    if (recipeCollectionID !== undefined) {
-      try {
-        parseRecipeCollectionID = typeof recipeCollectionID === 'string' ? JSON.parse(recipeCollectionID) : recipeCollectionID || [];
-        updateData.recipeCollectionID = parseRecipeCollectionID;
-      } catch (e) {
-        parseRecipeCollectionID = [];
-        updateData.recipeCollectionID = [];
-      }
-    }
-
-    if (recipeCollectionName !== undefined) {
-      try {
-        parseRecipeCollectionName = typeof recipeCollectionName === 'string' ? JSON.parse(recipeCollectionName) : recipeCollectionName || [];
-        updateData.recipeCollectionName = parseRecipeCollectionName;
-      } catch (e) {
-        parseRecipeCollectionName = [];
-        updateData.recipeCollectionName = [];
-      }
-    }
-
     const updatedRecipe = await Recipe.findByIdAndUpdate(
       req.params.id,
       updateData,
@@ -297,74 +329,111 @@ export async function updateRecipe(req, res) {
     // Generate presigned URL before sending
     const recipeWithUrl = await addPresignedUrlToRecipe(updatedRecipe.toObject());
 
-    // Update collections
+    // Handle collection updates (only MY collections)
+    let parseRecipeCollectionID = [];
     if (recipeCollectionID !== undefined) {
-      const oldCollectionIDs = existingRecipe.recipeCollectionID || [];
-      const collectionsToRemoveFrom = oldCollectionIDs.filter(id => !parseRecipeCollectionID.includes(id));
+      try {
+        parseRecipeCollectionID = typeof recipeCollectionID === 'string' ? JSON.parse(recipeCollectionID) : recipeCollectionID || [];
+      } catch (e) {
+        parseRecipeCollectionID = [];
+      }
+
+      // Find which of MY collections currently have this recipe
+      const currentCollections = await RecipeCollection.find({
+        uid: req.user.uid,
+        'recipes._id': req.params.id
+      });
+      const currentCollectionIDs = currentCollections.map(col => col._id.toString());
+      
+      // Collections to remove from
+      const collectionsToRemoveFrom = currentCollectionIDs.filter(
+        id => !parseRecipeCollectionID.includes(id)
+      );
       
       if (collectionsToRemoveFrom.length > 0) {
         await Promise.all(
           collectionsToRemoveFrom.map(async (collectionId) => {
-            await RecipeCollection.findByIdAndUpdate(
-              collectionId,
-              { $pull: { recipes: { _id: req.params.id } } } 
+            await RecipeCollection.findOneAndUpdate(
+              { _id: collectionId, uid: req.user.uid },
+              { $pull: { recipes: { _id: req.params.id } } }
             );
           })
         );
       }
 
-      const collectionsToAddTo = parseRecipeCollectionID.filter(id => !oldCollectionIDs.includes(id));
+      // Collections to add to
+      const collectionsToAddTo = parseRecipeCollectionID.filter(
+        id => !currentCollectionIDs.includes(id)
+      );
       
       if (collectionsToAddTo.length > 0) {
         const recipePreview = {
           _id: updatedRecipe._id,
           title: updatedRecipe.title,
-          imageKey: updatedRecipe.imageKey, // Store KEY, not URL
+          imageKey: updatedRecipe.imageKey,
           cuisine: updatedRecipe.cuisine,
           difficulty: updatedRecipe.difficulty,
           timePrepared: updatedRecipe.timePrepared,
           rating: updatedRecipe.rating,
-          likes: updatedRecipe.likes
+          likes: updatedRecipe.likes,
+          uid: updatedRecipe.uid,
+          authorName: updatedRecipe.authorName
         };
 
         await Promise.all(
           collectionsToAddTo.map(async (collectionId) => {
-            await RecipeCollection.findByIdAndUpdate(
-              collectionId,
+            await RecipeCollection.findOneAndUpdate(
+              { _id: collectionId, uid: req.user.uid },
               { $addToSet: { recipes: recipePreview } }
             );
           })
         );
       }
 
-      const collectionsToUpdate = parseRecipeCollectionID.filter(id => oldCollectionIDs.includes(id));
+      // Collections that still have the recipe - update their preview
+      const collectionsToUpdate = parseRecipeCollectionID.filter(
+        id => currentCollectionIDs.includes(id)
+      );
       
       if (collectionsToUpdate.length > 0) {
         const recipePreview = {
           _id: updatedRecipe._id,
           title: updatedRecipe.title,
-          imageKey: updatedRecipe.imageKey, // Store KEY, not URL
+          imageKey: updatedRecipe.imageKey,
           cuisine: updatedRecipe.cuisine,
           difficulty: updatedRecipe.difficulty,
           timePrepared: updatedRecipe.timePrepared,
           rating: updatedRecipe.rating,
-          likes: updatedRecipe.likes
+          likes: updatedRecipe.likes,
+          uid: updatedRecipe.uid,
+          authorName: updatedRecipe.authorName
         };
 
         await Promise.all(
           collectionsToUpdate.map(async (collectionId) => {
-            await RecipeCollection.findByIdAndUpdate(
-              collectionId,
+            await RecipeCollection.findOneAndUpdate(
+              { _id: collectionId, uid: req.user.uid },
               { $pull: { recipes: { _id: req.params.id } } }
             );
-            await RecipeCollection.findByIdAndUpdate(
-              collectionId,
+            await RecipeCollection.findOneAndUpdate(
+              { _id: collectionId, uid: req.user.uid },
               { $addToSet: { recipes: recipePreview } }
             );
           })
         );
       }
     }
+
+    // Add myCollections info
+    const myCollections = await RecipeCollection.find({
+      uid: req.user.uid,
+      'recipes._id': req.params.id
+    }).select('_id title');
+    
+    recipeWithUrl.myCollections = myCollections.map(col => ({
+      _id: col._id,
+      title: col.title
+    }));
 
     res.status(200).json(recipeWithUrl);
   } catch (error) {
@@ -385,17 +454,12 @@ export async function deleteRecipe(req, res) {
       return res.status(404).json({ message: "Recipe not found or you don't have permission" });
     }
 
-    // Remove recipe from all collections
-    if (recipe.recipeCollectionID && recipe.recipeCollectionID.length > 0) {
-      await Promise.all(
-        recipe.recipeCollectionID.map(async (collectionId) => {
-          await RecipeCollection.findByIdAndUpdate(
-            collectionId,
-            { $pull: { recipes: { _id: req.params.id } } }
-          );
-        })
-      );
-    }
+    // Remove recipe from ALL collections (including other users' collections)
+    // This is necessary because other users might have added this public recipe to their collections
+    await RecipeCollection.updateMany(
+      { 'recipes._id': req.params.id },
+      { $pull: { recipes: { _id: req.params.id } } }
+    );
     
     // Delete image from S3 using the KEY (not URL)
     if (recipe.imageKey) {
@@ -412,5 +476,93 @@ export async function deleteRecipe(req, res) {
   } catch (error) {
     console.error("Error in deleteRecipe controller", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+//Add any public recipe to my collection
+export async function addRecipeToCollection(req, res) {
+  try {
+
+    const { recipeId, collectionId } = req.body;
+    // Verify the collection belongs to me
+    const collection = await RecipeCollection.findOne({
+      _id: collectionId,
+      uid: req.user.uid
+    });
+    
+    if (!collection) {
+      return res.status(404).json({ message: "Collection not found or unauthorized" });
+    }
+    
+    // Verify the recipe exists and is either public or owned by me
+    const recipe = await Recipe.findById(recipeId);
+    if (!recipe) {
+      return res.status(404).json({ message: "Recipe not found" });
+    }
+    
+    if (!recipe.isPublic && recipe.uid !== req.user.uid) {
+      return res.status(403).json({ message: "Cannot add private recipe to collection" });
+    }
+    
+    // Create recipe preview with ORIGINAL owner's info
+    const recipePreview = {
+      _id: recipe._id,
+      title: recipe.title,
+      imageKey: recipe.imageKey,
+      cuisine: recipe.cuisine,
+      difficulty: recipe.difficulty,
+      timePrepared: recipe.timePrepared,
+      rating: recipe.rating,
+      likes: recipe.likes,
+      uid: recipe.uid, // Keep original owner's uid
+      authorName: recipe.authorName // Keep original author name
+    };
+    
+    // Update ONLY my collection, not the recipe
+    const updatedCollection = await RecipeCollection.findByIdAndUpdate(
+      collectionId,
+      { $addToSet: { recipes: recipePreview } },
+      { new: true }
+    );
+    
+    res.status(200).json({ 
+      message: "Recipe added to collection successfully",
+      collection: updatedCollection
+    });
+  } catch (error) {
+    console.error("Error in addRecipeToCollection controller", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+}
+
+//Remove recipe from MY collection
+export async function removeRecipeFromCollection(req, res) {
+  try {
+    const { recipeId, collectionId } = req.body;
+    
+    // Verify the collection belongs to me
+    const collection = await RecipeCollection.findOne({
+      _id: collectionId,
+      uid: req.user.uid
+    });
+    
+    if (!collection) {
+      return res.status(404).json({ message: "Collection not found or unauthorized" });
+    }
+    
+    // Remove recipe from my collection
+    const updatedCollection = await RecipeCollection.findByIdAndUpdate(
+      collectionId,
+      { $pull: { recipes: { _id: recipeId } } },
+      { new: true }
+    );
+    
+    res.status(200).json({ 
+      message: "Recipe removed from collection successfully",
+      collection: updatedCollection
+    });
+  } catch (error) {
+    console.error("Error in removeRecipeFromCollection controller", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 }

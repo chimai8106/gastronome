@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { deleteRecipe, updateRecipe, getUserRecipes, getRecipeById } from "../../services/RecipeServices";
+import { deleteRecipe, addRecipeToCollection, removeRecipeFromCollection, getUserRecipes } from "../../services/RecipeServices";
 import { getMyRecipeCollection, addRecipeCollection } from "../../services/RecipeCollectionServices";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
@@ -15,7 +15,7 @@ export default function Home() {
   const [recipeCollections, setRecipeCollections] = useState([]);
   const [selectedCollections, setSelectedCollections] = useState({}); 
   const [creatingNewCollection, setCreatingNewCollection] = useState({});
-  const [newCollectionName, setNewCollectionName] = useState({});
+  const [newCollectionTitle, setNewCollectionTitle] = useState({}); // Changed from newCollectionTitle
   const navigate = useNavigate();
   const { uid } = useAuth();
   const currentUserId = uid;
@@ -26,7 +26,6 @@ export default function Home() {
     return recipe.uid === currentUserId;
   };
   
-
   const handleDelete = async (recipeId) => {
     try {
       await deleteRecipe(recipeId);
@@ -37,32 +36,10 @@ export default function Home() {
     }
   };
 
+  // Remove a recipe from a collection 
   const handleRemoveCollection = async (recipeId, collectionId) => {
     try {
-      const recipe = await getRecipeById(recipeId);
-      
-      const updatedCollectionIds = (recipe.recipeCollectionID || []).filter(id => id !== collectionId);
-      const collectionIndex = (recipe.recipeCollectionID || []).indexOf(collectionId);
-      const updatedCollectionNames = (recipe.recipeCollectionName || []).filter((_, idx) => idx !== collectionIndex);
-      
-      const formData = new FormData();
-      formData.append("title", recipe.title);
-      formData.append("instruction", recipe.instruction);
-      formData.append("isPublic", recipe.isPublic);
-      formData.append("numServings", recipe.numServings);
-      formData.append("timePrepared", recipe.timePrepared);
-      formData.append("sourceName", recipe.sourceName);
-      formData.append("rating", recipe.rating);
-      formData.append("likes", recipe.likes);
-      formData.append("cuisine", recipe.cuisine);
-      formData.append("difficulty", recipe.difficulty);
-      formData.append("nutrition", recipe.nutrition);
-      formData.append("recipeCollectionID", JSON.stringify(updatedCollectionIds));
-      formData.append("recipeCollectionName", JSON.stringify(updatedCollectionNames));
-      formData.append("ingredients", JSON.stringify(recipe.ingredients));
-      formData.append("comments", JSON.stringify(recipe.comments));
-      
-      await updateRecipe(recipeId, formData);
+      await removeRecipeFromCollection(recipeId, collectionId);
       toast.success("Removed from collection!");
       setChanged(!changed);
     } catch (err) {
@@ -70,15 +47,16 @@ export default function Home() {
     }
   };
 
-  const handleCollectionToggle = (recipeId, collectionId, collectionName) => {
-    const currentSelections = selectedCollections[recipeId] || { ids: [], names: [] };
+  // Toggle temporary selection in dropdown
+  const handleCollectionToggle = (recipeId, collectionId, collectionTitle) => {
+    const currentSelections = selectedCollections[recipeId] || { ids: [], titles: [] };
     
     if (currentSelections.ids.includes(collectionId)) {
       setSelectedCollections({
         ...selectedCollections,
         [recipeId]: {
           ids: currentSelections.ids.filter(id => id !== collectionId),
-          names: currentSelections.names.filter(name => name !== collectionName)
+          titles: currentSelections.titles.filter(title => title !== collectionTitle)
         }
       });
     } else {
@@ -86,12 +64,13 @@ export default function Home() {
         ...selectedCollections,
         [recipeId]: {
           ids: [...currentSelections.ids, collectionId],
-          names: [...currentSelections.names, collectionName]
+          titles: [...currentSelections.titles, collectionTitle]
         }
       });
     }
   };
 
+  // Add recipe to multiple collections at once
   const handleAddToCollections = async (recipeId) => {
     const selections = selectedCollections[recipeId];
     
@@ -101,36 +80,16 @@ export default function Home() {
     }
 
     try {
-      const recipe = await getRecipeById(recipeId);
+      // Add to each selected collection
+      await Promise.all(
+        selections.ids.map(collectionId => 
+          addRecipeToCollection(recipeId, collectionId)
+        )
+      );
       
-      const existingCollectionIds = recipe.recipeCollectionID || [];
-      const existingCollectionNames = recipe.recipeCollectionName || [];
-      
-      const updatedCollectionIds = [...new Set([...existingCollectionIds, ...selections.ids])];
-      const updatedCollectionNames = [...new Set([...existingCollectionNames, ...selections.names])];
-      
-      const formData = new FormData();
-      formData.append("title", recipe.title);
-      formData.append("instruction", recipe.instruction);
-      formData.append("isPublic", recipe.isPublic);
-      formData.append("numServings", recipe.numServings);
-      formData.append("sourceName", recipe.sourceName);
-      formData.append("timePrepared", recipe.timePrepared);
-      formData.append("rating", recipe.rating);
-      formData.append("likes", recipe.likes);
-      formData.append("cuisine", recipe.cuisine);
-      formData.append("difficulty", recipe.difficulty);
-      formData.append("nutrition", recipe.nutrition);
-      formData.append("recipeCollectionID", JSON.stringify(updatedCollectionIds));
-      formData.append("recipeCollectionName", JSON.stringify(updatedCollectionNames));
-      formData.append("ingredients", JSON.stringify(recipe.ingredients));
-      formData.append("comments", JSON.stringify(recipe.comments));
-      
-      await updateRecipe(recipeId, formData);
-      
-      toast.success(`Added to ${selections.names.length} collection(s)!`);
-      closeCollectionDropdown(); // Close after adding
-      setSelectedCollections({ ...selectedCollections, [recipeId]: { ids: [], names: [] } });
+      toast.success(`Added to ${selections.titles.length} collection(s)!`);
+      closeCollectionDropdown();
+      setSelectedCollections({ ...selectedCollections, [recipeId]: { ids: [], titles: [] } });
       setChanged(!changed);
     } catch (err) {
       toast.error(`Failed to add to collections: ${err?.message || err}`);
@@ -138,32 +97,32 @@ export default function Home() {
   };
 
   const handleCreateNewCollection = async (recipeId) => {
-    const collectionName = newCollectionName[recipeId];
-    if (!collectionName || collectionName.trim() === '') {
+    const collectionTitle = newCollectionTitle[recipeId];
+    if (!collectionTitle || collectionTitle.trim() === '') {
       toast.error("Please enter a collection name");
       return;
     }
 
     try {
       const newCol = await addRecipeCollection({
-        title: collectionName,
+        title: collectionTitle,
         description: "",
         isPublic: false,
       });
       
       setRecipeCollections([...recipeCollections, newCol]);
       
-      const currentSelections = selectedCollections[recipeId] || { ids: [], names: [] };
+      const currentSelections = selectedCollections[recipeId] || { ids: [], titles: [] };
       setSelectedCollections({
         ...selectedCollections,
         [recipeId]: {
           ids: [...currentSelections.ids, newCol._id],
-          names: [...currentSelections.names, newCol.title]
+          titles: [...currentSelections.titles, newCol.title]
         }
       });
       
       setCreatingNewCollection({ ...creatingNewCollection, [recipeId]: false });
-      setNewCollectionName({ ...newCollectionName, [recipeId]: "" });
+      setNewCollectionTitle({ ...newCollectionTitle, [recipeId]: "" });
       toast.success("Collection created and selected!");
     } catch (err) {
       toast.error(`Failed to create collection: ${err?.message || err}`);
@@ -173,12 +132,14 @@ export default function Home() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [recipesData, collectionsData] = await Promise.all([
-          getUserRecipes(),
-          getMyRecipeCollection()
-        ]);
+        const recipesData = await getUserRecipes();
         setRecipes(recipesData);
-        setRecipeCollections(collectionsData);
+        
+        // Only fetch collections if user is logged in
+        if (uid) {
+          const collectionsData = await getMyRecipeCollection();
+          setRecipeCollections(collectionsData);
+        }
       } catch (err) {
         toast.error(`Failed to load data: ${err?.message || err}`);
       } finally {
@@ -186,7 +147,7 @@ export default function Home() {
       }
     }
     fetchData();
-  }, [changed]);
+  }, [changed, uid]);
 
   if (loading) {
     return null;
@@ -213,21 +174,21 @@ export default function Home() {
             currentUserId={currentUserId}
             isOwner={isOwner}
             selectedCollections={selectedCollections}
-            showCollectionDropdown={isDropdownOpen(recipe._id)} // Context returns true/false
+            showCollectionDropdown={isDropdownOpen(recipe._id)}
             creatingNewCollection={creatingNewCollection}
-            newCollectionName={newCollectionName}
+            newCollectionTitle={newCollectionTitle}
             recipeCollections={recipeCollections}
             onCollectionToggle={handleCollectionToggle}
             onRemoveCollection={handleRemoveCollection}
-            onShowCollectionDropdown={() => toggleCollectionDropdown(recipe._id)} // Context handles it
+            onShowCollectionDropdown={() => toggleCollectionDropdown(recipe._id)}
             onAddToCollections={handleAddToCollections}
             onCreateNewCollection={handleCreateNewCollection}
             onSetCreatingNewCollection={(recipeId, value) => setCreatingNewCollection({ 
               ...creatingNewCollection, 
               [recipeId]: value 
             })}
-            onSetNewCollectionName={(recipeId, value) => setNewCollectionName({ 
-              ...newCollectionName, 
+            onSetNewCollectionTitle={(recipeId, value) => setNewCollectionTitle({ 
+              ...newCollectionTitle, 
               [recipeId]: value 
             })}
             onUpdate={() => {
@@ -237,6 +198,7 @@ export default function Home() {
             }}
             onDelete={handleDelete}
             onNavigate={navigate}
+            disabledButton={!uid}  // Disable buttons if not logged in
           />
         ))}
       </div>

@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import Popup from "reactjs-popup";
 import RecipeForm from "./RecipeForm";
-import { getRecipeById, deleteRecipe, updateRecipe } from "../services/RecipeServices";
+import { getRecipeById, deleteRecipe, updateRecipe, addRecipeToCollection, removeRecipeFromCollection } from "../services/RecipeServices";
 import { getMyRecipeCollection, addRecipeCollection } from "../services/RecipeCollectionServices";
 import "./RecipeCard.css";
 import { useAuth } from "../contexts/authContext";
@@ -55,9 +55,10 @@ export default function RecipeCard() {
 
   const isOwner = (recipe) => recipe?.uid === currentUserId;
 
-  // These are the SAVED collections (persisted in database)
-  const savedCollectionIds = recipe?.recipeCollectionID || [];
-  const savedCollectionNames = recipe?.recipeCollectionName || [];
+  // Use myCollections from backend 
+  const savedCollections = recipe?.myCollections || [];
+  const savedCollectionIds = savedCollections.map(c => c._id);
+  const savedCollectionNames = savedCollections.map(c => c.title);
   const currentSelections = selectedCollections[recipeId] || { ids: [], names: [] };
   
   // Close dropdown when clicking outside
@@ -102,33 +103,10 @@ export default function RecipeCard() {
     }
   }, [showCollectionDropdown, creatingNewCollection, recipeId]);
 
-  // Remove a collection from the recipe (saved to database)
+  // Remove a recipe from a collection (using new API)
   const handleRemoveCollection = async (recipeId, collectionId) => {
     try {
-      const recipe = await getRecipeById(recipeId);
-      
-      const updatedCollectionIds = (recipe.recipeCollectionID || []).filter(id => id !== collectionId);
-      const collectionIndex = (recipe.recipeCollectionID || []).indexOf(collectionId);
-      const updatedCollectionNames = (recipe.recipeCollectionName || []).filter((_, idx) => idx !== collectionIndex);
-      
-      const formData = new FormData();
-      formData.append("title", recipe.title);
-      formData.append("instruction", recipe.instruction);
-      formData.append("isPublic", recipe.isPublic);
-      formData.append("numServings", recipe.numServings);
-      formData.append("timePrepared", recipe.timePrepared);
-      formData.append("sourceName", recipe.sourceName);
-      formData.append("rating", recipe.rating);
-      formData.append("likes", recipe.likes);
-      formData.append("cuisine", recipe.cuisine);
-      formData.append("difficulty", recipe.difficulty);
-      formData.append("nutrition", recipe.nutrition);
-      formData.append("recipeCollectionID", JSON.stringify(updatedCollectionIds));
-      formData.append("recipeCollectionName", JSON.stringify(updatedCollectionNames));
-      formData.append("ingredients", JSON.stringify(recipe.ingredients));
-      formData.append("comments", JSON.stringify(recipe.comments));
-      
-      await updateRecipe(recipeId, formData);
+      await removeRecipeFromCollection(recipeId, collectionId);
       toast.success("Removed from collection!");
       setChanged(!changed);
     } catch (err) {
@@ -159,6 +137,7 @@ export default function RecipeCard() {
     }
   };
 
+  // Add recipe to multiple collections at once (using new API)
   const handleAddToCollections = async (recipeId) => {
     const selections = selectedCollections[recipeId];
     
@@ -168,33 +147,12 @@ export default function RecipeCard() {
     }
 
     try {
-      const recipe = await getRecipeById(recipeId);
-      
-      // Merge existing collections with new selections (avoid duplicates)
-      const existingCollectionIds = recipe.recipeCollectionID || [];
-      const existingCollectionNames = recipe.recipeCollectionName || [];
-      
-      const updatedCollectionIds = [...new Set([...existingCollectionIds, ...selections.ids])];
-      const updatedCollectionNames = [...new Set([...existingCollectionNames, ...selections.names])];
-      
-      const formData = new FormData();
-      formData.append("title", recipe.title);
-      formData.append("instruction", recipe.instruction);
-      formData.append("isPublic", recipe.isPublic);
-      formData.append("numServings", recipe.numServings);
-      formData.append("sourceName", recipe.sourceName);
-      formData.append("timePrepared", recipe.timePrepared);
-      formData.append("rating", recipe.rating);
-      formData.append("likes", recipe.likes);
-      formData.append("cuisine", recipe.cuisine);
-      formData.append("difficulty", recipe.difficulty);
-      formData.append("nutrition", recipe.nutrition);
-      formData.append("recipeCollectionID", JSON.stringify(updatedCollectionIds));
-      formData.append("recipeCollectionName", JSON.stringify(updatedCollectionNames));
-      formData.append("ingredients", JSON.stringify(recipe.ingredients));
-      formData.append("comments", JSON.stringify(recipe.comments));
-      
-      await updateRecipe(recipeId, formData);
+      // Add to each selected collection using new API
+      await Promise.all(
+        selections.ids.map(collectionId => 
+          addRecipeToCollection(recipeId, collectionId)
+        )
+      );
       
       toast.success(`Added to ${selections.names.length} collection(s)!`);
       setShowCollectionDropdown({ ...showCollectionDropdown, [recipeId]: false });
@@ -337,10 +295,13 @@ export default function RecipeCard() {
                       <>
                         <button 
                           type="button" 
-                          onClick={() => setShowCollectionDropdown({ 
+                          onClick={() => {
+                            if (!uid){
+                                  navigate("/login");}
+                            setShowCollectionDropdown({ 
                             ...showCollectionDropdown, 
                             [recipeId]: !showCollectionDropdown[recipeId] 
-                          })}
+                          })}}
                           className="toggle-collection-btn"
                         >
                           {showCollectionDropdown[recipeId] ? '− Hide Collections' : '+ Add to Collection'}
@@ -383,23 +344,23 @@ export default function RecipeCard() {
                             )}
 
                             {/* Saved Collections Display */}
-                            {savedCollectionNames.length > 0 && (
+                            {savedCollections.length > 0 && (
                               <div className="saved-collections-in-dropdown">
                                 <p className="saved-collections-label">Your Collections:</p>
                                 <div className="saved-collections-tags">
-                                  {savedCollectionNames.map((name, idx) => (
-                                    <span key={idx} className="saved-collection-tag">
+                                  {savedCollections.map((collection) => (
+                                    <span key={collection._id} className="saved-collection-tag">
                                       <span 
-                                        onClick={() => navigate(`/collections/${savedCollectionIds[idx]}`)}
+                                        onClick={() => navigate(`/collections/${collection._id}`)}
                                         className="collection-tag-name"
                                       >
-                                        {name}
+                                        {collection.title}
                                       </span>
                                       <button
                                         type="button"
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          handleRemoveCollection(recipeId, savedCollectionIds[idx]);
+                                          handleRemoveCollection(recipeId, collection._id);
                                         }}
                                         className="remove-collection-btn"
                                         title="Remove from collection"
@@ -536,14 +497,14 @@ export default function RecipeCard() {
 
             {(recipe.timePrepared || recipe.readyInMinutes) && (
               <div className="detail-item">
-                <span className="detail-label">Ready in:</span>
+                <span className="detail-label">⏱️ Ready in:</span>
                 <span className="detail-value">{recipe.timePrepared || recipe.readyInMinutes} minutes</span>
               </div>
             )}
 
             {(recipe.numServings || recipe.servings) && (
               <div className="detail-item">
-                <span className="detail-label">Servings:</span>
+                <span className="detail-label">🍽️ Servings:</span>
                 <span className="detail-value">{recipe.numServings || recipe.servings}</span>
               </div>
             )}
@@ -583,28 +544,22 @@ export default function RecipeCard() {
               </div>
             )}
           </div>
+          
           {/* Collections Tags */}
-          <p className="detail-label">Collections:</p>
-          {recipe.recipeCollectionName?.length > 0 && recipe.recipeCollectionID?.length > 0 && (
-            <div className="recipe-collections">
-              {Array.isArray(recipe.recipeCollectionName)
-                ? recipe.recipeCollectionName.map((name, i) => (
-                    <Link
-                      key={recipe.recipeCollectionID[i]}
-                      to={`/collections/${recipe.recipeCollectionID[i]}`}
-                      className="collection-tag"
-                    >
-                      {name}
-                    </Link>
-                  ))
-                : (
-                    <Link
-                      to={`/collections/${recipe.recipeCollectionID}`}
-                      className="collection-tag"
-                    >
-                      {recipe.recipeCollectionName}
-                    </Link>
-                  )}
+          {savedCollections.length > 0 && (
+            <div className="recipe-collections-section">
+              <p className="detail-label">Collections:</p>
+              <div className="recipe-collections">
+                {savedCollections.map((collection) => (
+                  <Link
+                    key={collection._id}
+                    to={`/collections/${collection._id}`}
+                    className="collection-tag"
+                  >
+                    {collection.title}
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
         </div>

@@ -42,4 +42,38 @@ export async function verifyFirebaseToken(req, res, next) {
   }
 }
 
-export default { verifyFirebaseToken };
+
+export const optionalFirebaseToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    // No token? That's okay, continue as guest
+    if (!authHeader) {
+      req.user = null;
+      return next();
+    }
+    
+    const token = authHeader.split(' ')[1];
+    
+    if (!token) {
+      req.user = null;
+      return next();
+    }
+    
+    // Try to verify token
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = {
+      uid: decodedToken.uid,
+      email: decodedToken.email,
+      displayName: decodedToken.name || decodedToken.email
+    };
+    
+    next();
+  } catch (error) {
+    // Token is invalid? Still continue as guest (don't reject)
+    console.log('Optional auth failed, continuing as guest:', error.message);
+    req.user = null;
+    next();
+  }
+};
+

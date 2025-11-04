@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMyRecipeCollection, deleteRecipeCollection, updateRecipeCollection, addRecipeCollection } from "../../services/RecipeCollectionServices";
-import { getRecipeById, updateRecipe, deleteRecipe } from "../../services/RecipeServices";
+import { deleteRecipe, addRecipeToCollection, removeRecipeFromCollection } from "../../services/RecipeServices";
 import Popup from 'reactjs-popup';
 import { toast } from "react-hot-toast";
 import { useLocation } from "react-router-dom";
@@ -11,7 +11,6 @@ import RecipeGridBox from "../../components/RecipeGridBox";
 import "./User.css"; 
 import { useAddToCollection } from "../../contexts/AddToCollectionContext";
 import { useCreate } from "../../contexts/CreateContext";
-
 
 export default function User() {
   const { userLoggedIn, loading: authLoading, uid } = useAuth();
@@ -117,32 +116,10 @@ export default function User() {
     }
   };
 
+  // Remove recipe from collection (using new API)
   const handleRemoveCollection = async (recipeId, collectionId) => {
     try {
-      const recipe = await getRecipeById(recipeId);
-      
-      const updatedCollectionIds = (recipe.recipeCollectionID || []).filter(id => id !== collectionId);
-      const collectionIndex = (recipe.recipeCollectionID || []).indexOf(collectionId);
-      const updatedCollectionNames = (recipe.recipeCollectionName || []).filter((_, idx) => idx !== collectionIndex);
-      
-      const formData = new FormData();
-      formData.append("title", recipe.title);
-      formData.append("instruction", recipe.instruction);
-      formData.append("isPublic", recipe.isPublic);
-      formData.append("numServings", recipe.numServings);
-      formData.append("timePrepared", recipe.timePrepared);
-      formData.append("sourceName", recipe.sourceName);
-      formData.append("rating", recipe.rating);
-      formData.append("likes", recipe.likes);
-      formData.append("cuisine", recipe.cuisine);
-      formData.append("difficulty", recipe.difficulty);
-      formData.append("nutrition", recipe.nutrition);
-      formData.append("recipeCollectionID", JSON.stringify(updatedCollectionIds));
-      formData.append("recipeCollectionName", JSON.stringify(updatedCollectionNames));
-      formData.append("ingredients", JSON.stringify(recipe.ingredients));
-      formData.append("comments", JSON.stringify(recipe.comments));
-      
-      await updateRecipe(recipeId, formData);
+      await removeRecipeFromCollection(recipeId, collectionId);
       toast.success("Removed from collection!");
       setChanged(!changed);
     } catch (err) {
@@ -150,7 +127,32 @@ export default function User() {
     }
   };
 
-  
+  // Add recipe to multiple collections (using new API)
+  const handleAddToCollections = async (recipeId) => {
+    const selections = selectedCollections[recipeId];
+    
+    if (!selections || selections.ids.length === 0) {
+      toast.error("Please select at least one collection");
+      return;
+    }
+
+    try {
+      // Add to each selected collection using new API
+      await Promise.all(
+        selections.ids.map(collectionId => 
+          addRecipeToCollection(recipeId, collectionId)
+        )
+      );
+      
+      toast.success(`Added to ${selections.names.length} collection(s)!`);
+      closeCollectionDropdown();
+      setSelectedCollections({ ...selectedCollections, [recipeId]: { ids: [], names: [] } });
+      setChanged(!changed);
+    } catch (err) {
+      toast.error(`Failed to add to collections: ${err?.message || err}`);
+    }
+  };
+
   const handleCreateNewCollection = async (recipeId) => {
     const collectionName = newCollectionName[recipeId];
     if (!collectionName || collectionName.trim() === '') {
@@ -195,7 +197,7 @@ export default function User() {
           <p>You haven't added any Recipe Collections yet!</p>
           <button onClick={openRecipePopup} className="btn">
             Add one now!
-        </button>
+          </button>
         </div>
       </div>
     );
@@ -278,7 +280,7 @@ export default function User() {
                       onCollectionToggle={handleCollectionToggle}
                       onRemoveCollection={handleRemoveCollection}
                       onShowCollectionDropdown={() => toggleCollectionDropdown(recipe._id)}
-                      onAddToCollections={null}
+                      onAddToCollections={handleAddToCollections}
                       onCreateNewCollection={handleCreateNewCollection}
                       onSetCreatingNewCollection={(recipeId, value) => setCreatingNewCollection({ 
                         ...creatingNewCollection, 
@@ -295,7 +297,7 @@ export default function User() {
                       }}
                       onDelete={handleRecipeDelete}
                       onNavigate={navigate}
-                      disabledButton = {true}
+                      disabledButton={true}
                     />
                   ))}
                 </div>
