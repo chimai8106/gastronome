@@ -15,7 +15,6 @@
 }
 
 .form-label {
-  display: block;
   margin-bottom: 5px;
   font-weight: bold;
 }
@@ -126,11 +125,37 @@
   margin-right: 8px;
   padding: 6px 12px;
   cursor: pointer;
+  width: 100%;
+
+}
+.collection-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px; /* Space between text and button */
+}
+
+.collection-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0 4px;
 }
 
 .new-collection-cancel {
   padding: 6px 12px;
   cursor: pointer;
+  width: 100%;
+  
+}
+.collection-button {
+  background-color: #D4A574;
+  width: 100%;
+}
+.collection-button:hover {
+  background-color: #C69463;
 }
 
 .inline-checkbox-container {
@@ -147,29 +172,32 @@
   padding: 10px 20px;
   cursor: pointer;
   font-weight: bold;
+  margin: 0 auto;
+  display: block;
 }
 
-/* Ingredient Tags Styling */
-.ingredients-list {
-  list-style: none;
-  padding: 0;
-  margin: 10px 0 0 0;
+.ingredients-list-form{
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
 }
 
 .ingredient-tag {
   background: linear-gradient(135deg, #D4A574 0%, #A67C52 100%);
   color: #FFFFFF;
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: 8px 16px;
+  border-radius: 9999px; /* Full pill shape */
   font-size: 14px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   box-shadow: 0 2px 4px rgba(101, 67, 33, 0.15);
   transition: all 0.2s ease;
+  font-weight: 500;
+  list-style: none;
 }
 
 .ingredient-tag:hover {
@@ -180,8 +208,37 @@
 
 .ingredient-tag-text {
   line-height: 1;
-  color: #FFFFFF;
+  white-space: nowrap;
 }
+
+.ingredient-remove-btn {
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  color: #FFFFFF;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.ingredient-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(101, 67, 33, 0.2);
+  background: linear-gradient(135deg, #C69463 0%, #956A43 100%);
+}
+
+.ingredient-tag-text {
+  line-height: 1;
+}
+  
 
 .ingredient-remove-btn {
   background: rgba(255, 255, 255, 0.25);
@@ -205,6 +262,9 @@
   background: rgba(255, 255, 255, 0.4);
   transform: scale(1.1);
   color: #FFFFFF !important;
+}
+.selected-collections-container{
+  width: 100%;
 }
 
 /* Alternative color schemes matching your palette */

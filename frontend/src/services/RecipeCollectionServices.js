@@ -49,7 +49,7 @@ export async function updateRecipeCollection(recipeRecipeCollectionId, recipeRec
  */
 export async function getRecipeCollectionById(recipeRecipeCollectionId, onNavigate) {
   try {
-    return await authenticatedFetch(`/recipeRecipeCollections/${recipeRecipeCollectionId}`, { method: "GET" });
+    return await optionalAuthFetch(`/recipeRecipeCollections/${recipeRecipeCollectionId}`, { method: "GET" });
   } catch (err) {
     handleAuthError(err, onNavigate);
   }

@@ -12,3 +12,6 @@
   overflow-y: auto;
   z-index: 1000;
 }
+.pop-up-collection-content {
+  width: 50%
+}

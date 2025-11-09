@@ -78,14 +78,13 @@
 }
 
 .form-group label {
-  display: block;
   font-size: 14px;
   font-weight: 500;
   color: #654321;
   margin-bottom: 8px;
 }
 
-.form-group input {
+.form-group input, .form-textarea, .form-textarea-small {
   width: 100%;
   padding: 12px 16px;
   font-size: 15px;
@@ -118,7 +117,6 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.25s;
-  display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;

@@ -25,7 +25,6 @@
 .collection-dropdown-container {
   position: relative;
   width: 100%;
-  margin: 0.5rem 0;
 }
 
 /* Dropdown positioning */
@@ -116,16 +115,16 @@ input[type="number"] {
 }
 
 /* Ingredients list */
-.ingredients-list ul {
+.ingredients-list-search ul {
   list-style-type: none;
   padding: 0;
 }
 
-.ingredients-list li {
+.ingredients-list-search li {
   margin-bottom: 5px;
 }
 
-.ingredients-list button {
+.ingredients-list-search button {
     background: rgba(220, 38, 38, 0.2);
     border: none;
     color: #991b1b;
@@ -169,7 +168,7 @@ input[type="number"] {
 }
 
 .form-group label {
-  display: block;
+  font-size: 20px;
   font-weight: 600;
   color: #374151;
   margin-bottom: 0.5rem;
@@ -226,20 +225,20 @@ input[type="number"] {
 }
 
 /* Ingredients List (tags) */
-.ingredients-list {
+.ingredients-list-search {
   background-color: #f9fafb;
   padding: 1.5rem;
   border-radius: 0.5rem;
   margin-bottom: 2rem;
 }
 
-.ingredients-list h2 {
+.ingredients-list-search h2 {
   font-size: 1.25rem;
   color: #1f2937;
   margin-bottom: 1rem;
 }
 
-.ingredients-list ul {
+.ingredients-list-search ul {
   list-style: none;
   padding: 0;
   display: flex;
@@ -248,7 +247,7 @@ input[type="number"] {
 }
 
 
-.ingredients-list li {
+.ingredients-list-search li {
   background-color: #D4A574;
   color: white;
   padding: 0.5rem 0.5rem;
@@ -259,7 +258,7 @@ input[type="number"] {
   font-weight: 500;
 }
 
-.ingredients-list li button {
+.ingredients-list-search li button {
   background-color: rgba(255, 255, 255, 0.3);
   border: none;
   color: white;
@@ -274,7 +273,7 @@ input[type="number"] {
   transition: background-color 0.2s;
 }
 
-.ingredients-list li button:hover {
+.ingredients-list-search li button:hover {
   background-color: rgba(255, 255, 255, 0.5);
 }
 
@@ -392,20 +391,6 @@ input[type="number"] {
   font-weight: 600;
 }
 
-.ingredient-list {
-  list-style: none;
-  padding: 0;
-}
-
-.ingredient-list li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #f3f4f6;
-  font-size: 0.875rem;
-}
-
-.ingredient-list li:last-child {
-  border-bottom: none;
-}
 
 .ingredient-used {
   color: #15803d;
@@ -415,16 +400,7 @@ input[type="number"] {
   color: #b91c1c;
 }
 
-.instructions-list {
-  list-style: decimal;
-  padding-left: 1.5rem;
-}
 
-.instructions-list li {
-  padding: 0.75rem 0;
-  line-height: 1.6;
-  color: #374151;
-}
 
 /* Action Buttons */
 .recipe-actions-search {

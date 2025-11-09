@@ -1,0 +1,425 @@
+/* Make overlay fixed and non-scrollable */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Prevent overlay itself from scrolling */
+  z-index: 9999;
+}
+
+/* Pop-up box itself */
+.pop-up {
+  background: #FFFFFF;
+  border-radius: 24px;
+  width: 70vw;
+  max-height: 85vh;
+  overflow: hidden; /* Prevent scrollbar on container itself */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollable content area INSIDE the popup */
+.popup-content-wrapper {
+  overflow-y: auto; /* Only this part scrolls */
+  flex: 1;
+  max-height: 85vh;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+/* Optional: Hide scrollbar for cleaner look */
+.popup-content-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.popup-content-wrapper::-webkit-scrollbar-thumb {
+  background-color: #D4C4B0;
+  border-radius: 8px;
+}
+
+.popup-content-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #D4A574;
+}
+
+/* Close Button */
+.popup-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #F5EFE7;
+  border: 1px solid #D4C4B0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #654321;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.popup-close-btn:hover {
+  background: #C85A54;
+  color: #FFFFFF;
+  border-color: #C85A54;
+}
+
+/* Form Styles */
+.recipe-collection-form {
+  margin: 24px;
+}
+
+.inline-checkbox-container {
+  margin-bottom: 20px;
+}
+
+.inline-label {
+  padding-bottom: 10px;
+  display: block;
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #654321;
+  font-family: 'Fredoka', sans-serif;
+}
+
+/* WIDER, ROUNDER INPUT */
+.inline-checkbox-container input[type="url"] {
+  width: 100%;
+  padding: 20px 24px;
+  font-size: 17px;
+  min-height: 64px;
+  border: 3px solid #D4C4B0;
+  border-radius: 32px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  background-color: #FFFFFF;
+  color: #654321;
+  font-family: 'Fredoka', sans-serif;
+  margin-bottom: 10px;
+}
+
+.inline-checkbox-container input[type="url"]::placeholder {
+  color: #A69080;
+}
+
+.inline-checkbox-container input[type="url"]:focus {
+  outline: none;
+  border-color: #D4A574;
+  border-width: 3px;
+  box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.2);
+  background-color: #FFFFFF;
+}
+
+.inline-checkbox-container input[type="url"]:disabled {
+  background-color: #D4C4B0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Submit Button - SAME SIZE AND ROUNDNESS */
+.submit-button {
+  font-size: 18px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background-color: #D4A574;
+  border: none;
+  border-radius: 32px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Fredoka', sans-serif;
+  box-sizing: border-box;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #C69463;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 165, 116, 0.4);
+}
+
+.submit-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-button:disabled {
+  background-color: #D4C4B0;
+  color: #8B7355;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 40px 20px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  margin: 20px 0;
+}
+
+.loading-state p {
+  margin: 0;
+  color: #654321;
+  font-size: 16px;
+  font-family: 'Fredoka', sans-serif;
+}
+
+/* Spinner Animation */
+.loading-state::before {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 20px;
+  border: 4px solid #D4C4B0;
+  border-top: 4px solid #D4A574;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error Message */
+.error-message {
+  background-color: #FFE5E5;
+  border: 3px solid #C85A54;
+  border-left: 6px solid #C85A54;
+  padding: 20px;
+  border-radius: 20px;
+  margin: 20px 0;
+}
+
+.error-message p {
+  margin: 0;
+  font-size: 15px;
+  color: #C85A54;
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+}
+
+
+.recipe-image-search {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.recipe-header-search {
+  padding: 24px;
+  background: #FFFFFF;
+  border-bottom: 3px solid #D4C4B0;
+}
+
+.recipe-header-search h3 {
+  margin: 0 0 16px 0;
+  font-size: 28px;
+  color: #654321;
+  line-height: 1.3;
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+}
+
+.recipe-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 15px;
+  color: #8B7355;
+  font-family: 'Fredoka', sans-serif;
+}
+
+.recipe-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #F5EFE7;
+  padding: 10px 16px;
+  border-radius: 24px;
+  font-weight: 500;
+  border: 2px solid #D4C4B0;
+}
+
+/* Recipe Details */
+.recipe-details-expanded {
+  padding: 24px;
+}
+
+.section {
+  margin-bottom: 28px;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.section h4 {
+  margin: 0 0 16px 0;
+  font-size: 22px;
+  color: #654321;
+  font-weight: 600;
+  font-family: 'Fredoka', sans-serif;
+  border-bottom: 3px solid #D4A574;
+  padding-bottom: 8px;
+}
+
+
+.ingredients-section {
+  margin-top: 1rem;
+}
+
+.ingredients-subtitle {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+/* Action Buttons - SAME SIZE */
+.recipe-actions {
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  border-top: 3px solid #D4C4B0;
+  background: #F5EFE7;
+}
+
+/* Delete Button */
+.delete-recipe-btn {
+  flex: 1;
+  padding: 16px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background-color: #D4A574;
+  border: none;
+  border-radius: 28px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Fredoka', sans-serif;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Recipe Actions Table Styling */
+.recipe-actions{ 
+  margin-right: auto; /* Push table to the right */
+  border-collapse: separate; /* Change from collapse to separate for spacing */
+  border-spacing: 0 10px; /* Add horizontal spacing between cells */
+  width: 100%;
+  display: block;
+  table-layout: fixed;
+  position: relative;
+}
+
+.secondary-button, .save-recipe-btn{
+  width: 100%;
+}
+.secondary-button {
+  background-color: #C85A54;
+  color: #FFFFFF;
+  border: none;
+}
+.secondary-button:hover {
+  background-color: #B04943;
+  border-color: transparent;
+}
+.save-recipe-btn {
+  background-color: #D4A574;
+  color: white;
+}
+
+.save-recipe-btn:hover {
+  background-color: #C69463;
+}
+
+
+
+.recipe-actions tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.recipe-actions td {
+  width: 100%;
+  padding: 0;
+  max-height: 50%;
+}
+button {
+  display: block;
+}
+/* Responsive */
+@media (max-width: 768px) {
+  .pop-up {
+    width: 95vw !important;
+    max-height: 90vh !important;
+    border-radius: 20px !important;
+  }
+  
+  .popup-content-wrapper {
+    max-height: 90vh;
+  }
+  
+  .inline-checkbox-container input[type="url"] {
+    padding: 18px 20px;
+    font-size: 16px;
+    min-height: 60px;
+    border-radius: 30px;
+  }
+  
+  .submit-button {
+    padding: 18px 20px;
+    min-height: 60px;
+    border-radius: 30px;
+  }
+  
+  .recipe-header-search h3 {
+    font-size: 22px;
+  }
+  
+  .recipe-actions {
+    flex-direction: column;
+  }
+  
+  .recipe-image-search {
+    height: 220px;
+  }
+  
+  .recipe-meta {
+    gap: 10px;
+  }
+  
+  .section h4 {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .popup-content-wrapper {
+    padding: 16px;
+  }
+  
+  .inline-checkbox-container input[type="url"] {
+    padding: 16px 18px;
+    font-size: 15px;
+    min-height: 56px;
+    border-radius: 28px;
+  }
+  
+  .submit-button {
+    padding: 16px 18px;
+    min-height: 56px;
+    font-size: 17px;
+    border-radius: 28px;
+  }
+}

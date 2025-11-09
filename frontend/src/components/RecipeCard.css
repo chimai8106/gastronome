@@ -326,7 +326,6 @@
   opacity: 0.8;
 }
 
-/* FIXED: Much smaller X button - like a small dot */
 .remove-collection-btn {
   background: rgba(220, 38, 38, 0.2);
   border: none;
@@ -588,20 +587,7 @@
 }
 
 /* Ingredients */
-.ingredients-list {
-  list-style: disc;
-  list-style-position: inside;
-  color: #374151;
-  line-height: 1.8;
-}
 
-.ingredients-list li {
-  margin-bottom: 0.5rem;
-}
-
-.ingredients-section {
-  margin-top: 1rem;
-}
 
 .ingredients-subtitle {
   font-weight: 600;
@@ -616,27 +602,7 @@
   color: #b91c1c;
 }
 
-/* Instructions */
-.instructions-text {
-  color: #374151;
-  line-height: 1.75;
-  white-space: pre-line;
-}
 
-.instructions-list {
-  list-style: decimal;
-  list-style-position: inside;
-  color: #374151;
-}
-
-.instructions-list li {
-  margin-bottom: 0.75rem;
-  line-height: 1.75;
-}
-
-.instructions-list li span {
-  margin-left: 0.5rem;
-}
 
 .no-content {
   color: #9ca3af;

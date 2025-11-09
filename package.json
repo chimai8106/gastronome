@@ -25,6 +25,7 @@
     "mongoose": "^8.19.1",
     "multer": "^2.0.2",
     "path-to-regexp": "^0.1.7",
+    "request": "^2.88.2",
     "tailwindcss": "^4.1.13",
     "toaster-ui": "^1.1.5"
   },

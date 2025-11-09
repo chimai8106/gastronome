@@ -79,7 +79,7 @@ export default function RecipeForm({
       setTitle(initialRecipe.title || "");
       setIngredients(
         Array.isArray(initialRecipe.ingredients)
-          ? initialRecipe.ingredients.join(", ")
+          ? initialRecipe.ingredients.join("; ")
           : initialRecipe.ingredients || ""
       );
       setInstruction(initialRecipe.instruction || "");
@@ -90,7 +90,7 @@ export default function RecipeForm({
       setRating(initialRecipe.rating || 0);
       setComments(
         Array.isArray(initialRecipe.comments)
-          ? initialRecipe.comments.join(", ")
+          ? initialRecipe.comments.join("; ")
           : initialRecipe.comments || ""
       );
       setCuisine(initialRecipe.cuisine || "");
@@ -156,12 +156,12 @@ export default function RecipeForm({
     setErrors({});
     // Append data to the FormData
     const formattedIngredients = ingredients
-      .split(",")
+      .split(";")
       .map((i) => i.trim())
       .filter((i) => i.length > 0);
 
     const formattedComments = comments
-      .split(",")
+      .split(";")
       .map((c) => c.trim())
       .filter((c) => c.length > 0);
 
@@ -227,6 +227,10 @@ export default function RecipeForm({
 
         {!creatingNewRecipeCollection ? (
           <>
+          <table className = "collection-button-conatiner">
+            <tbody>
+              <tr>
+                <td>
             <button 
               type="button" 
               onClick={() => {
@@ -237,7 +241,8 @@ export default function RecipeForm({
             >
               {showCollectionDropdown ? '− Hide Collections' : '+ Add to Collection'}
             </button>
-            
+            </td>
+            <td>
             <button 
               type="button" 
               onClick={() => {
@@ -248,6 +253,11 @@ export default function RecipeForm({
             >
               + Create New Collection
             </button>
+            </td>
+            </tr>
+            </tbody>
+            </table>
+            
 
             {showCollectionDropdown && (
               <div className="collection-dropdown">
@@ -270,7 +280,7 @@ export default function RecipeForm({
             )}
           </>
         ) : (
-          <div className="new-collection-container">
+          <div className="new-collection-form">
             <input
               type="text"
               placeholder="New recipe collection name"
@@ -281,7 +291,10 @@ export default function RecipeForm({
               }}
               className="new-collection-input"
             />
-            <button
+            <table>
+              <tbody>
+                <tr>
+            <td><button
               type="button"
               onClick={async () => {
                 try {
@@ -305,6 +318,8 @@ export default function RecipeForm({
             >
               Save
             </button>
+            </td>
+            <td>
             <button
               type="button"
               onClick={() => {
@@ -316,6 +331,10 @@ export default function RecipeForm({
             >
               Cancel
             </button>
+            </td>
+            </tr>
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -323,7 +342,21 @@ export default function RecipeForm({
       <div className="form-group">
         <label className="form-label">Image</label>
         <input id='image' type='file' hidden onChange={handleUploadImage}></input>
-        <label htmlFor='image' className='btn' style={{cursor: 'pointer'}}>Upload</label>
+        
+        <label 
+          htmlFor='image' 
+          className='btn' 
+          style={{
+            cursor: 'pointer', 
+            display: 'block',  
+            marginTop: '10px', 
+            width: 'fit-content',
+            color: 'white' 
+          }}
+        >
+          Upload
+        </label>
+        
         {errors.image && <p className="error-message">{errors.image}</p>}
       </div>
     
@@ -331,6 +364,7 @@ export default function RecipeForm({
 
       <div className="form-group">
         <label className="form-label">Ingredients *</label>
+        <p>Separate by semicolon (;)</p>
         <input
           className="form-input"
           placeholder="Comma-separated list"
@@ -339,9 +373,9 @@ export default function RecipeForm({
         />
         {errors.ingredients && <p className="error-message">{errors.ingredients}</p>}
   
-        <ul className="ingredients-list">
+        <ul className="ingredients-list-form">
           {ingredients
-            .split(",")
+            .split(";")
             .map(item => item.trim())
             .filter(item => item.length > 0) 
             .map((item, index) => (
@@ -353,10 +387,10 @@ export default function RecipeForm({
                   onClick={() => {
                     setIngredients(prev =>
                       prev
-                        .split(",")
+                        .split(";")
                         .map(i => i.trim())
                         .filter((_, i) => i !== index)
-                        .join(", ")
+                        .join("; ")
                     );
                     notifyFormChange();
                   }}

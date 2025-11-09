@@ -34,6 +34,9 @@ export const CreateProvider = ({ children }) => {
   // Store callback for successful update
   const [onSuccessCallback, setOnSuccessCallback] = useState(null);
   
+  //Store callback for collection creation
+  const [onCollectionSuccessCallback, setOnCollectionSuccessCallback] = useState(null);
+  
   const navigate = useNavigate();
 
   // Open for CREATE (no data)
@@ -52,7 +55,11 @@ export const CreateProvider = ({ children }) => {
     setIsRecipePopupOpen(true);
   };
 
-  const openCollectionPopup = () => setIsCollectionPopupOpen(true);
+  //Callback
+  const openCollectionPopup = (onSuccess) => {
+    setOnCollectionSuccessCallback(() => onSuccess);
+    setIsCollectionPopupOpen(true);
+  };
   
   const handleRecipePopupClose = () => {
     setIsRecipePopupOpen(false);
@@ -63,7 +70,12 @@ export const CreateProvider = ({ children }) => {
     }, 100);
   };
   
-  const closeCollectionPopup = () => setIsCollectionPopupOpen(false);
+  const closeCollectionPopup = () => {
+    setIsCollectionPopupOpen(false);
+    setTimeout(() => {
+      setOnCollectionSuccessCallback(null);
+    }, 100);
+  };
 
   // This handles both CREATE and UPDATE
   const handleSubmitRecipe = async (recipeIdOrData, recipeData) => {
@@ -105,7 +117,13 @@ export const CreateProvider = ({ children }) => {
       await addRecipeCollection(recipeCollectionData);
       toast.success('Successfully created Recipe Collection!');
       closeCollectionPopup();
-      navigate('/user');
+      
+      // Call the success callback
+      if (onCollectionSuccessCallback) {
+        onCollectionSuccessCallback();
+      }
+      
+      //navigate('/user');
     } catch (err) {
       toast.error(err?.message || 'Failed to create Recipe Collection');
     }
@@ -119,8 +137,8 @@ export const CreateProvider = ({ children }) => {
         openRecipePopup,
         openCollectionPopup,
         openUpdateRecipePopup,
-        handleRecipePopupClose,
         closeCollectionPopup,
+        handleRecipePopupClose
       }}
     >
       {children}
@@ -153,7 +171,7 @@ export const CreateProvider = ({ children }) => {
 
       {/* Recipe Collection Popup */}
       <Popup
-        className="pop-up"
+        className="pop-up-collection"
         overlayClassName="popup-overlay"
         open={isCollectionPopupOpen}
         onClose={closeCollectionPopup}

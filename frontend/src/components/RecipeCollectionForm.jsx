@@ -41,7 +41,13 @@ export default function RecipeCollectionForm({
       if (initialRecipeCollection) {
         // If onSubmit prop is provided, use it (for popup forms)
         if (onSubmit) {
-          await onSubmit(initialRecipeCollection._id, recipeCollectionData);
+          const result = await onSubmit(initialRecipeCollection._id, recipeCollectionData);
+          // Only show toast if onSubmit didn't handle it (check return value)
+          if (result !== false) {
+            toast.success("RecipeCollection updated successfully!");
+          }
+          // Call onSuccess after successful submit
+          if (onSuccess) onSuccess();
         } else {
           // Otherwise use the service directly
           await updateRecipeCollection(initialRecipeCollection._id, recipeCollectionData);
@@ -50,10 +56,16 @@ export default function RecipeCollectionForm({
           navigate("/user");
         }
       } else {
-        await addRecipeCollection(recipeCollectionData);
-        toast.success("RecipeCollection created successfully!");
-        if (onSuccess) onSuccess();
-        navigate("/user");
+        // For create mode
+        if (onSubmit) {
+          await onSubmit(recipeCollectionData);
+          if (onSuccess) onSuccess();
+        } else {
+          await addRecipeCollection(recipeCollectionData);
+          toast.success("RecipeCollection created successfully!");
+          if (onSuccess) onSuccess();
+          navigate("/user");
+        }
       }
     } catch (err) {
       toast.error(`Failed to save RecipeCollection: ${err?.message || err}`);
@@ -66,7 +78,10 @@ export default function RecipeCollectionForm({
       await deleteRecipeCollection(initialRecipeCollection._id);
       toast.success("RecipeCollection deleted successfully!");
       if (onSuccess) onSuccess();
-      navigate("/user");
+      // Don't navigate if we're in a popup (onSubmit exists)
+      if (!onSubmit) {
+        navigate("/user");
+      }
     } catch (err) {
       toast.error(`Failed to delete RecipeCollection: ${err?.message || err}`);
     }

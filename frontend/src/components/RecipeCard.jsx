@@ -41,6 +41,7 @@ export default function RecipeCard() {
   }, [id, changed]);
 
   useEffect(() => {
+    if (currentUserId){
     async function fetchCollections() {
       try {
         const collectionsData = await getMyRecipeCollection();
@@ -51,7 +52,8 @@ export default function RecipeCard() {
     }
     
     fetchCollections();
-  }, [changed]);
+  }
+  }, [changed, currentUserId]);
 
   const isOwner = (recipe) => recipe?.uid === currentUserId;
 
@@ -491,7 +493,7 @@ export default function RecipeCard() {
             {(recipe.sourceName) && (
               <div className="detail-item">
                 <span className="detail-label">Source:</span>
-                <span className="detail-value">{recipe.sourceName}</span>
+                <span className="detail-value" style ={{wordBreak: 'break-word', overflowWrap: 'break-word'}}>{recipe.sourceName}</span>
               </div>
             )}
 
@@ -529,13 +531,14 @@ export default function RecipeCard() {
                 <span className="detail-value">⭐ {recipe.rating}/5</span>
               </div>
             )}
-
+          {/*
             {recipe.likes != null && (
               <div className="detail-item">
                 <span className="detail-label">Likes:</span>
                 <span className="detail-value">❤️ {recipe.likes}</span>
               </div>
             )}
+            */}
 
             {recipe.nutrition && (
               <div className="detail-item full-width">
@@ -603,24 +606,23 @@ export default function RecipeCard() {
         </div>
       )}
 
-      {/* Instructions */}
-      <div className="recipe-card">
-        <h2 className="section-title">Instructions</h2>
-        
-        {recipe.instruction ? (
-          <p className="instructions-text">{recipe.instruction}</p>
-        ) : recipe.analyzedInstructions?.length > 0 ? (
+      {/*Instructions*/}
+
+      {(recipe.instructions || recipe.instruction) ? (
+        <div className="section">
+          <h4>Instructions</h4>
           <ol className="instructions-list">
-            {recipe.analyzedInstructions[0].steps.map(step => (
-              <li key={step.number}>
-                <span>{step.step}</span>
-              </li>
-            ))}
+            {(recipe.instructions || recipe.instruction)
+              .split('\n')
+              .filter(step => step.trim())
+              .map((step, i) => (
+                <li key={i}>{step.trim()}</li>
+              ))}
           </ol>
-        ) : (
-          <p className="no-content">No instructions available</p>
-        )}
-      </div>
+        </div>
+      ) : (
+        <p className="no-content">No instructions available</p>
+      )}
 
       {/* Comments */}
       {recipe.comments?.length > 0 && (

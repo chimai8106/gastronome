@@ -20,7 +20,13 @@ export default function User() {
   const navigate = useNavigate();
   const location = useLocation();
   const hasShownToast = useRef(false);
-  const { openRecipePopup, openUpdateRecipePopup } = useCreate();
+  const {isRecipePopupOpen,
+        isCollectionPopupOpen,
+        openRecipePopup,
+        openCollectionPopup,
+        openUpdateRecipePopup,
+        closeCollectionPopup,
+        handleRecipePopupClose } = useCreate();
   const currentUserId = uid;
   const { toggleCollectionDropdown, isDropdownOpen, closeCollectionDropdown } = useAddToCollection();
   
@@ -61,7 +67,6 @@ export default function User() {
     try {
       await updateRecipeCollection(id, recipeCollectionData);
       setChanged(!changed);
-      toast.success("Successfully updated Recipe Collection!");
       return true;
     } catch (err) {
       toast.error(`Failed to update Recipe Collection: ${err?.message || err}. Please try again`);
@@ -195,7 +200,10 @@ export default function User() {
       <div className="user-collections-container">
         <div className="empty-collections">
           <p>You haven't added any Recipe Collections yet!</p>
-          <button onClick={openRecipePopup} className="btn">
+          <button 
+            onClick={() => openCollectionPopup(() => setChanged(prev => !prev))} 
+            className="btn"
+          >
             Add one now!
           </button>
         </div>
@@ -246,9 +254,12 @@ export default function User() {
                     <RecipeCollectionForm
                       initialRecipeCollection={recipeCollection}
                       onSubmit={async (id, data) => {
-                        const success = await handleUpdate(recipeCollection._id, data);
-                        if (success) close();
+                        const success = await handleUpdate(id, data);
+                        if (success) {
+                          close();
+                        }
                       }}
+                      onSuccess={() => setChanged(!changed)}
                       submitButtonText="Update Collection"
                     />
                   )}

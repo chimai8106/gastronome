@@ -28,8 +28,7 @@ export async function getAuthToken() {
 
 //Authenticated fetch
 export async function authenticatedFetch(endpoint, options = {}) {
-  const token = await getAuthToken();
-  
+  const token = await getAuthToken();  
   if (!token) {
     throw new Error("You must be logged in");
     
@@ -90,8 +89,7 @@ export async function publicFetch(endpoint, options = {}) {
 }
 // Optional authenticated fetch - sends token if available, but doesn't require it
 export async function optionalAuthFetch(endpoint, options = {}) {
-  const token = await getAuthToken(); // This returns null if not logged in
-  
+  const token = await getAuthToken(); // This returns null if not logged in  
   const isFormData = options.body instanceof FormData;
   const headers = {
     ...options.headers,

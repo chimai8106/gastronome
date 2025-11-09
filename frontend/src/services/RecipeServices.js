@@ -135,3 +135,26 @@ function handleAuthError(err, onNavigate) {
     toast.error(err.message);
   }
 }
+
+/*
+* Import recipe
+*/
+export async function importRecipe(url) {
+  try {    
+    const res = await fetch('http://localhost:5001/recipe-parser', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ link: url })
+    });
+    
+
+    const data = await res.json();
+    
+    return data;
+  } catch (error) {
+    toast.error('Error: ' + error.message);
+    throw error;
+  } 
+}

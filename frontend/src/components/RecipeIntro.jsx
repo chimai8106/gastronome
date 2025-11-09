@@ -26,7 +26,7 @@ export default function RecipeIntro({ recipe }) {
             </p>
           )}
           {recipe.sourceName&& (
-            <p>
+            <p style ={{wordBreak: 'break-word', overflowWrap: 'break-word'}}>
               <strong>Source:</strong> {recipe.sourceName}
             </p>
           )}
@@ -45,20 +45,20 @@ export default function RecipeIntro({ recipe }) {
             <p>
               <strong>Ingredients:</strong>{" "}
               {Array.isArray(recipe.ingredients)
-                ? recipe.ingredients.join(", ")
+                ? recipe.ingredients.join("; ")
                 : recipe.ingredients}
             </p>
           )}
           {recipe.usedIngredients?.length > 0 && (
             <p>
               <strong>Used ingredients:</strong>{" "}
-              {recipe.usedIngredients.map((ing) => ing.original).join(", ")}
+              {recipe.usedIngredients.map((ing) => ing.original).join("; ")}
             </p>
           )}
           {recipe.missedIngredients?.length > 0 && (
             <p>
               <strong>Missing ingredients:</strong>{" "}
-              {recipe.missedIngredients.map((ing) => ing.original).join(", ")}
+              {recipe.missedIngredients.map((ing) => ing.original).join("; ")}
             </p>
           )}
           {recipe.cuisine && (
@@ -76,11 +76,13 @@ export default function RecipeIntro({ recipe }) {
               <strong>Rating:</strong> {recipe.rating}/5
             </p>
           )}
+          {/*
           {recipe.likes != null && (
             <p>
               <strong>Likes:</strong> {recipe.likes}
             </p>
           )}
+            */}
           {savedCollections.length > 0 && (
             <div className="mt-2">
               <strong className="block mb-2">Collections:</strong>

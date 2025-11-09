@@ -25,7 +25,7 @@ export default function SearchByIngredients() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState(false);
 
-  const formattedIngredients = ingredients.split(",").map(i => i.trim()).join(",");
+  const formattedIngredients = ingredients.split(";").map(i => i.trim()).join(";");
 
   useEffect(() => {
     async function fetchCollections() {
@@ -221,12 +221,13 @@ export default function SearchByIngredients() {
       {/* Ingredients */}
       <div className="form-group">
         <label>
-          Ingredients *
-          <span className="tooltip">Enter ingredients you have, separated by commas.</span>
+          Ingredients * 
+          <span className="tooltip">Enter ingredients you have, separated by semicolon (;).</span>
+          <p style ={{color: 'grey', fontWeight: '50px', fontSize: '12px'}}>Separated by semicolon (;)</p>
         </label>
         <input
           type="text"
-          placeholder="e.g. tomato, cheese, basil"
+          placeholder="e.g. tomato; cheese; basil"
           value={ingredients}
           onChange={(e) => setIngredients(e.target.value)}
           disabled={isLoading}
@@ -291,11 +292,11 @@ export default function SearchByIngredients() {
 
       {/* Display selected ingredients */}
       {ingredients && ingredients.length > 0 && (
-        <div className="ingredients-list">
+        <div className="ingredients-list-search">
           <h2>Your Ingredients</h2>
           <ul>
             {ingredients
-              .split(",")
+              .split(";")
               .map(item => item.trim())
               .filter(item => item.length > 0) 
               .map((item, index) => (
@@ -304,10 +305,10 @@ export default function SearchByIngredients() {
                     onClick={() =>
                       setIngredients(prev =>
                         prev
-                          .split(",")
+                          .split(";")
                           .map(i => i.trim())
                           .filter((_, i) => i !== index)
-                          .join(", ")
+                          .join("; ")
                       )
                     }
                     disabled={isLoading}
@@ -385,13 +386,13 @@ export default function SearchByIngredients() {
                   {recipe.usedIngredients?.length > 0 && (
                     <div className="used-ingredients">
                       <strong>✓ Have ({recipe.usedIngredients.length}):</strong>
-                      <span>{recipe.usedIngredients.map(ing => ing.name).join(", ")}</span>
+                      <span>{recipe.usedIngredients.map(ing => ing.name).join("; ")}</span>
                     </div>
                   )}
                   {recipe.missedIngredients?.length > 0 && (
                     <div className="missed-ingredients">
                       <strong>✗ Need ({recipe.missedIngredients.length}):</strong>
-                      <span>{recipe.missedIngredients.map(ing => ing.name).join(", ")}</span>
+                      <span>{recipe.missedIngredients.map(ing => ing.name).join("; ")}</span>
                     </div>
                   )}
                 </div>
@@ -401,7 +402,7 @@ export default function SearchByIngredients() {
                   <div className="recipe-details-expanded">
                     <div className="section">
                       <h4>All Ingredients</h4>
-                      <ul className="ingredient-list">
+                      <ul className="ingredients-list">
                         {recipe.usedIngredients?.map((ing, i) => (
                           <li key={`used-${i}`} className="ingredient-used">
                             ✓ {ing.original}
@@ -418,7 +419,7 @@ export default function SearchByIngredients() {
                     {recipe.analyzedInstructions?.[0]?.steps && (
                       <div className="section">
                         <h4>Instructions</h4>
-                        <ol className="instructions-list">
+                        <ol className="instructions-text">
                           {recipe.analyzedInstructions[0].steps.map((step) => (
                             <li key={step.number}>{step.step}</li>
                           ))}

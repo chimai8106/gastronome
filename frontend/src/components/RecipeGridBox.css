@@ -256,7 +256,6 @@ td button {
   text-decoration: underline;
 }
 
-/* FIXED: Much smaller X button - like a small dot */
 .remove-collection-btn {
   background: rgba(101, 67, 33, 0.15);
   border: none;
