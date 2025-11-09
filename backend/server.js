@@ -19,7 +19,15 @@ const upload = multer({
 const app = express()
 const __dirname = path.resolve()
 if (process.env.NODE_ENV === "production"){
-  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+  app.use(express.static(path.join(__dirname, '../frontend/dist'), {
+    setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    } else if (filePath.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
   
   // catches all routes and serves index.html
   app.use((req, res) => {
@@ -30,6 +38,7 @@ if (process.env.NODE_ENV === "production"){
     origin : "http://localhost:5173"
   }));
 }
+
 //middleware
 app.use(express.json());
 app.use(rateLimiter)
