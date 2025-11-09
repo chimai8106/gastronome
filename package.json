@@ -2,33 +2,10 @@
   "name": "gastronome",
   "version": "1.0.0",
   "description": "first version",
-  "main": "backend/server.js",
   "scripts": {
     "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run start --prefix backend"
   },
   "author": "Mai Nguyen",
-  "license": "MIT",
-  "dependencies": {
-    "@tailwindcss/vite": "^4.1.13",
-    "body-parser": "^2.2.0",
-    "bootstrap": "^5.3.8",
-    "ejs": "^3.1.10",
-    "express": "^5.1.0",
-    "mongoose": "^8.19.1",
-    "multer": "^2.0.2",
-    "path-to-regexp": "^0.1.7",
-    "request": "^2.88.2",
-    "tailwindcss": "^4.1.13",
-    "toaster-ui": "^1.1.5"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/chimai8106/gastronome.git"
-  },
-  "bugs": {
-    "url": "https://github.com/chimai8106/gastronome/issues"
-  },
-  "homepage": "https://github.com/chimai8106/gastronome#readme"
+  "license": "MIT"
 }
