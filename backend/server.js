@@ -65,8 +65,8 @@ if (process.env.NODE_ENV === "production") {
     }
   }));
   
-  // Catch-all route - serves index.html for any unmatched routes
-  app.get('*', (req, res) => {
+  // Catch-all route 
+  app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
   });
 }
