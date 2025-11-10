@@ -1,7 +1,7 @@
 import { auth } from '../firebase/firebase';
 import { useNavigate } from 'react-router-dom';
 
-const BASE_URL = import.meta.env.MODE === "development" ? 'http://localhost:5001/api' : "/api"
+const BASE_URL = "/api"
 const API_BASE_URL = BASE_URL;
 // Wait for auth to be ready
 function waitForAuth() {
