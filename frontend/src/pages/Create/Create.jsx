@@ -28,10 +28,12 @@ export default function CreateDropdown() {
     setIsDropdownOpen(false);
     openRecipePopup();
     if (!uid){
+      console.log(uid);
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
       handleRecipePopupClose();
+      console.log("Close");
     }
     
   };
