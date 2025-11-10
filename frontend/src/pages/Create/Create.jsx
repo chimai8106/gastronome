@@ -2,12 +2,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useCreate } from '../../contexts/CreateContext';
 import { useImport } from '../../contexts/ImportContext';
 import './Create.css';
+import { useAuth } from '../../contexts/authContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function CreateDropdown() {
+  const {uid} = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { openRecipePopup, openCollectionPopup } = useCreate();
-  const {openImportPopup} = useImport();
+  const { openRecipePopup, openCollectionPopup, closeCollectionPopup, handleRecipePopupClose} = useCreate();
+  const {openImportPopup, closeImportPopup} = useImport();
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -23,15 +27,34 @@ export default function CreateDropdown() {
   const handleRecipeClick = () => {
     setIsDropdownOpen(false);
     openRecipePopup();
+    if (!uid){
+      navigate('/login', { 
+        state: { message: 'Please log in to continue' } 
+      });
+      handleRecipePopupClose();
+    }
+    
   };
 
   const handleCollectionClick = () => {
     setIsDropdownOpen(false);
     openCollectionPopup();
+    if (!uid){
+      navigate('/login', { 
+        state: { message: 'Please log in to continue' } 
+      });
+      closeCollectionPopup();
+    }
   };
   const handleImportClick =() =>{
     setIsDropdownOpen(false);
     openImportPopup();
+    if (!uid){
+      navigate('/login', { 
+        state: { message: 'Please log in to continue' } 
+      });
+      closeImportPopup();
+    }
   }
 
   return (

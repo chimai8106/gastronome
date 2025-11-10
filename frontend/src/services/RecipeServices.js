@@ -135,13 +135,13 @@ function handleAuthError(err, onNavigate) {
     toast.error(err.message);
   }
 }
-
 /*
 * Import recipe
 */
 export async function importRecipe(url) {
   try {    
-    const res = await fetch('/recipe-parser', {
+    const url = process.env.NODE_ENV !== "production" ? "http://localhost:5001/recipe-parser" : '/recipe-parser'
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

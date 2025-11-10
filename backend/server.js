@@ -19,7 +19,7 @@ const upload = multer({
 const app = express()
 const __dirname = path.resolve()
 
-//middleware - move these UP
+//middleware 
 app.use(express.json());
 app.use(rateLimiter);
 
@@ -53,7 +53,7 @@ app.post('/recipe-parser', function(req, res) {
   );
 });
 
-// Static files and catch-all LAST (only in production)
+// Static files and catch-all last (only in production)
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, '../frontend/dist'), {
     setHeaders: (res, filePath) => {

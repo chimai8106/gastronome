@@ -12,12 +12,22 @@ import {
   Outlet,
 } from "react-router-dom";
 import './Login.css';
+import { useLocation } from 'react-router-dom';
+import { useEffect } from "react";
+import { toast } from "react-hot-toast";
 
 export default function Login() {
   const { userLoggedIn, isSigningIn, setIsSigningIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const location = useLocation();
+  
+  useEffect(() => {
+    if (location.state?.message) {
+      toast.error(location.state.message);
+    }
+  }, [location.state]);
 
   const onSubmit = async (e) => {
     e.preventDefault();

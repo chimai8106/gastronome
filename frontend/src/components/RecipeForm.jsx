@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { getMyRecipeCollection, addRecipeCollection } from "../services/RecipeCollectionServices";
 import "./RecipeForm.css";
+import { useAuth } from "../contexts/authContext";
 
 export default function RecipeForm({
   initialRecipe = null,
@@ -10,6 +11,7 @@ export default function RecipeForm({
   onFormChange = () => {},
   submitButtonText = "Save Recipe",
 }) {
+  const {uid} = useAuth();
   const [title, setTitle] = useState("");
   const [ingredients, setIngredients] = useState("");
   const [instruction, setInstruction] = useState("");
