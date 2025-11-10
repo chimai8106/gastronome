@@ -35,6 +35,9 @@ export default function CreateDropdown() {
       return;
       
     }
+    else{
+      toast.error('wrong');
+      }
     openRecipePopup();
     
   };
@@ -48,6 +51,9 @@ export default function CreateDropdown() {
       });
       return;
     }
+    else{
+      toast.error('wrong');
+      }
     openCollectionPopup();
 
   };
@@ -60,6 +66,9 @@ export default function CreateDropdown() {
       });
       return;
     }
+    else{
+      toast.error('wrong');
+      }
     openImportPopup();
 
   }
