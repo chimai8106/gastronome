@@ -4,6 +4,7 @@ import { useImport } from '../../contexts/ImportContext';
 import './Create.css';
 import { useAuth } from '../../contexts/authContext';
 import { useNavigate } from 'react-router-dom';
+import {toast} from "react-hot-toast";
 
 export default function CreateDropdown() {
   const {userLoggedIn} = useAuth();
@@ -27,10 +28,12 @@ export default function CreateDropdown() {
   const handleRecipeClick = () => {
     setIsDropdownOpen(false);
     if (!userLoggedIn){
+      toast.success(`navigate`);
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
-      console.log("Navigate");
+      return;
+      
     }
     openRecipePopup();
     
@@ -39,10 +42,11 @@ export default function CreateDropdown() {
   const handleCollectionClick = () => {
     setIsDropdownOpen(false);
     if (!userLoggedIn){
+      toast.success(`navigate`);
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
-      console.log("Navigate");
+      return;
     }
     openCollectionPopup();
 
@@ -50,10 +54,11 @@ export default function CreateDropdown() {
   const handleImportClick =() =>{
     setIsDropdownOpen(false);
     if (!userLoggedIn){
+      toast.success(`navigate`);
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
-      console.log("Navigate");
+      return;
     }
     openImportPopup();
 
