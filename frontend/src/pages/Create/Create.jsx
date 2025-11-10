@@ -26,37 +26,34 @@ export default function CreateDropdown() {
 
   const handleRecipeClick = () => {
     setIsDropdownOpen(false);
-    openRecipePopup();
     if (!uid){
-      console.log(uid);
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
-      handleRecipePopupClose();
-      console.log("Close");
     }
+    openRecipePopup();
     
   };
 
   const handleCollectionClick = () => {
     setIsDropdownOpen(false);
-    openCollectionPopup();
     if (!uid){
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
-      closeCollectionPopup();
     }
+    openCollectionPopup();
+
   };
   const handleImportClick =() =>{
     setIsDropdownOpen(false);
-    openImportPopup();
     if (!uid){
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
-      closeImportPopup();
     }
+    openImportPopup();
+
   }
 
   return (

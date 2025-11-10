@@ -27,7 +27,6 @@ export const uploadToS3 = async ({file, uid}) => {
         await s3.send(command);
         return {key};
     } catch(error) {
-        console.log(error);
         return {error};
     }
 };
@@ -39,7 +38,6 @@ export const getImagePresignedUrl = async (key) => {
     const command = new GetObjectCommand({ Bucket: BUCKET, Key: key });  
     return await getSignedUrl(s3, command, { expiresIn: 15000 });  
   } catch (error) {
-    console.log('Error generating presigned URL:', error);
     return null;
   }
 };
@@ -47,7 +45,6 @@ export const getImagePresignedUrl = async (key) => {
 // Delete image 
 export const deleteImage = async (key) => {
     if (!key) {
-        console.log('No key provided for deletion');
         return { error: 'No key provided' };
     }
     
@@ -55,10 +52,8 @@ export const deleteImage = async (key) => {
     
     try {
         await s3.send(command);
-        console.log('Successfully deleted image with key:', key);
         return { key };
     } catch(error) {
-        console.error('Error deleting image from S3:', error);
         return { error };
     }
 }

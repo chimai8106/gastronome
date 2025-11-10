@@ -71,7 +71,6 @@ export const optionalFirebaseToken = async (req, res, next) => {
     next();
   } catch (error) {
     // Token is invalid? Still continue as guest (don't reject)
-    console.log('Optional auth failed, continuing as guest:', error.message);
     req.user = null;
     next();
   }
