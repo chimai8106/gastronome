@@ -18,36 +18,23 @@ const upload = multer({
 
 const app = express()
 const __dirname = path.resolve()
-if (process.env.NODE_ENV === "production"){
-  app.use(express.static(path.join(__dirname, '../frontend/dist'), {
-    setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css');
-    } else if (filePath.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-  }
-}));
-  
-  // catches all routes and serves index.html
-  app.use((req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
-  });
-} else {
+
+//middleware - move these UP
+app.use(express.json());
+app.use(rateLimiter);
+
+// CORS for development
+if (process.env.NODE_ENV !== "production") {
   app.use(cors({
-    origin : "http://localhost:5173"
+    origin: "http://localhost:5173"
   }));
 }
 
-//middleware
-app.use(express.json());
-app.use(rateLimiter)
-
-
+// API routes BEFORE static files
 app.use("/api/recipes", recipes);
 app.use("/api/recipeRecipeCollections", recipeCollections);
 
-//recipe parser server on flask
+// Recipe parser route
 app.post('/recipe-parser', function(req, res) {
   if (!req.body.link) {
     return res.status(400).json({ error: 'No link provided' });
@@ -65,11 +52,28 @@ app.post('/recipe-parser', function(req, res) {
     }
   );
 });
-const PORT = process.env.PORT || 5001;
-connectDB().then(()=>{
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+
+// Static files and catch-all LAST (only in production)
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, '../frontend/dist'), {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css');
+      } else if (filePath.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      }
+    }
+  }));
+  
+  // Catch-all route - serves index.html for any unmatched routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
 }
 
-)
+const PORT = process.env.PORT || 5001;
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+});
