@@ -141,7 +141,7 @@ function handleAuthError(err, onNavigate) {
 */
 export async function importRecipe(url) {
   try {    
-    const res = await fetch('http://localhost:5001/recipe-parser', {
+    const res = await fetch('/recipe-parser', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
