@@ -26,52 +26,59 @@ export default function CreateDropdown() {
   }, []);
 
   const handleRecipeClick = () => {
-    setIsDropdownOpen(false);
-    if (!userLoggedIn){
-      toast.success(`navigate`);
-      navigate('/login', { 
-        state: { message: 'Please log in to continue' } 
-      });
-      return;
-      
-    }
-    else{
-      toast.error('wrong');
-      }
-    openRecipePopup();
+  setIsDropdownOpen(false);
+  
+  if (!userLoggedIn) {
+    toast.success('Please log in to continue');
     
-  };
-
-  const handleCollectionClick = () => {
-    setIsDropdownOpen(false);
-    if (!userLoggedIn){
-      toast.success(`navigate`);
+    // Delay navigation so toast can show
+    setTimeout(() => {
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
-      return;
-    }
-    else{
-      toast.error('wrong');
-      }
-    openCollectionPopup();
-
-  };
-  const handleImportClick =() =>{
-    setIsDropdownOpen(false);
-    if (!userLoggedIn){
-      toast.success(`navigate`);
-      navigate('/login', { 
-        state: { message: 'Please log in to continue' } 
-      });
-      return;
-    }
-    else{
-      toast.error('wrong');
-      }
-    openImportPopup();
-
+    }, 500); // 500ms delay
+    
+    return;
   }
+  
+  openRecipePopup();
+};
+
+const handleCollectionClick = () => {
+  setIsDropdownOpen(false);
+  
+  if (!userLoggedIn) {
+    toast.success('Please log in to continue');
+    
+    setTimeout(() => {
+      navigate('/login', { 
+        state: { message: 'Please log in to continue' } 
+      });
+    }, 500);
+    
+    return;
+  }
+  
+  openCollectionPopup();
+};
+
+const handleImportClick = () => {
+  setIsDropdownOpen(false);
+  
+  if (!userLoggedIn) {
+    toast.success('Please log in to continue');
+    
+    setTimeout(() => {
+      navigate('/login', { 
+        state: { message: 'Please log in to continue' } 
+      });
+    }, 500);
+    
+    return;
+  }
+  
+  openImportPopup();
+};
 
   return (
     <div className="create-dropdown-container" ref={dropdownRef}>
