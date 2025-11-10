@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/authContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function CreateDropdown() {
-  const {uid} = useAuth();
+  const {userLoggedIn} = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { openRecipePopup, openCollectionPopup, closeCollectionPopup, handleRecipePopupClose} = useCreate();
   const {openImportPopup, closeImportPopup} = useImport();
@@ -26,10 +26,11 @@ export default function CreateDropdown() {
 
   const handleRecipeClick = () => {
     setIsDropdownOpen(false);
-    if (!uid){
+    if (!userLoggedIn){
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
+      console.log("Navigate");
     }
     openRecipePopup();
     
@@ -37,20 +38,22 @@ export default function CreateDropdown() {
 
   const handleCollectionClick = () => {
     setIsDropdownOpen(false);
-    if (!uid){
+    if (!userLoggedIn){
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
+      console.log("Navigate");
     }
     openCollectionPopup();
 
   };
   const handleImportClick =() =>{
     setIsDropdownOpen(false);
-    if (!uid){
+    if (!userLoggedIn){
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
+      console.log("Navigate");
     }
     openImportPopup();
 
