@@ -27,7 +27,6 @@ export default function CreateDropdown() {
 
   const handleRecipeClick = () => {
   setIsDropdownOpen(false);
-  
   if (!userLoggedIn) {
     toast.success('Please log in to continue');
     
@@ -36,12 +35,11 @@ export default function CreateDropdown() {
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
       });
-    }, 500); // 500ms delay
+    }, 500); 
     
     return;
   }
-  
-  openRecipePopup();
+  //openRecipePopup();
 };
 
 const handleCollectionClick = () => {
@@ -59,7 +57,7 @@ const handleCollectionClick = () => {
     return;
   }
   
-  openCollectionPopup();
+  //openCollectionPopup();
 };
 
 const handleImportClick = () => {
@@ -77,7 +75,7 @@ const handleImportClick = () => {
     return;
   }
   
-  openImportPopup();
+  //openImportPopup();
 };
 
   return (
