@@ -83,28 +83,40 @@ export const CreateProvider = ({ children }) => {
     try {
       // If two arguments, it's UPDATE mode: (id, formData)
       if (recipeData) {
-        await updateMutation(recipeIdOrData, recipeData);
-        toast.success('Successfully updated recipe!');
-        
-        handleRecipePopupClose();
-        
-        // Call the success callback after closing
-        if (onSuccessCallback) {
-          onSuccessCallback();
+        try {
+           await updateMutation(recipeIdOrData, recipeData);
+           toast.success('Successfully updated Recipe!'); 
+           if (onSuccessCallback) {
+           onSuccessCallback();
+        } 
+        } catch (error) {
+          toast.error('Failed to update Recipe.', error);
+          console.error(error);
         }
+
+          
+        handleRecipePopupClose();
+
       } 
       // If one argument, it's CREATE mode: (formData)
       else {
-       
-        await addMutation(recipeIdOrData);
-        toast.success('Successfully created recipe!');
-        
-        handleRecipePopupClose();
-        
-        navigate('/dashboard', { 
+        try {
+           await addMutation(recipeIdOrData);
+           toast.success('Successfully created recipe!');
+           if (onSuccessCallback) {
+           onSuccessCallback();
+           navigate('/dashboard', { 
         state: { refresh: true },
         replace: true 
         });
+        } 
+        } catch (error) {
+          toast.error('Failed to create Recipe.', error);
+          console.error(error);
+        }
+    
+        
+        
       }
     } catch (err) {
       toast.error(err?.message || 'Failed to save recipe');
@@ -113,8 +125,14 @@ export const CreateProvider = ({ children }) => {
 
   const handleSubmitRecipeCollection = async (recipeCollectionData) => {
     try {
-      await addRecipeCollection(recipeCollectionData);
-      toast.success('Successfully created Recipe Collection!');
+      try {
+        await addRecipeCollection(recipeCollectionData);
+        toast.success('Successfully created Recipe Collection!');
+      } catch (error) {
+        toast.error('Failed to create Recipe Collection.'); 
+        console.error(error);
+    }
+
       closeCollectionPopup();
       
       // Call the success callback

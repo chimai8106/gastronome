@@ -27,9 +27,7 @@ export default function CreateDropdown() {
 
   const handleRecipeClick = () => {
   //setIsDropdownOpen(false);
-  if (!userLoggedIn) {
-    toast.success('Please log in to continue');
-    
+  if (!userLoggedIn) {    
     // Delay navigation so toast can show
     setTimeout(() => {
       navigate('/login', { 
@@ -45,9 +43,7 @@ export default function CreateDropdown() {
 const handleCollectionClick = () => {
   //setIsDropdownOpen(false);
   
-  if (!userLoggedIn) {
-    toast.success('Please log in to continue');
-    
+  if (!userLoggedIn) {    
     setTimeout(() => {
       navigate('/login', { 
         state: { message: 'Please log in to continue' } 
@@ -64,7 +60,6 @@ const handleImportClick = () => {
   //setIsDropdownOpen(false);
   
   if (!userLoggedIn) {
-    toast.success('Please log in to continue');
     
     setTimeout(() => {
       navigate('/login', { 
