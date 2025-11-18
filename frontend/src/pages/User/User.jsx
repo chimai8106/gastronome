@@ -36,12 +36,20 @@ export default function User() {
   const [newCollectionName, setNewCollectionName] = useState({});
   
   useEffect(() => {
-    if (location.state?.message && !hasShownToast.current) {
-      toast.success(location.state.message);
-      hasShownToast.current = true;
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state, navigate, location.pathname]);
+      //check for refresh flag first
+      if (location.state?.refresh) {
+        setChanged(prev => !prev);
+        navigate(location.pathname, { replace: true, state: {} });
+        return;
+      }
+      
+      // Handle toast separately
+      if (location.state?.message && !hasShownToast.current) {
+        toast.success(location.state.message);
+        hasShownToast.current = true;
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }, [location.state, navigate, location.pathname]);
 
   useEffect(() => {
     if (authLoading) return;

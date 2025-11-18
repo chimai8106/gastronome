@@ -10,12 +10,13 @@ def index():
     try:
         data = request.get_json()
         url = data.get("link")
-        
+        print("URL received:", url)
         if not url:
             return jsonify({"error": "No URL provided"}), 400
             
         return parse_recipe(url)
     except Exception as e:
+        print(e)
         return jsonify({"error": str(e)}), 500
 
 

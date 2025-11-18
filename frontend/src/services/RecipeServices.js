@@ -138,7 +138,7 @@ function handleAuthError(err, onNavigate) {
 /*
 * Import recipe
 */
-export async function importRecipe(url) {
+export async function importRecipe(recipeUrl) {
   try {    
     const url = process.env.NODE_ENV !== "production" ? "http://localhost:5001/recipe-parser" : '/recipe-parser'
     const res = await fetch(url, {
@@ -146,7 +146,7 @@ export async function importRecipe(url) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ link: url })
+      body: JSON.stringify({ link: recipeUrl })
     });
     
 

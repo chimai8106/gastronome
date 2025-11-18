@@ -99,7 +99,6 @@ export const CreateProvider = ({ children }) => {
         await addMutation(recipeIdOrData);
         toast.success('Successfully created recipe!');
         
-        // Use forceClose to bypass the warning check
         handleRecipePopupClose();
         
         navigate('/dashboard', { 
@@ -123,7 +122,10 @@ export const CreateProvider = ({ children }) => {
         onCollectionSuccessCallback();
       }
       
-      //navigate('/user');
+      navigate('/user', { 
+        state: { refresh: true },
+        replace: true 
+        });
     } catch (err) {
       toast.error(err?.message || 'Failed to create Recipe Collection');
     }

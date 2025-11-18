@@ -41,8 +41,8 @@ app.post('/recipe-parser', function(req, res) {
   }
   request.post(
     {
-      url: process.env.PYTHON_URL || 'http://127.0.0.1:5000/recipe-parser',
-      json: { link: req.body.link }
+      url: 'http://127.0.0.1:5000/recipe-parser',
+      json: { "link": req.body.link }
     },
     function (error, response, body) {
       if (error) {

@@ -26,7 +26,7 @@ export default function CreateDropdown() {
   }, []);
 
   const handleRecipeClick = () => {
-  setIsDropdownOpen(false);
+  //setIsDropdownOpen(false);
   if (!userLoggedIn) {
     toast.success('Please log in to continue');
     
@@ -39,11 +39,11 @@ export default function CreateDropdown() {
     
     return;
   }
-  //openRecipePopup();
+  openRecipePopup();
 };
 
 const handleCollectionClick = () => {
-  setIsDropdownOpen(false);
+  //setIsDropdownOpen(false);
   
   if (!userLoggedIn) {
     toast.success('Please log in to continue');
@@ -57,11 +57,11 @@ const handleCollectionClick = () => {
     return;
   }
   
-  //openCollectionPopup();
+  openCollectionPopup();
 };
 
 const handleImportClick = () => {
-  setIsDropdownOpen(false);
+  //setIsDropdownOpen(false);
   
   if (!userLoggedIn) {
     toast.success('Please log in to continue');
@@ -75,7 +75,7 @@ const handleImportClick = () => {
     return;
   }
   
-  //openImportPopup();
+  openImportPopup();
 };
 
   return (
