@@ -78,13 +78,7 @@ export default function CreateDropdown() {
     //Close dropdown immediately
     setIsDropdownOpen(false); 
     
-    if (!userLoggedIn) {
-      //Show error only once
-      if (!hasShownLoginError.current) {
-        hasShownLoginError.current = true;
-        toast.error('Please log in to continue');
-      }
-      
+    if (!userLoggedIn) {  
       //Navigate after a small delay
       setTimeout(() => {
         navigate('/login', { 
