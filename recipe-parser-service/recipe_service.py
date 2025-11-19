@@ -16,6 +16,7 @@ def parse_recipe(url):
     html = urlopen(request).read().decode("utf-8")
     scraper = scrape_me(url)
     #Extract recipe information
+    
     res_lib = { "title": scraper.title(), 
                "instruction": scraper.instructions(),
                "ingredients": scraper.ingredients(), 
@@ -24,6 +25,7 @@ def parse_recipe(url):
                "image": scraper.image(),
                "authorName": scraper.author()
                }
+    print(res_lib)
     return json.dumps(res_lib)
 
 
