@@ -7,9 +7,6 @@ import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import path from "path";
 import multer, {memoryStorage} from "multer";
-import { uploadToS3 } from "./db/s3.mjs";
-import request from "request";
-
 
 const storage = memoryStorage()
 const upload = multer({
@@ -34,22 +31,37 @@ app.use("/api/recipes", recipes);
 app.use("/api/recipeRecipeCollections", recipeCollections);
 
 // Recipe parser route
-app.post('/recipe-parser', function(req, res) {
+app.post('/recipe-parser', async function(req, res) {
   if (!req.body.link) {
     return res.status(400).json({ error: 'No link provided' });
   }
-  request.post(
-    {
-      url: process.env.NODE_ENV !== "development" ? process.env.PYTHON_URL : 'http://127.0.0.1:5000/recipe-parser',
-      json: { "link": req.body.link }
-    },
-    function (error, response, body) {
-      if (error) {
-        return res.status(500).json({ error: 'Failed to connect to parser service' });
-      }
-      res.send(body);
+
+  try {
+    const pythonUrl = process.env.NODE_ENV !== "development" 
+      ? process.env.PYTHON_URL 
+      : 'http://127.0.0.1:5000/recipe-parser';
+    
+    const response = await fetch(pythonUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ link: req.body.link })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  );
+    
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Parser service error:', error.message);
+    return res.status(500).json({ 
+      error: 'Failed to connect to parser service',
+      details: error.message 
+    });
+  }
 });
 
 // Static files and catch-all last (only in production)
