@@ -30,7 +30,6 @@ if (process.env.NODE_ENV !== "production") {
 app.use("/api/recipes", recipes);
 app.use("/api/recipeRecipeCollections", recipeCollections);
 
-// Recipe parser route
 // Health check endpoint for Python service
 app.get('/parser-health', async function(req, res) {
   const pythonUrl = process.env.NODE_ENV !== "development" 
@@ -40,9 +39,9 @@ app.get('/parser-health', async function(req, res) {
   try {
     const response = await fetch(pythonUrl, {
       method: 'GET',
-      signal: AbortSignal.timeout(5000) // 5 second timeout
+      signal: AbortSignal.timeout(5000)
     });
-    
+
     if (response.ok) {
       res.json({ status: 'healthy', message: 'Parser service is ready' });
     } else {
@@ -53,7 +52,7 @@ app.get('/parser-health', async function(req, res) {
   }
 });
 
-// Recipe parser endpoint with retry logic
+// Recipe parser endpoint with improved retry logic
 app.post('/recipe-parser', async function(req, res) {
   if (!req.body.link) {
     return res.status(400).json({ error: 'No link provided' });
@@ -63,42 +62,114 @@ app.post('/recipe-parser', async function(req, res) {
     ? process.env.PYTHON_URL 
     : 'http://127.0.0.1:5000/recipe-parser';
 
+  const healthUrl = pythonUrl.replace('/recipe-parser', '/health');
+  const MAX_RETRIES = 3;
+  const RETRY_DELAYS = [90000, 60000, 30000]; // 90s, 60s, 30s
+
   try {
-    //First attempt
-    let response = await fetch(pythonUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ link: req.body.link }),
-      signal: AbortSignal.timeout(30000) // 30 second timeout
-    });
-
-    // If 502 or 503, the service is likely sleeping
-    // wait and retry
-    if (response.status === 502 || response.status === 503) {
-      console.log('Service is sleeping (status:', response.status, '), waiting 60s and retrying...');
-  
-      await new Promise(resolve => setTimeout(resolve, 60000)); // Wait 60 seconds
-      
-      console.log('Retrying request...');
-      response = await fetch(pythonUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ link: req.body.link }),
-        signal: AbortSignal.timeout(30000)
-      });
+    let lastError;
+    
+    // Check health first and wait for service to wake up
+    for (let healthCheck = 0; healthCheck < 4; healthCheck++) {
+      try {
+        const healthResponse = await fetch(healthUrl, {
+          method: 'GET',
+          signal: AbortSignal.timeout(10000)
+        });
+        
+        if (healthResponse.ok) {
+          console.log('Parser service is ready');
+          break;
+        }
+      } catch (error) {
+        if (healthCheck < 3) {
+          console.log(`Service not ready, waiting 30s... (attempt ${healthCheck + 1}/4)`);
+          await new Promise(resolve => setTimeout(resolve, 30000));
+        }
+      }
     }
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // Now attempt to parse the recipe with retries
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        console.log(`Parsing attempt ${attempt + 1}/${MAX_RETRIES + 1}`);
+        
+        const response = await fetch(pythonUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ link: req.body.link }),
+          signal: AbortSignal.timeout(45000)
+        });
+
+        // Success!
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Successfully parsed recipe');
+          return res.json(data);
+        }
+
+        // If service is sleeping/unavailable and we have retries left
+        if ((response.status === 502 || response.status === 503) && attempt < MAX_RETRIES) {
+          const waitTime = RETRY_DELAYS[attempt];
+          console.log(`Service error (status: ${response.status}), waiting ${waitTime/1000}s before retry...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          continue;
+        }
+
+        // Other HTTP errors
+        if (!response.ok) {
+          lastError = new Error(`HTTP error! status: ${response.status}`);
+          
+          // Only retry on server errors, not client errors
+          if (response.status >= 500 && attempt < MAX_RETRIES) {
+            const waitTime = RETRY_DELAYS[attempt];
+            console.log(`Server error, waiting ${waitTime/1000}s before retry...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            continue;
+          }
+          
+          throw lastError;
+        }
+        
+      } catch (fetchError) {
+        lastError = fetchError;
+        console.error(`Attempt ${attempt + 1} failed:`, fetchError.message);
+        
+        // Retry on timeout or connection errors
+        if (attempt < MAX_RETRIES && 
+            (fetchError.name === 'AbortError' || 
+             fetchError.message.includes('fetch') ||
+             fetchError.message.includes('network'))) {
+          const waitTime = RETRY_DELAYS[attempt];
+          console.log(`Connection error, waiting ${waitTime/1000}s before retry...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          continue;
+        }
+        
+        throw fetchError;
+      }
     }
 
-    const data = await response.json();
-    console.log('Successfully parsed recipe');
-    res.json(data);
+    // All retries exhausted
+    throw lastError || new Error('All retry attempts failed');
+
   } catch (error) {
-    console.error('Parser service error:', error.message);
-    return res.status(500).json({ 
-      error: 'Failed to connect to parser service',
+    console.error('Parser service error after all retries:', error.message);
+    
+    // Determine appropriate error message
+    let userMessage = 'Failed to parse recipe';
+    let statusCode = 500;
+    
+    if (error.name === 'AbortError') {
+      userMessage = 'Parser service request timed out';
+      statusCode = 504;
+    } else if (error.message.includes('502') || error.message.includes('503')) {
+      userMessage = 'Parser service is unavailable. It may be starting up - please try again in 1-2 minutes.';
+      statusCode = 503;
+    }
+    
+    return res.status(statusCode).json({ 
+      error: userMessage,
       details: error.message 
     });
   }
@@ -115,7 +186,7 @@ if (process.env.NODE_ENV === "production") {
       }
     }
   }));
-  
+
   // Catch-all route 
   app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
@@ -123,6 +194,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const PORT = process.env.PORT || 5001;
+
 connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
