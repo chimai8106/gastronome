@@ -30,7 +30,6 @@ if (process.env.NODE_ENV !== "production") {
   }));
 }
 
-// API routes BEFORE static files
 app.use("/api/recipes", recipes);
 app.use("/api/recipeRecipeCollections", recipeCollections);
 

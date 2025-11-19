@@ -165,6 +165,9 @@ export default function Home() {
   }
 
   return (
+    <p>Home</p>
+  );
+    /*
     <div className="recipe-grid-container">
       <div className="recipe-grid">
         {recipes.map((recipe) => (
@@ -204,4 +207,5 @@ export default function Home() {
       </div>
     </div>
   );
+  */
 }

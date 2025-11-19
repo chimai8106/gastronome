@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "first version",
   "scripts": {
-    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+    "prebuild": "npm ci --prefix backend && npm ci --prefix frontend",
+    "build": "npm run build --prefix frontend",
     "start": "npm run start --prefix backend"
   },
   "author": "Mai Nguyen",
