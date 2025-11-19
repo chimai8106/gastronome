@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import { toast } from 'react-hot-toast';
-import "./ImportContext.css"
+import "./ImportContext.css";
 import { importRecipe } from '../services/RecipeServices';
 import { useAuth } from './authContext';
 import { addRecipe } from '../services/RecipeServices';
@@ -18,7 +18,7 @@ export const useImport = () => {
 };
 
 export const ImportProvider = ({ children }) => {
-  const {uid} = useAuth();
+  const { uid, userLoggedIn } = useAuth();
   const [isImportPopupOpen, setIsImportPopupOpen] = useState(false);  
   const [recipe, setRecipe] = useState(null);
   const [link, setLink] = useState('');  
@@ -28,6 +28,12 @@ export const ImportProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const openImportPopup = () => {
+    // Auth check before opening
+    if (!userLoggedIn) {
+      console.warn('Cannot open import popup - user not logged in');
+      return;
+    }
+    
     setIsImportPopupOpen(true);
     // Reset state when opening
     setRecipe(null);
@@ -46,6 +52,14 @@ export const ImportProvider = ({ children }) => {
   const handleImportLink = async (e) => {
     e.preventDefault();
     
+    // Double-check authentication
+    if (!userLoggedIn || !uid) {
+      toast.error("Please log in to import recipes");
+      closeImportPopup();
+      navigate("/login");
+      return;
+    }
+    
     if (!link || link.trim() === '') {
       toast.error('Please enter a valid link');
       return;
@@ -56,9 +70,7 @@ export const ImportProvider = ({ children }) => {
     
     try {
       const res = await importRecipe(link);  
-      // Parse if response is a string
       const recipeData = typeof res === 'string' ? JSON.parse(res) : res;
-      
       
       setRecipe(recipeData);
       toast.success('Recipe imported successfully!');
@@ -71,61 +83,61 @@ export const ImportProvider = ({ children }) => {
   };
 
   const handleAddToMyRecipes = async (recipe) => {
-      if (!uid) {
-        toast.error("Please log in to save recipes");
-        navigate("/login");
-        return;
-      }
+    // Double-check authentication
+    if (!uid || !userLoggedIn) {
+      toast.error("Please log in to save recipes");
+      closeImportPopup();
+      navigate("/login");
+      return;
+    }
   
-      try {
-        // Prepare recipe data
-        const formData = new FormData();
-        formData.append("title", recipe.title);
-        formData.append("instruction", recipe.instruction);
-        formData.append("ingredients", JSON.stringify(recipe.ingredients));
-        formData.append("isPublic", "false");
-        formData.append("numServings", recipe.servings || 0);
-        formData.append("sourceName", link);
-        formData.append("timePrepared", recipe.timePrepared || 0);
-        formData.append("rating", 0);
-        formData.append("cuisine", recipe.cuisines?.[0] || "");
-        formData.append("difficulty", 0);
-        formData.append("nutrition", "");
-        formData.append("comments", JSON.stringify([]));
-        formData.append("authorName", recipe.authorName);
-        
-  
-        // Fetch and add image if available - with CORS handling
-        if (recipe.image) {
-          try {
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(recipe.image)}`;
-            const imageResponse = await fetch(proxyUrl);
-            
-            if (imageResponse.ok) {
-              const imageBlob = await imageResponse.blob();
-              const imageFile = new File([imageBlob], `${recipe.title}.jpg`, { type: 'image/jpeg' });
-              formData.append("image", imageFile);
-            } else {
-              console.warn("Failed to fetch image, saving recipe without image");
-            }
-          } catch (imgError) {
-            console.warn("Image fetch failed, saving recipe without image:", imgError);
+    try {
+      // Prepare recipe data
+      const formData = new FormData();
+      formData.append("title", recipe.title);
+      formData.append("instruction", recipe.instruction);
+      formData.append("ingredients", JSON.stringify(recipe.ingredients));
+      formData.append("isPublic", "false");
+      formData.append("numServings", recipe.servings || 0);
+      formData.append("sourceName", link);
+      formData.append("timePrepared", recipe.timePrepared || 0);
+      formData.append("rating", 0);
+      formData.append("cuisine", recipe.cuisines?.[0] || "");
+      formData.append("difficulty", 0);
+      formData.append("nutrition", "");
+      formData.append("comments", JSON.stringify([]));
+      formData.append("authorName", recipe.authorName);
+      
+      // Fetch and add image if available - with CORS handling
+      if (recipe.image) {
+        try {
+          const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(recipe.image)}`;
+          const imageResponse = await fetch(proxyUrl);
+          
+          if (imageResponse.ok) {
+            const imageBlob = await imageResponse.blob();
+            const imageFile = new File([imageBlob], `${recipe.title}.jpg`, { type: 'image/jpeg' });
+            formData.append("image", imageFile);
+          } else {
+            console.warn("Failed to fetch image, saving recipe without image");
           }
+        } catch (imgError) {
+          console.warn("Image fetch failed, saving recipe without image:", imgError);
         }
+      }
 
-        await addRecipe(formData);
-        closeImportPopup();
-        toast.success("Succesfully added to my recipe");
-        navigate('/dashboard', { 
+      await addRecipe(formData);
+      closeImportPopup();
+      toast.success("Successfully added to my recipe");
+      navigate('/dashboard', { 
         state: { refresh: true },
         replace: true 
-        });
-
-        
-      } catch (err) {
-        toast.error(`Failed to save recipe: ${err?.message || err}`);
-      }
-    };
+      });
+      
+    } catch (err) {
+      toast.error(`Failed to save recipe: ${err?.message || err}`);
+    }
+  };
 
   return (
     <ImportContext.Provider

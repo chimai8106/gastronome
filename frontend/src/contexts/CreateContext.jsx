@@ -8,7 +8,8 @@ import RecipeCollectionForm from '../components/RecipeCollectionForm';
 import { addRecipe, updateRecipe } from '../services/RecipeServices';
 import { addRecipeCollection } from '../services/RecipeCollectionServices';
 import './CreateContext.css';
-import {useAddMutation, useUpdateMutation} from "../hooks/useMutation"
+import { useAddMutation, useUpdateMutation } from "../hooks/useMutation";
+import { useAuth } from './authContext';
 
 const CreateContext = createContext();
 
@@ -21,26 +22,25 @@ export const useCreate = () => {
 };
 
 export const CreateProvider = ({ children }) => {
-  //mutation
+  const { userLoggedIn } = useAuth();
   const { mutate: addMutation } = useAddMutation();
   const { mutate: updateMutation } = useUpdateMutation();
   const [isRecipePopupOpen, setIsRecipePopupOpen] = useState(false);
   const [isCollectionPopupOpen, setIsCollectionPopupOpen] = useState(false);
   
-  // Store the recipe being edited
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [editingRecipeId, setEditingRecipeId] = useState(null);
-  
-  // Store callback for successful update
   const [onSuccessCallback, setOnSuccessCallback] = useState(null);
-  
-  //Store callback for collection creation
   const [onCollectionSuccessCallback, setOnCollectionSuccessCallback] = useState(null);
   
   const navigate = useNavigate();
 
-  // Open for CREATE (no data)
+  // Open for CREATE (no data) - with auth check
   const openRecipePopup = () => {
+    if (!userLoggedIn) {
+      console.warn('Cannot open recipe popup - user not logged in');
+      return;
+    }
     setEditingRecipe(null);
     setEditingRecipeId(null);
     setOnSuccessCallback(null);
@@ -49,14 +49,22 @@ export const CreateProvider = ({ children }) => {
 
   // Open for UPDATE (with recipe data and optional callback)
   const openUpdateRecipePopup = (recipeData, onSuccess) => {
+    if (!userLoggedIn) {
+      console.warn('Cannot open recipe popup - user not logged in');
+      return;
+    }
     setEditingRecipe(recipeData);
     setEditingRecipeId(recipeData._id || recipeData.id);
     setOnSuccessCallback(() => onSuccess);
     setIsRecipePopupOpen(true);
   };
 
-  //Callback
+  // Open collection popup - with auth check
   const openCollectionPopup = (onSuccess) => {
+    if (!userLoggedIn) {
+      console.warn('Cannot open collection popup - user not logged in');
+      return;
+    }
     setOnCollectionSuccessCallback(() => onSuccess);
     setIsCollectionPopupOpen(true);
   };
@@ -79,44 +87,44 @@ export const CreateProvider = ({ children }) => {
 
   // This handles both CREATE and UPDATE
   const handleSubmitRecipe = async (recipeIdOrData, recipeData) => {
+    // Double-check authentication
+    if (!userLoggedIn) {
+      toast.error('Please log in to continue');
+      navigate('/login');
+      return;
+    }
     
     try {
       // If two arguments, it's UPDATE mode: (id, formData)
       if (recipeData) {
         try {
-           await updateMutation(recipeIdOrData, recipeData);
-           toast.success('Successfully updated Recipe!'); 
-           if (onSuccessCallback) {
-           onSuccessCallback();
-        } 
+          await updateMutation(recipeIdOrData, recipeData);
+          toast.success('Successfully updated Recipe!'); 
+          if (onSuccessCallback) {
+            onSuccessCallback();
+          } 
         } catch (error) {
-          toast.error('Failed to update Recipe.', error);
+          toast.error('Failed to update Recipe.');
           console.error(error);
         }
-
-          
         handleRecipePopupClose();
-
       } 
       // If one argument, it's CREATE mode: (formData)
       else {
         try {
-           await addMutation(recipeIdOrData);
-           toast.success('Successfully created recipe!');
-           if (onSuccessCallback) {
-           onSuccessCallback();
-           navigate('/dashboard', { 
-        state: { refresh: true },
-        replace: true 
-        });
-        } 
+          await addMutation(recipeIdOrData);
+          toast.success('Successfully created recipe!');
+          if (onSuccessCallback) {
+            onSuccessCallback();
+          }
+          navigate('/dashboard', { 
+            state: { refresh: true },
+            replace: true 
+          });
         } catch (error) {
-          toast.error('Failed to create Recipe.', error);
+          toast.error('Failed to create Recipe.');
           console.error(error);
         }
-    
-        
-        
       }
     } catch (err) {
       toast.error(err?.message || 'Failed to save recipe');
@@ -124,15 +132,17 @@ export const CreateProvider = ({ children }) => {
   };
 
   const handleSubmitRecipeCollection = async (recipeCollectionData) => {
-    try {
-      try {
-        await addRecipeCollection(recipeCollectionData);
-        toast.success('Successfully created Recipe Collection!');
-      } catch (error) {
-        toast.error('Failed to create Recipe Collection.'); 
-        console.error(error);
+    // Double-check authentication
+    if (!userLoggedIn) {
+      toast.error('Please log in to continue');
+      navigate('/login');
+      return;
     }
-
+    
+    try {
+      await addRecipeCollection(recipeCollectionData);
+      toast.success('Successfully created Recipe Collection!');
+      
       closeCollectionPopup();
       
       // Call the success callback
@@ -143,7 +153,7 @@ export const CreateProvider = ({ children }) => {
       navigate('/user', { 
         state: { refresh: true },
         replace: true 
-        });
+      });
     } catch (err) {
       toast.error(err?.message || 'Failed to create Recipe Collection');
     }
@@ -185,7 +195,6 @@ export const CreateProvider = ({ children }) => {
               submitButtonText={editingRecipe ? "Update Recipe" : "Create Recipe"}
             />
           </div>
-            
         )}
       </Popup>
 
