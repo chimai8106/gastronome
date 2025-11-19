@@ -113,14 +113,7 @@ export const CreateProvider = ({ children }) => {
     }
   };
 
-  const handleSubmitRecipeCollection = async (recipeCollectionData) => {
-    // Double-check authentication
-    if (!userLoggedIn) {
-      toast.error('Please log in to continue');
-      navigate('/login');
-      return;
-    }
-    
+  const handleSubmitRecipeCollection = async (recipeCollectionData) => {    
     try {
       await addRecipeCollection(recipeCollectionData);
       toast.success('Successfully created Recipe Collection!');
