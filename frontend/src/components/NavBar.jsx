@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import "./Header.css";
 import { useAuth } from "../contexts/authContext";
 import Create from "../pages/Create/Create"
+
 export default function NavBar(){
     const { userLoggedIn, isSigningIn, userName } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -14,8 +15,10 @@ export default function NavBar(){
     const closeMobileMenu = () => {
         setIsMobileMenuOpen(false);
     };
-    return (<>
-    {/* Desktop Navigation */}
+
+    return (
+        <>
+            {/* Desktop Navigation */}
             <nav>
                 <ul>
                     <li>
@@ -28,33 +31,26 @@ export default function NavBar(){
                         <Link to="/recipe-search">Kitchen Remix</Link>
                     </li>
                     
+                    {!userLoggedIn && (
+                        <>
+                            <li>
+                                <Link to="/login">Login</Link>
+                            </li>
+                            <li>
+                                <Link to="/register">Register</Link>
+                            </li>
+                        </>
+                    )}
                     
-                    {!userLoggedIn && <>
-                    <li>
-                        <Link to="/login">Login</Link>
-                    </li>
-                    
-                    <li>
-                        <Link to="/register">Register</Link>
-                    </li>
-                   
-                    </>
-                    }
                     {userLoggedIn && (
-                    <>
-                    <li className="greeting"> 
-                        <Link to ="/user">{userName}</Link>
-                    </li>
-                    </>
-                    )
-                    }
+                        <li className="greeting"> 
+                            <Link to="/user">{userName}</Link>
+                        </li>
+                    )}
+                    
                     <li> 
                         <Create />
                     </li>
-
-                    
-
-                    
                 </ul>
             </nav>
 
@@ -76,18 +72,34 @@ export default function NavBar(){
                         <Link to="/" onClick={closeMobileMenu}>Home</Link>
                     </li>
                     <li>
-                        <Link to="/about" onClick={closeMobileMenu}>About</Link>
-                    </li>
-                    <li>
                         <Link to="/dashboard" onClick={closeMobileMenu}>Dashboard</Link>
                     </li>
                     <li>
-                        <Link to="/login" onClick={closeMobileMenu}>Login</Link>
+                        <Link to="/recipe-search" onClick={closeMobileMenu}>Kitchen Remix</Link>
                     </li>
-                    <li>
-                        <Link to="/register" onClick={closeMobileMenu}>Register</Link>
+                    
+                    {!userLoggedIn && (
+                        <>
+                            <li>
+                                <Link to="/login" onClick={closeMobileMenu}>Login</Link>
+                            </li>
+                            <li>
+                                <Link to="/register" onClick={closeMobileMenu}>Register</Link>
+                            </li>
+                        </>
+                    )}
+                    
+                    {userLoggedIn && (
+                        <li className="greeting">
+                            <Link to="/user" onClick={closeMobileMenu}>{userName}</Link>
+                        </li>
+                    )}
+                    
+                    <li onClick={closeMobileMenu}> 
+                        <Create />
                     </li>
                 </ul>
             </nav>
-    </>)
+        </>
+    );
 }
