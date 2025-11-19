@@ -3,34 +3,53 @@ from flask import Flask, request, jsonify
 from recipe_service import parse_recipe 
 from flask_cors import CORS
 app = Flask(__name__)
-CORS(app)  # Allow requests from your Node.js backend
+CORS(app) 
 @app.route('/recipe-parser', methods=['POST'])
-@app.route('/recipe-parser', methods=['POST'])
-def index():
-    print("=== PARSER ENDPOINT HIT ===", flush=True)
+
+def parse_recipe(url):
+    print(f"=== PARSING URL: {url} ===", flush=True)
+    
     try:
-        data = request.get_json()
-        url = data.get("link")
-        print(f"URL received: {url}", flush=True)
+        recipe = parse_recipe(url, wild_mode=True)
+        print(f"Recipe object created: {type(recipe)}", flush=True)
         
-        if not url:
-            return jsonify({"error": "No URL provided"}), 400
+        # Test each field individually
+        title = recipe.title()
+        print(f"Title: {title}", flush=True)
         
-        print("About to call parse_recipe...", flush=True)
-        result = parse_recipe(url)
-        print(f"Parse successful!", flush=True)
-        return result
+        ingredients = recipe.ingredients()
+        print(f"Ingredients type: {type(ingredients)}", flush=True)
+        print(f"Ingredients length: {len(ingredients)}", flush=True)
+        print(f"Ingredients content: {ingredients}", flush=True)
+        
+        instructions = recipe.instructions()
+        print(f"Instructions length: {len(instructions)}", flush=True)
+        
+        result = {
+            'title': title,
+            'instruction': instructions,
+            'ingredients': ingredients,
+            'timePrepared': recipe.total_time(),
+            'numServings': recipe.yields(),
+            'image': recipe.image(),
+            'authorName': recipe.author()
+        }
+        
+        print(f"=== FINAL RESULT ===", flush=True)
+        print(result, flush=True)
+        
+        return jsonify(result)
         
     except Exception as e:
-        print("=== ERROR ===", flush=True)
-        print(f"Error: {str(e)}", flush=True)
+        print(f"ERROR in parse_recipe: {e}", flush=True)
         import traceback
         traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        raise
 
 
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({'status': 'healthy'}), 200
-port = int(os.environ.get("PORT", 5000))
-app.run(host="0.0.0.0", port=port, debug=False)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000)) 
+    app.run(host="0.0.0.0", port=port, debug=False)
