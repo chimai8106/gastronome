@@ -40,12 +40,6 @@ export default function CreateDropdown() {
     setIsDropdownOpen(false); 
     
     if (!userLoggedIn) {
-      //Show error only once
-      if (!hasShownLoginError.current) {
-        hasShownLoginError.current = true;
-        toast.error('Please log in to continue');
-      }
-      
       //Navigate after a small delay
       setTimeout(() => {
         navigate('/login', { 
@@ -65,12 +59,7 @@ export default function CreateDropdown() {
     setIsDropdownOpen(false); 
     
     if (!userLoggedIn) {
-      //Show error only once
-      if (!hasShownLoginError.current) {
-        hasShownLoginError.current = true;
-        toast.error('Please log in to continue');
-      }
-      
+
       //Navigate after a small delay
       setTimeout(() => {
         navigate('/login', { 
