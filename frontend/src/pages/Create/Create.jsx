@@ -121,11 +121,17 @@ export default function CreateDropdown() {
 
       {isDropdownOpen && (
         <div className="dropdown-menu">
-          <button className="dropdown-item" onClick={handleRecipeClick}>
+          <button className="dropdown-item" 
+          onClick={() => {
+            toast.error("Wrong");
+            handleRecipeClick()}}>
             Recipe
           </button>
 
-          <button className="dropdown-item" onClick={handleCollectionClick}>
+          <button className="dropdown-item" 
+          onClick={() => {
+            toast.error("Wrong");
+            handleCollectionClick();}}>
             Recipe Collection
           </button>
 
