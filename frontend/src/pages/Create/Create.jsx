@@ -123,14 +123,12 @@ export default function CreateDropdown() {
         <div className="dropdown-menu">
           <button className="dropdown-item" 
           onClick={() => {
-            toast.error("Wrong");
             handleRecipeClick()}}>
             Recipe
           </button>
 
           <button className="dropdown-item" 
           onClick={() => {
-            toast.error("Wrong");
             handleCollectionClick();}}>
             Recipe Collection
           </button>

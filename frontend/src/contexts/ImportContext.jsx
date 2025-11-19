@@ -46,14 +46,7 @@ export const ImportProvider = ({ children }) => {
   const handleImportLink = async (e) => {
     e.preventDefault();
     
-    // Double-check authentication
-    if (!userLoggedIn || !uid) {
-      toast.error("Please log in to import recipes");
-      closeImportPopup();
-      navigate("/login");
-      return;
-    }
-    
+
     if (!link || link.trim() === '') {
       toast.error('Please enter a valid link');
       return;
