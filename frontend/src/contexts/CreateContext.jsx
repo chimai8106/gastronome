@@ -37,10 +37,6 @@ export const CreateProvider = ({ children }) => {
 
   // Open for CREATE (no data) - with auth check
   const openRecipePopup = () => {
-    if (!userLoggedIn) {
-      console.warn('Cannot open recipe popup - user not logged in');
-      return;
-    }
     setEditingRecipe(null);
     setEditingRecipeId(null);
     setOnSuccessCallback(null);
@@ -49,10 +45,6 @@ export const CreateProvider = ({ children }) => {
 
   // Open for UPDATE (with recipe data and optional callback)
   const openUpdateRecipePopup = (recipeData, onSuccess) => {
-    if (!userLoggedIn) {
-      console.warn('Cannot open recipe popup - user not logged in');
-      return;
-    }
     setEditingRecipe(recipeData);
     setEditingRecipeId(recipeData._id || recipeData.id);
     setOnSuccessCallback(() => onSuccess);
@@ -61,10 +53,6 @@ export const CreateProvider = ({ children }) => {
 
   // Open collection popup - with auth check
   const openCollectionPopup = (onSuccess) => {
-    if (!userLoggedIn) {
-      console.warn('Cannot open collection popup - user not logged in');
-      return;
-    }
     setOnCollectionSuccessCallback(() => onSuccess);
     setIsCollectionPopupOpen(true);
   };
@@ -174,6 +162,7 @@ export const CreateProvider = ({ children }) => {
       {children}
 
       {/* Recipe Popup (handles both CREATE and UPDATE) */}
+      {userLoggedIn && (
       <Popup
         className="pop-up"
         overlayClassName="popup-overlay"
@@ -196,9 +185,10 @@ export const CreateProvider = ({ children }) => {
             />
           </div>
         )}
-      </Popup>
+      </Popup>)}
 
       {/* Recipe Collection Popup */}
+      {userLoggedIn && (
       <Popup
         className="pop-up-collection"
         overlayClassName="popup-overlay"
@@ -217,7 +207,7 @@ export const CreateProvider = ({ children }) => {
             submitButtonText="Create Collection"
           />
         )}
-      </Popup>
+      </Popup>)}
     </CreateContext.Provider>
   );
 };

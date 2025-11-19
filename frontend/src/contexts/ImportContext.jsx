@@ -28,13 +28,7 @@ export const ImportProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const openImportPopup = () => {
-    // Auth check before opening
-    if (!userLoggedIn) {
-      console.warn('Cannot open import popup - user not logged in');
-      return;
-    }
-    
-    setIsImportPopupOpen(true);
+  setIsImportPopupOpen(true);
     // Reset state when opening
     setRecipe(null);
     setLink('');
