@@ -76,12 +76,6 @@ export const CreateProvider = ({ children }) => {
   // This handles both CREATE and UPDATE
   const handleSubmitRecipe = async (recipeIdOrData, recipeData) => {
     // Double-check authentication
-    if (!userLoggedIn) {
-      toast.error('Please log in to continue');
-      navigate('/login');
-      return;
-    }
-    
     try {
       // If two arguments, it's UPDATE mode: (id, formData)
       if (recipeData) {
