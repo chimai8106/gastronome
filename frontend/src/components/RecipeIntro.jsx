@@ -111,6 +111,11 @@ export default function RecipeIntro({ recipe }) {
               </div>
             </div>
           )}
+          {recipe.myComment && (
+            <p>
+              <strong style={{color: "#8B5E3C", textDecoration: "underline"}}>My Comment:</strong> {recipe.myComment}
+            </p>
+          )}
         </div>
       </div>
     </div>

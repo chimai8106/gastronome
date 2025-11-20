@@ -64,8 +64,10 @@ const recipeSchema = new mongoose.Schema({
         type: String
     },
     recipeCollectionID:[{type: String}],
-    recipeCollectionName:[{type: String}]
-
+    recipeCollectionName:[{type: String}],
+    myComment:{
+        type: String
+    }
 },
 { timestamps : true});
 const Recipe = mongoose.model("Recipe", recipeSchema)

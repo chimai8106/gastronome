@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import { useAuth } from "../contexts/authContext";
 import { useNavigate } from "react-router-dom";
 import { useAddToCollection } from "../contexts/AddToCollectionContext";
+import Popup from 'reactjs-popup';
 import "./RecipeSearch.css";
 
 export default function SearchByIngredients() {
@@ -24,6 +25,11 @@ export default function SearchByIngredients() {
   const [changed, setChanged] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState(false);
+  const [isPopUpComment, setIsPopUpComment] = useState(false);
+  const [myComment, setMyComment] = useState('');
+  const [recipe, setRecipe] = useState(null);
+  
+  
 
   const formattedIngredients = ingredients.split(";").map(i => i.trim()).join(";");
 
@@ -40,6 +46,14 @@ export default function SearchByIngredients() {
     }
     fetchCollections();
   }, [uid]);
+
+  const handleCommentAndSave = () => {
+      if (!myComment.trim()) {
+        toast.error('Please enter a comment');
+        return;
+      }
+      handleAddToMyRecipes(recipe, true);
+    };
 
   const handleSearch = async () => {
     // Validation
@@ -109,7 +123,7 @@ export default function SearchByIngredients() {
     }));
   };
 
-  const handleAddToMyRecipes = async (recipe) => {
+  const handleAddToMyRecipes = async (recipe, withComment = false) => {
     if (!uid) {
       toast.error("Please log in to save recipes");
       navigate("/login");
@@ -129,6 +143,8 @@ export default function SearchByIngredients() {
       formData.append("cuisine", recipe.cuisines?.[0] || "");
       formData.append("difficulty", 0);
       formData.append("nutrition", "");
+      // Add comment if provided
+      if (withComment) formData.append("myComment", myComment.trim());
       
       // Extract ingredient names
       const ingredientNames = [
@@ -156,12 +172,17 @@ export default function SearchByIngredients() {
           console.warn("Image fetch failed, saving recipe without image:", imgError);
         }
       }
-
-      await addRecipe(formData);
+      const savedRecipe = await addRecipe(formData);
       toast.success("Recipe saved to your collection!");
-      
       // Clear selections
       setSelectedCollections({ ...selectedCollections, [recipe.id]: { ids: [], titles: [] } });
+      navigate(`/recipe/${savedRecipe._id}`, { 
+        state: { refresh: true },
+        replace: true 
+        });
+  
+      
+      
     } catch (err) {
       toast.error(`Failed to save recipe: ${err?.message || err}`);
     }
@@ -452,6 +473,19 @@ export default function SearchByIngredients() {
                         </button>
                       </td>
                     </tr>
+                     <tr>
+                      <td>
+                        <button
+                          onClick={() => {
+                            setRecipe(recipe);
+                            setIsPopUpComment(true);}} 
+                          className="add-save-search-btn"
+                        >
+                          Add Comment & Save
+                        </button>
+                      </td>
+                    </tr>
+                    
                   </tbody>
                 </table>
               </div>
@@ -466,6 +500,80 @@ export default function SearchByIngredients() {
           <p>No recipes found with those ingredients. Try different combinations!</p>
         </div>
       )}
+     {/* Comment Popup */}
+      <Popup
+        className="import"
+        overlayClassName="popup-overlay"
+        open={isPopUpComment}
+        onClose={() => {
+          setIsPopUpComment(false);
+          setMyComment('');
+        }}
+        modal
+        nested
+        closeOnDocumentClick={true}
+      >
+        {(close) => (
+          <div className="popup-content-wrapper">
+            {/* Close Button */}
+            <button 
+              className="popup-close-btn" 
+              onClick={() => {
+                setIsPopUpComment(false);
+                setMyComment('');
+              }}
+              type="button"
+              aria-label="Close"
+            >
+              ×
+            </button>
+
+            <h3 style={{ marginBottom: '20px' }}>Add Your Comment</h3>
+            
+            <div className="form-group">
+              <label className="form-label">Comment</label>
+              <textarea 
+                className="form-textarea"
+                rows="6"
+                placeholder="What do you think about this recipe? Any modifications or tips?"
+                value={myComment} 
+                onChange={(e) => setMyComment(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <table className="recipe-actions">
+              <tbody>
+              <tr>
+              <td>
+              <button
+                onClick={handleCommentAndSave}
+                className="save-recipe-btn"
+                style={{ flex: 1 }}
+              >
+                Save Recipe with Comment
+              </button>
+              </td>
+              </tr>
+              <tr>
+                <td>
+              <button
+                onClick={() => {
+                  setIsPopUpComment(false);
+                  setMyComment('');
+                }}
+                className="secondary-button"
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </button>
+              </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Popup>
     </div>
   );
 }

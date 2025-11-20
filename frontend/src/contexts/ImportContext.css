@@ -32,6 +32,7 @@
   max-height: 85vh;
   box-sizing: border-box;
   scroll-behavior: smooth;
+  padding: 30px;
 }
 
 /* Optional: Hide scrollbar for cleaner look */
@@ -321,7 +322,7 @@
   position: relative;
 }
 
-.secondary-button, .save-recipe-btn{
+.secondary-button, .save-recipe-btn, .add-save-btn, .add-save-search-btn{
   width: 100%;
 }
 .secondary-button {
@@ -329,10 +330,17 @@
   color: #FFFFFF;
   border: none;
 }
+.add-save-btn, .add-save-search-btn{
+  background-color: #D4B89A !important;
+}
 .secondary-button:hover {
   background-color: #B04943;
   border-color: transparent;
 }
+.add-save-btn:hover, .add-save-search-btn:hover{
+  background-color: #C6A27F;
+}
+
 .save-recipe-btn {
   background-color: #D4A574;
   color: white;

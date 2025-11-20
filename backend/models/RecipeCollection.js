@@ -57,6 +57,10 @@ const recipeCollectionSchema = new mongoose.Schema(
         like: {
           type: Number,
           default: 0
+        },
+        myComment: {
+          type: String,
+          default: "",
         }
       }
     ],

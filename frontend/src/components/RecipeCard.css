@@ -641,7 +641,8 @@
 /* --- Consistent Action Buttons --- */
 .update-recipe-btn,
 .delete-recipe-btn,
-.toggle-collection-btn {
+.toggle-collection-btn,
+.add-save-search-btn {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 0.5rem;

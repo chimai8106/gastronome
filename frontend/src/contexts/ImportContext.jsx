@@ -6,6 +6,7 @@ import "./ImportContext.css";
 import { importRecipe } from '../services/RecipeServices';
 import { useAuth } from './authContext';
 import { addRecipe } from '../services/RecipeServices';
+import { MdSyncProblem } from 'react-icons/md';
 
 const ImportContext = createContext();
 
@@ -24,15 +25,19 @@ export const ImportProvider = ({ children }) => {
   const [link, setLink] = useState('');  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+  const [isPopUpComment, setIsPopUpComment] = useState(false);
+  const [myComment, setMyComment] = useState('');
+
   const navigate = useNavigate();
 
   const openImportPopup = () => {
-  setIsImportPopupOpen(true);
+    setIsImportPopupOpen(true);
     // Reset state when opening
     setRecipe(null);
     setLink('');
     setError(null);
+    setIsPopUpComment(false);
+    setMyComment('');
   };
 
   const closeImportPopup = () => {
@@ -40,13 +45,14 @@ export const ImportProvider = ({ children }) => {
     setRecipe(null);
     setLink('');
     setError(null);
+    setIsPopUpComment(false);
+    setMyComment('');
   };
 
   // Handle link import
   const handleImportLink = async (e) => {
     e.preventDefault();
     
-
     if (!link || link.trim() === '') {
       toast.error('Please enter a valid link');
       return;
@@ -69,7 +75,7 @@ export const ImportProvider = ({ children }) => {
     }
   };
 
-  const handleAddToMyRecipes = async (recipe) => {
+  const handleAddToMyRecipes = async (recipe, withComment = false) => {
     // Double-check authentication
     if (!uid || !userLoggedIn) {
       toast.error("Please log in to save recipes");
@@ -92,7 +98,10 @@ export const ImportProvider = ({ children }) => {
       formData.append("cuisine", recipe.cuisines?.[0] || "");
       formData.append("difficulty", 0);
       formData.append("nutrition", "");
-      formData.append("comments", JSON.stringify([]));
+      
+      // Add comment if provided
+      if (withComment) formData.append("myComment", myComment.trim());
+      
       formData.append("authorName", recipe.authorName);
       
       // Fetch and add image if available - with CORS handling
@@ -113,17 +122,27 @@ export const ImportProvider = ({ children }) => {
         }
       }
 
-      await addRecipe(formData);
+      const savedRecipe = await addRecipe(formData);
+      
       closeImportPopup();
       toast.success("Successfully added to my recipe");
-      navigate('/dashboard', { 
+      navigate(`/recipe/${savedRecipe._id}`, { 
         state: { refresh: true },
         replace: true 
       });
       
     } catch (err) {
+      console.error('Save recipe error:', err);
       toast.error(`Failed to save recipe: ${err?.message || err}`);
     }
+  };
+
+  const handleCommentAndSave = () => {
+    if (!myComment.trim()) {
+      toast.error('Please enter a comment');
+      return;
+    }
+    handleAddToMyRecipes(recipe, true);
   };
 
   return (
@@ -242,54 +261,141 @@ export const ImportProvider = ({ children }) => {
                     </div>
                   )}
 
-                {/* Instructions */}
-                {(recipe.instructions || recipe.instruction) ? (
-                  <div className="section">
-                    <h4>Instructions</h4>
-                    <ol className="instructions-list">
-                      {(recipe.instructions || recipe.instruction)
-                        .split('\n')
-                        .filter(step => step.trim())
-                        .map((step, i) => (
-                          <li key={i}>{step.trim()}</li>
-                        ))}
-                    </ol>
-                  </div>
-                ) : (
-                  <p className="no-content">No instructions available</p>
-                )}
-              </div>
+                  {/* Instructions */}
+                  {(recipe.instructions || recipe.instruction) ? (
+                    <div className="section">
+                      <h4>Instructions</h4>
+                      <ol className="instructions-list">
+                        {(recipe.instructions || recipe.instruction)
+                          .split('\n')
+                          .filter(step => step.trim())
+                          .map((step, i) => (
+                            <li key={i}>{step.trim()}</li>
+                          ))}
+                      </ol>
+                    </div>
+                  ) : (
+                    <p className="no-content">No instructions available</p>
+                  )}
+                </div>
 
                 {/* Action Buttons */}
                 <table className="recipe-actions">
                   <tbody>
-                  <tr>
-                    <td>
-                      <button
-                      onClick={() => handleAddToMyRecipes(recipe)}
-                      className="save-recipe-btn"
+                    <tr>
+                      <td>
+                        <button
+                          onClick={() => handleAddToMyRecipes(recipe, false)}
+                          className="save-recipe-btn"
                         >
-                      Save Recipe
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <button
-                        onClick={() => {
-                          setRecipe(null);
-                          setLink('');
-                        }}
-                        className="secondary-button"
-                      >
-                        Import Another
-                      </button>
-                    </td>
-                  </tr>
+                          Save Recipe
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <button
+                          onClick={() => {
+                            setRecipe(null);
+                            setLink('');
+                            setIsPopUpComment(false);
+                            setMyComment('');
+                          }}
+                          className="secondary-button"
+                        >
+                          Import Another
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <button
+                          onClick={() => setIsPopUpComment(true)} 
+                          className="add-save-btn"
+                        >
+                          Add Comment & Save
+                        </button>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
             )}
+          </div>
+        )}
+      </Popup>
+
+      {/* Comment Popup */}
+      <Popup
+        className="import"
+        overlayClassName="popup-overlay"
+        open={isPopUpComment}
+        onClose={() => {
+          setIsPopUpComment(false);
+          setMyComment('');
+        }}
+        modal
+        nested
+        closeOnDocumentClick={true}
+      >
+        {(close) => (
+          <div className="popup-content-wrapper">
+            {/* Close Button */}
+            <button 
+              className="popup-close-btn" 
+              onClick={() => {
+                setIsPopUpComment(false);
+                setMyComment('');
+              }}
+              type="button"
+              aria-label="Close"
+            >
+              ×
+            </button>
+
+            <h3 style={{ marginBottom: '20px' }}>Add Your Comment</h3>
+            
+            <div className="form-group">
+              <label className="form-label">Comment</label>
+              <textarea 
+                className="form-textarea"
+                rows="6"
+                placeholder="What do you think about this recipe? Any modifications or tips?"
+                value={myComment} 
+                onChange={(e) => setMyComment(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <table className="recipe-actions">
+              <tbody>
+              <tr>
+              <td>
+              <button
+                onClick={handleCommentAndSave}
+                className="save-recipe-btn"
+                style={{ flex: 1 }}
+              >
+                Save Recipe with Comment
+              </button>
+              </td>
+              </tr>
+              <tr>
+                <td>
+              <button
+                onClick={() => {
+                  setIsPopUpComment(false);
+                  setMyComment('');
+                }}
+                className="secondary-button"
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </button>
+              </td>
+              </tr>
+              </tbody>
+            </table>
           </div>
         )}
       </Popup>

@@ -61,31 +61,21 @@ app.post('/recipe-parser', async function(req, res) {
     ? process.env.PYTHON_URL 
     : 'http://127.0.0.1:5000/recipe-parser';
 
-  const healthUrl = pythonUrl.replace('/recipe-parser', '/health');
+  const healthUrl = process.env.PYTHON_HEALTH;
 
   try {
     let serviceReady = false;
-    
-    console.log('Attempting to wake up Python service...');
-    
+        
     // Check health with multiple short attempts (total ~2 min)
     for (let healthCheck = 0; healthCheck < 10; healthCheck++) {
-      try {
-        console.log(`Health check attempt ${healthCheck + 1}/10`);
-        
-        const healthResponse = await fetch(healthUrl, {
-          method: 'GET',
-          signal: AbortSignal.timeout(15000) // 15 second timeout per attempt
-        });
+      try {        
+        const healthResponse = await fetch(healthUrl);
         
         if (healthResponse.ok) {
           serviceReady = true;
-          console.log('Service is awake!');
           break;
         }
-      } catch (error) {
-        console.log(`Health check ${healthCheck + 1} failed: ${error.message}`);
-        
+      } catch (error) {        
         if (healthCheck < 9) {
           // Wait 12 seconds between attempts
           await new Promise(resolve => setTimeout(resolve, 12000));
@@ -100,9 +90,7 @@ app.post('/recipe-parser', async function(req, res) {
       });
     }
     
-    // Service is ready, now make the actual parse request
-    console.log('Making parse request...');
-    
+    // Service is ready, now make the actual parse request    
     const response = await fetch(pythonUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

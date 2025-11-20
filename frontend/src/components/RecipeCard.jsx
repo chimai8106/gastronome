@@ -565,6 +565,13 @@ export default function RecipeCard() {
               </div>
             </div>
           )}
+          {/*My Comments */}
+          {recipe.myComment && (
+            <div className="detail-item" style={{marginTop: '10px'}}>
+                <span className="detail-label" style={{color: "#8B5E3C", textDecoration: "underline"}}>My Comment:</span>
+                <span className="detail-value">{recipe.myComment}</span>
+            </div>
+          )}
         </div>
       </div>
 

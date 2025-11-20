@@ -33,6 +33,7 @@ export default function RecipeForm({
   const [creatingNewRecipeCollection, setCreatingNewRecipeCollection] = useState(false);
   const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
   const validFileTypes = ['image/jpg', 'image/jpeg', 'image/png']
+  const [myComment, setMyComment] = useState("");
   
   // Track if we've already initialized from initialRecipe
   const hasInitialized = useRef(false);
@@ -100,6 +101,7 @@ export default function RecipeForm({
       setNutrition(initialRecipe.nutrition || "");
       setSelectedRecipeCollections(initialRecipe.recipeCollectionID || []);
       setSelectedRecipeCollectionNames(initialRecipe.recipeCollectionName || []);
+      setMyComment(initialRecipe.myComment || "");
     }
   }, [initialRecipe]);
 
@@ -183,6 +185,7 @@ export default function RecipeForm({
     formData.append("recipeCollectionName", JSON.stringify(selectedRecipeCollectionNames));
     formData.append("ingredients", JSON.stringify(formattedIngredients));
     formData.append("comments", JSON.stringify(formattedComments));
+    formData.append("myComment", myComment);
 
     if (initialId) onSubmit(initialId, formData);
     else onSubmit(formData);
@@ -362,7 +365,15 @@ export default function RecipeForm({
         {errors.image && <p className="error-message">{errors.image}</p>}
       </div>
     
-
+      <div className="form-group">
+        <label className="form-label">My Comment </label>
+        <textarea
+          className="form-textarea"
+          placeholder="What do you think about this recipe? Any modifications or tips?"
+          value={myComment}
+          onChange={(e) => handleChange(setMyComment)(e.target.value)}
+        />
+      </div>
 
       <div className="form-group">
         <label className="form-label">Ingredients *</label>
@@ -483,7 +494,7 @@ export default function RecipeForm({
           onChange={(e) => handleChange(setNutrition)(e.target.value)}
         />
       </div>
-
+        {/*
       <div className="form-group">
         <label className="form-label">Comments</label>
         <input 
@@ -493,6 +504,7 @@ export default function RecipeForm({
           onChange={(e) => handleChange(setComments)(e.target.value)}
         />
       </div>
+      */}
 
       <div className="inline-checkbox-container">
         <label className="inline-label">Public?</label>

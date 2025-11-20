@@ -45,7 +45,7 @@ export const createRecipe = async (req, res) => {
     const {
       title, instruction, isPublic, numServings, sourceName,
       timePrepared, rating, cuisine, difficulty, nutrition,
-      ingredients, comments, recipeCollectionID, recipeCollectionName, authorName
+      ingredients, comments, recipeCollectionID, recipeCollectionName, authorName, myComment
     } = req.body;
     
     const file = req.file;
@@ -102,7 +102,8 @@ export const createRecipe = async (req, res) => {
       difficulty: Number(difficulty),
       nutrition,
       uid: req.user.uid,
-      authorName: authorName || req.user.displayName
+      authorName: authorName || req.user.displayName,
+      myComment
     });
 
     const newRecipe = await recipe.save();
@@ -122,7 +123,8 @@ export const createRecipe = async (req, res) => {
         rating: newRecipe.rating,
         likes: newRecipe.likes,
         uid: newRecipe.uid, 
-        authorName: newRecipe.authorName 
+        authorName: newRecipe.authorName,
+        myComment
       };
 
       await Promise.all(
@@ -263,7 +265,7 @@ export async function updateRecipe(req, res) {
     const {
       title, instruction, isPublic, numServings, sourceName,
       timePrepared, rating, likes, cuisine, difficulty, nutrition,
-      ingredients, comments, recipeCollectionID
+      ingredients, comments, recipeCollectionID, myComment
     } = req.body;
 
     const updateData = {};
@@ -299,6 +301,7 @@ export async function updateRecipe(req, res) {
     if (cuisine !== undefined) updateData.cuisine = cuisine;
     if (difficulty !== undefined) updateData.difficulty = Number(difficulty);
     if (nutrition !== undefined) updateData.nutrition = nutrition;
+    if (myComment !== undefined) updateData.myComment = myComment;
     
     if (ingredients !== undefined) {
       try {
@@ -377,7 +380,8 @@ export async function updateRecipe(req, res) {
           rating: updatedRecipe.rating,
           likes: updatedRecipe.likes,
           uid: updatedRecipe.uid,
-          authorName: updatedRecipe.authorName
+          authorName: updatedRecipe.authorName,
+          myComment: updateRecipe.myComment
         };
 
         await Promise.all(
@@ -406,7 +410,8 @@ export async function updateRecipe(req, res) {
           rating: updatedRecipe.rating,
           likes: updatedRecipe.likes,
           uid: updatedRecipe.uid,
-          authorName: updatedRecipe.authorName
+          authorName: updatedRecipe.authorName,
+          myComment: updateRecipe.myComment
         };
 
         await Promise.all(
@@ -515,7 +520,8 @@ export async function addRecipeToCollection(req, res) {
       rating: recipe.rating,
       likes: recipe.likes,
       uid: recipe.uid, 
-      authorName: recipe.authorName 
+      authorName: recipe.authorName,
+      myComment: recipe.myComment
     };
     
     // Update ONLY my collection, not the recipe

@@ -133,6 +133,7 @@ export default function Collection() {
       formData.append("recipeCollectionName", JSON.stringify(updatedCollectionNames));
       formData.append("ingredients", JSON.stringify(recipe.ingredients));
       formData.append("comments", JSON.stringify(recipe.comments));
+      formData.append("myComment", recipe.myComment);
       
       await updateRecipe(recipeId, formData);
       toast.success("Removed from collection!");
@@ -175,6 +176,7 @@ export default function Collection() {
       formData.append("recipeCollectionName", JSON.stringify(updatedCollectionNames));
       formData.append("ingredients", JSON.stringify(recipe.ingredients));
       formData.append("comments", JSON.stringify(recipe.comments));
+      formData.append("myComment", recipe.myComment);
       
       await updateRecipe(recipeId, formData);
       
