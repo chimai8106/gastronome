@@ -68,25 +68,36 @@ app.post('/recipe-parser', async function(req, res) {
 
   try {
     let lastError;
+    let serviceReady = false;
     
     // Check health first and wait for service to wake up
-    for (let healthCheck = 0; healthCheck < 4; healthCheck++) {
+    console.log('Checking if parser service is awake...');
+    for (let healthCheck = 0; healthCheck < 5; healthCheck++) {
       try {
+        console.log(`Health check attempt ${healthCheck + 1}/5`);
         const healthResponse = await fetch(healthUrl, {
           method: 'GET',
           signal: AbortSignal.timeout(10000)
         });
         
         if (healthResponse.ok) {
-          console.log('Parser service is ready');
+          console.log('✓ Parser service is ready!');
+          serviceReady = true;
           break;
+        } else {
+          console.log(`Health check returned status: ${healthResponse.status}`);
         }
       } catch (error) {
-        if (healthCheck < 3) {
-          console.log(`Service not ready, waiting 30s... (attempt ${healthCheck + 1}/4)`);
+        console.log(`Health check failed: ${error.message}`);
+        if (healthCheck < 4) {
+          console.log(`Waiting 30s before next health check...`);
           await new Promise(resolve => setTimeout(resolve, 30000));
         }
       }
+    }
+    
+    if (!serviceReady) {
+      console.log('⚠ Service did not become ready after health checks, but will try parsing anyway...');
     }
 
     // Now attempt to parse the recipe with retries

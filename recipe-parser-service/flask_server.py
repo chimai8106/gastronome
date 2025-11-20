@@ -5,7 +5,6 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)  # Allow requests from your Node.js backend
 @app.route('/recipe-parser', methods=['POST'])
-@app.route('/recipe-parser', methods=['POST'])
 def index():
     try:
         data = request.get_json()
