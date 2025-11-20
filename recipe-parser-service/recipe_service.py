@@ -4,6 +4,7 @@ from recipe_scrapers import scrape_html
 from flask import jsonify
 
 def parse_recipe(url):
+    print(url, flush=True)
     
     try:
         #Fetch HTML with proper headers
