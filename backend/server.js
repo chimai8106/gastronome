@@ -75,7 +75,7 @@ app.post('/recipe-parser', async function(req, res) {
       try {
         const healthResponse = await fetch(healthUrl, {
           method: 'GET',
-          signal: AbortSignal.timeout(10000)
+          signal: AbortSignal.timeout(100000)
         });
         
         if (healthResponse.ok) {
