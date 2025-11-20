@@ -16,7 +16,6 @@ def index():
         return result
         
     except Exception as e:
-        print("=== ERROR ===", flush=True)
         print(f"Error: {str(e)}", flush=True)
         import traceback
         traceback.print_exc()

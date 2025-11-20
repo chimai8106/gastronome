@@ -63,47 +63,36 @@ app.post('/recipe-parser', async function(req, res) {
     : 'http://127.0.0.1:5000/recipe-parser';
 
   const healthUrl = pythonUrl.replace('/recipe-parser', '/health');
-  const MAX_RETRIES = 3;
-  const RETRY_DELAYS = [90000, 60000, 30000]; // 90s, 60s, 30s
+  const MAX_RETRIES = 1;
+  const RETRY_DELAYS = [90000]; 
 
   try {
     let lastError;
     let serviceReady = false;
     
     // Check health first and wait for service to wake up
-    console.log('Checking if parser service is awake...');
     for (let healthCheck = 0; healthCheck < 5; healthCheck++) {
       try {
-        console.log(`Health check attempt ${healthCheck + 1}/5`);
         const healthResponse = await fetch(healthUrl, {
           method: 'GET',
           signal: AbortSignal.timeout(10000)
         });
         
         if (healthResponse.ok) {
-          console.log('✓ Parser service is ready!');
           serviceReady = true;
           break;
         } else {
-          console.log(`Health check returned status: ${healthResponse.status}`);
         }
       } catch (error) {
-        console.log(`Health check failed: ${error.message}`);
         if (healthCheck < 4) {
-          console.log(`Waiting 30s before next health check...`);
           await new Promise(resolve => setTimeout(resolve, 30000));
         }
       }
     }
     
-    if (!serviceReady) {
-      console.log('⚠ Service did not become ready after health checks, but will try parsing anyway...');
-    }
-
     // Now attempt to parse the recipe with retries
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       try {
-        console.log(`Parsing attempt ${attempt + 1}/${MAX_RETRIES + 1}`);
         
         const response = await fetch(pythonUrl, {
           method: 'POST',
@@ -115,14 +104,12 @@ app.post('/recipe-parser', async function(req, res) {
         // Success!
         if (response.ok) {
           const data = await response.json();
-          console.log('Successfully parsed recipe');
           return res.json(data);
         }
 
         // If service is sleeping/unavailable and we have retries left
         if ((response.status === 502 || response.status === 503) && attempt < MAX_RETRIES) {
           const waitTime = RETRY_DELAYS[attempt];
-          console.log(`Service error (status: ${response.status}), waiting ${waitTime/1000}s before retry...`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
           continue;
         }
@@ -134,7 +121,6 @@ app.post('/recipe-parser', async function(req, res) {
           // Only retry on server errors, not client errors
           if (response.status >= 500 && attempt < MAX_RETRIES) {
             const waitTime = RETRY_DELAYS[attempt];
-            console.log(`Server error, waiting ${waitTime/1000}s before retry...`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
             continue;
           }
@@ -152,7 +138,6 @@ app.post('/recipe-parser', async function(req, res) {
              fetchError.message.includes('fetch') ||
              fetchError.message.includes('network'))) {
           const waitTime = RETRY_DELAYS[attempt];
-          console.log(`Connection error, waiting ${waitTime/1000}s before retry...`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
           continue;
         }

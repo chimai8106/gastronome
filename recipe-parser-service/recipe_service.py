@@ -4,7 +4,6 @@ from recipe_scrapers import scrape_html
 from flask import jsonify
 
 def parse_recipe(url):
-    print(f"Parsing recipe from: {url}", flush=True)
     
     try:
         #Fetch HTML with proper headers
@@ -15,14 +14,11 @@ def parse_recipe(url):
             }
         )
         html = urlopen(request).read().decode("utf-8")
-        print(f"HTML fetched successfully, length: {len(html)}", flush=True)
         
         scraper = scrape_html(html=html, org_url=url)
-        print(f"Scraper created: {type(scraper)}", flush=True)
         
         #Extract recipe information
         ingredients = scraper.ingredients()
-        print(f"Ingredients found: {len(ingredients)}", flush=True)
         
         res_lib = {
             "title": scraper.title(), 
@@ -34,11 +30,9 @@ def parse_recipe(url):
             "authorName": scraper.author()
         }
         
-        print(f"Recipe parsed successfully: {res_lib['title']}", flush=True)
         return json.dumps(res_lib)
         
     except Exception as e:
-        print(f"Error parsing recipe: {e}", flush=True)
         import traceback
         traceback.print_exc()
         raise

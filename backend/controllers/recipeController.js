@@ -45,7 +45,7 @@ export const createRecipe = async (req, res) => {
     const {
       title, instruction, isPublic, numServings, sourceName,
       timePrepared, rating, cuisine, difficulty, nutrition,
-      ingredients, comments, recipeCollectionID, recipeCollectionName
+      ingredients, comments, recipeCollectionID, recipeCollectionName, authorName
     } = req.body;
     
     const file = req.file;
@@ -102,7 +102,7 @@ export const createRecipe = async (req, res) => {
       difficulty: Number(difficulty),
       nutrition,
       uid: req.user.uid,
-      authorName: req.user.displayName
+      authorName: authorName || req.user.displayName
     });
 
     const newRecipe = await recipe.save();
@@ -121,8 +121,8 @@ export const createRecipe = async (req, res) => {
         timePrepared: newRecipe.timePrepared,
         rating: newRecipe.rating,
         likes: newRecipe.likes,
-        uid: newRecipe.uid, // Keep original owner's uid
-        authorName: newRecipe.authorName // Keep original author name
+        uid: newRecipe.uid, 
+        authorName: newRecipe.authorName 
       };
 
       await Promise.all(
@@ -514,8 +514,8 @@ export async function addRecipeToCollection(req, res) {
       timePrepared: recipe.timePrepared,
       rating: recipe.rating,
       likes: recipe.likes,
-      uid: recipe.uid, // Keep original owner's uid
-      authorName: recipe.authorName // Keep original author name
+      uid: recipe.uid, 
+      authorName: recipe.authorName 
     };
     
     // Update ONLY my collection, not the recipe
