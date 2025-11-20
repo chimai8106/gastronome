@@ -19,9 +19,6 @@ def parse_recipe(url):
         
         scraper = scrape_html(html=html, org_url=url)
         print(f"Scraper created: {type(scraper)}", flush=True)
-        for key, value in vars(scraper).items():
-            print(f"{key}: {value}", flush=True)
-
         
         #Extract recipe information
         ingredients = scraper.ingredients()

@@ -4,7 +4,6 @@ requests==2.31.0
 beautifulsoup4==4.12.0
 lxml==5.1.0
 gunicorn==21.2.0
-recipe-scrapers==14.55.0
-recipe-scrapers==14.55.0
+recipe-scrapers==15.9.0
 html5lib==1.1 
 soupsieve==2.5
