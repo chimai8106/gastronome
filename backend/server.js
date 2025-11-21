@@ -6,7 +6,7 @@ import 'dotenv/config';
 import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import path from "path";
-import multer, {memoryStorage} from "multer";
+import multer, { memoryStorage } from "multer";
 
 const storage = memoryStorage()
 const upload = multer({
@@ -16,7 +16,7 @@ const upload = multer({
 const app = express()
 const __dirname = path.resolve()
 
-//middleware 
+// Middleware 
 app.use(express.json());
 app.use(rateLimiter);
 
@@ -32,7 +32,7 @@ app.use("/api/recipeRecipeCollections", recipeCollections);
 
 // Health check endpoint for Python service
 app.get('/parser-health', async function(req, res) {
-  const pythonUrl = process.env.PYTHON_HEALTH
+  const pythonUrl = process.env.PYTHON_HEALTH;
 
   try {
     const response = await fetch(pythonUrl, {
@@ -52,61 +52,81 @@ app.get('/parser-health', async function(req, res) {
 
 // Recipe parser endpoint with retry logic
 app.post('/recipe-parser', async function(req, res) {
-  console.log('=== DEBUG INFO ===');
+  console.log('=== RECIPE PARSER REQUEST ===');
   console.log('NODE_ENV:', process.env.NODE_ENV);
-  console.log('pythonUrl will be:', process.env.NODE_ENV !== "development" ? process.env.PYTHON_URL : 'http://127.0.0.1:5000/recipe-parser');
-  console.log('PYTHON_URL from env:', process.env.PYTHON_URL);
-  console.log('PYTHON_HEALTH from env:', process.env.PYTHON_HEALTH);
+  console.log('PYTHON_URL:', process.env.PYTHON_URL);
+  console.log('PYTHON_HEALTH:', process.env.PYTHON_HEALTH);
+  
   if (!req.body.link) {
     return res.status(400).json({ error: 'No link provided' });
   }
-  const pythonUrl =process.env.PYTHON_URL 
+  
+  const pythonUrl = process.env.PYTHON_URL;
   const healthUrl = process.env.PYTHON_HEALTH;
 
   try {
     let serviceReady = false;
         
-    // Check health with multiple short attempts (total ~2 min)
+    // Check health with multiple attempts - allow time for cold start
     for (let healthCheck = 0; healthCheck < 10; healthCheck++) {
-      try {        
-        const healthResponse = await fetch(healthUrl);
+      try {
+        console.log(`[${new Date().toISOString()}] Health check ${healthCheck + 1}/10 to ${healthUrl}`);
+        
+        // First 3 checks get 60s timeout (for cold start), rest get 10s
+        const timeout = healthCheck < 3 ? 60000 : 10000;
+        
+        const healthResponse = await fetch(healthUrl, {
+          signal: AbortSignal.timeout(timeout)
+        });
+        
+        console.log(`Health check ${healthCheck + 1} - Status: ${healthResponse.status}`);
         
         if (healthResponse.ok) {
           serviceReady = true;
+          console.log('Service is ready! Waiting 3 seconds for full initialization...');
+          await new Promise(resolve => setTimeout(resolve, 3000));
           break;
         }
-      } catch (error) {        
+      } catch (error) {
+        console.log(`Health check ${healthCheck + 1} failed: ${error.name} - ${error.message}`);
         if (healthCheck < 9) {
-          // Wait 12 seconds between attempts
-          await new Promise(resolve => setTimeout(resolve, 12000));
+          console.log('Waiting 5 seconds before retry...');
+          await new Promise(resolve => setTimeout(resolve, 5000));
         }
       }
     }
     
     if (!serviceReady) {
+      console.log('Service failed to become ready after all health checks');
       return res.status(503).json({ 
-        error: 'Parser service failed to wake up after 2 minutes. Please try again.',
-        details: 'The service may need manual intervention or is experiencing issues.'
+        error: 'Parser service failed to wake up. Please try again.',
+        details: 'The service may be experiencing cold start issues or is unavailable.'
       });
     }
     
-    // Service is ready, now make the actual parse request    
+    // Service is ready, make the actual parse request
+    console.log(`[${new Date().toISOString()}] Making parse request to ${pythonUrl}`);
+    console.log('Request payload:', JSON.stringify({ link: req.body.link }));
+    
     const response = await fetch(pythonUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ link: req.body.link }),
-      signal: AbortSignal.timeout(30000) // 30 second timeout for actual request
+      signal: AbortSignal.timeout(60000) // 60 second timeout for actual request
     });
+
+    console.log(`Parse request response status: ${response.status}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('Parse successful, returning data');
     return res.json(data);
 
   } catch (error) {
-    console.error('Parser service error:', error.message);
+    console.error('Parser service error:', error.name, error.message);
     
     let userMessage = 'Failed to parse recipe';
     let statusCode = 500;
@@ -122,6 +142,7 @@ app.post('/recipe-parser', async function(req, res) {
     });
   }
 });
+
 // Static files and catch-all last (only in production)
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, '../frontend/dist'), {
