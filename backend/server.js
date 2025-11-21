@@ -38,7 +38,7 @@ app.get('/parser-health', async function(req, res) {
     const response = await fetch(pythonUrl, {
       method: 'GET',
        headers: {
-            'User-Agent': 'Gastronome-Backend/1.0',
+            'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0 Safari/537.36",
             'Accept': 'application/json'
           },
       signal: AbortSignal.timeout(5000)
@@ -82,7 +82,7 @@ app.post('/recipe-parser', async function(req, res) {
         const healthResponse = await fetch(healthUrl, {
           method: 'GET',
           headers: {
-            'User-Agent': 'Gastronome-Backend/1.0',
+            'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0 Safari/537.36",
             'Accept': 'application/json'
           },
           signal: AbortSignal.timeout(timeout)
