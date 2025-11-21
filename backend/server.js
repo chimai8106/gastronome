@@ -37,6 +37,10 @@ app.get('/parser-health', async function(req, res) {
   try {
     const response = await fetch(pythonUrl, {
       method: 'GET',
+       headers: {
+            'User-Agent': 'Gastronome-Backend/1.0',
+            'Accept': 'application/json'
+          },
       signal: AbortSignal.timeout(5000)
     });
 
@@ -76,6 +80,11 @@ app.post('/recipe-parser', async function(req, res) {
         const timeout = healthCheck < 3 ? 60000 : 10000;
         
         const healthResponse = await fetch(healthUrl, {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'Gastronome-Backend/1.0',
+            'Accept': 'application/json'
+          },
           signal: AbortSignal.timeout(timeout)
         });
         
