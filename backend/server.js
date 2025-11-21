@@ -87,11 +87,18 @@ app.post('/recipe-parser', async function(req, res) {
           await new Promise(resolve => setTimeout(resolve, 3000));
           break;
         }
+        
+        // If not ready (including 429 rate limit), wait before next attempt
+        if (healthCheck < 9) {
+          console.log('Service not ready, waiting 12 seconds before retry...');
+          await new Promise(resolve => setTimeout(resolve, 12000));
+        }
+        
       } catch (error) {
         console.log(`Health check ${healthCheck + 1} failed: ${error.name} - ${error.message}`);
         if (healthCheck < 9) {
-          console.log('Waiting 5 seconds before retry...');
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          console.log('Waiting 12 seconds before retry...');
+          await new Promise(resolve => setTimeout(resolve, 12000));
         }
       }
     }
