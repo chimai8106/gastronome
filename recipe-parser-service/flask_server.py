@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify
 from recipe_service import parse_recipe 
 from flask_cors import CORS
 app = Flask(__name__)
-CORS(app)  # Allow requests from your Node.js backend
+CORS(app)  # Allow requests from Node.js backend
 @app.route('/recipe-parser', methods=['POST'])
 def index():
     try:

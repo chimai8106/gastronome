@@ -32,9 +32,7 @@ app.use("/api/recipeRecipeCollections", recipeCollections);
 
 // Health check endpoint for Python service
 app.get('/parser-health', async function(req, res) {
-  const pythonUrl = process.env.NODE_ENV !== "development" 
-    ? process.env.PYTHON_URL.replace('/recipe-parser', '/health')
-    : 'http://127.0.0.1:5000/health';
+  const pythonUrl = process.env.PYTHON_HEALTH
 
   try {
     const response = await fetch(pythonUrl, {
@@ -54,13 +52,15 @@ app.get('/parser-health', async function(req, res) {
 
 // Recipe parser endpoint with retry logic
 app.post('/recipe-parser', async function(req, res) {
+  console.log('=== DEBUG INFO ===');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('pythonUrl will be:', process.env.NODE_ENV !== "development" ? process.env.PYTHON_URL : 'http://127.0.0.1:5000/recipe-parser');
+  console.log('PYTHON_URL from env:', process.env.PYTHON_URL);
+  console.log('PYTHON_HEALTH from env:', process.env.PYTHON_HEALTH);
   if (!req.body.link) {
     return res.status(400).json({ error: 'No link provided' });
   }
-  const pythonUrl = process.env.NODE_ENV !== "development" 
-    ? process.env.PYTHON_URL 
-    : 'http://127.0.0.1:5000/recipe-parser';
-
+  const pythonUrl =process.env.PYTHON_URL 
   const healthUrl = process.env.PYTHON_HEALTH;
 
   try {
