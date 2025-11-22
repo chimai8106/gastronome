@@ -55,6 +55,7 @@ export const ImportProvider = ({ children }) => {
   // Wake up the parser service
   const wakeUpParserService = async () => {
     const pythonHealthUrl = import.meta.env.VITE_PYTHON_HEALTH;
+    console.log(pythonHealthUrl);
     const maxAttempts = 12; // ~2 minutes total
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -64,7 +65,8 @@ export const ImportProvider = ({ children }) => {
         const response = await fetch(pythonHealthUrl, {
           method: 'GET',
           headers: {
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0 Safari/537.36",
           }
         });
         
