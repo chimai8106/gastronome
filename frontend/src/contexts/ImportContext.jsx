@@ -54,7 +54,7 @@ export const ImportProvider = ({ children }) => {
 
   // Wake up the parser service
   const wakeUpParserService = async () => {
-    const pythonHealthUrl = import.meta.env.VITE_PYTHON_HEALTH;
+    const pythonHealthUrl = import.meta.env.VITE_PYTHON_HEALTH || "https://gastronome-recipe-parser.onrender.com/health";
     console.log(pythonHealthUrl);
     const maxAttempts = 12; // ~2 minutes total
     
