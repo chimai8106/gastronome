@@ -54,7 +54,7 @@ export const ImportProvider = ({ children }) => {
 
   // Wake up the parser service
   const wakeUpParserService = async () => {
-    const pythonHealthUrl = import.meta.env.PYTHON_HEALTH;
+    const pythonHealthUrl = import.meta.env.VITE_PYTHON_HEALTH;
     const maxAttempts = 12; // ~2 minutes total
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
