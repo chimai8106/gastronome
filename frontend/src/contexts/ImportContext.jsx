@@ -27,6 +27,7 @@ export const ImportProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isPopUpComment, setIsPopUpComment] = useState(false);
   const [myComment, setMyComment] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   const navigate = useNavigate();
 
@@ -38,6 +39,7 @@ export const ImportProvider = ({ children }) => {
     setError(null);
     setIsPopUpComment(false);
     setMyComment('');
+    setLoadingMessage('');
   };
 
   const closeImportPopup = () => {
@@ -47,6 +49,48 @@ export const ImportProvider = ({ children }) => {
     setError(null);
     setIsPopUpComment(false);
     setMyComment('');
+    setLoadingMessage('');
+  };
+
+  // Wake up the parser service
+  const wakeUpParserService = async () => {
+    const pythonHealthUrl = import.meta.env.PYTHON_HEALTH;
+    const maxAttempts = 12; // ~2 minutes total
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        setLoadingMessage(`Waking up recipe parser... (${attempt + 1}/${maxAttempts})`);
+        
+        const response = await fetch(pythonHealthUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          console.log('Parser service is awake!');
+          setLoadingMessage('Parser service is ready!');
+          return true;
+        }
+        
+        if (response.status === 429) {
+          console.log('Rate limited, waiting...');
+          setLoadingMessage('Service is waking up, please wait...');
+        }
+        
+      } catch (error) {
+        console.log(`Wake attempt ${attempt + 1} failed:`, error.message);
+        setLoadingMessage(`Attempting to wake service... (${attempt + 1}/${maxAttempts})`);
+      }
+      
+      // Wait 10 seconds between attempts
+      if (attempt < maxAttempts - 1) {
+        await new Promise(resolve => setTimeout(resolve, 10000));
+      }
+    }
+    
+    return false;
   };
 
   // Handle link import
@@ -62,14 +106,30 @@ export const ImportProvider = ({ children }) => {
     setError(null);
     
     try {
+      // First, wake up the parser service
+      setLoadingMessage('Waking up recipe parser service...');
+      const isAwake = await wakeUpParserService();
+      
+      if (!isAwake) {
+        setError('Failed to wake up parser service. Please try again in a moment.');
+        toast.error('Parser service unavailable');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Service is awake, now import the recipe
+      setLoadingMessage('Parsing recipe...');
       const res = await importRecipe(link);  
       const recipeData = typeof res === 'string' ? JSON.parse(res) : res;
       
       setRecipe(recipeData);
+      setLoadingMessage('');
       toast.success('Recipe imported successfully!');
     } catch (err) {
+      console.error('Import error:', err);
       setError('Failed to import recipe. Please check the link and try again.');
       toast.error('Failed to import recipe');
+      setLoadingMessage('');
     } finally {
       setIsLoading(false);
     }
@@ -199,14 +259,17 @@ export const ImportProvider = ({ children }) => {
                 className="submit-button"
                 disabled={isLoading}
               >
-                {isLoading ? 'Importing...' : 'Get Recipe'}
+                {isLoading ? 'Processing...' : 'Get Recipe'}
               </button>
             </form>
 
             {/* Loading State */}
             {isLoading && (
               <div className="loading-state">
-                <p>Parsing recipe... This may take a few seconds.</p>
+                <p>{loadingMessage || 'Starting...'}</p>
+                <p style={{ fontSize: '0.9em', color: '#666', marginTop: '10px' }}>
+                  This may take up to 2 minutes if the service is sleeping.
+                </p>
               </div>
             )}
 
@@ -369,31 +432,31 @@ export const ImportProvider = ({ children }) => {
 
             <table className="recipe-actions">
               <tbody>
-              <tr>
-              <td>
-              <button
-                onClick={handleCommentAndSave}
-                className="save-recipe-btn"
-                style={{ flex: 1 }}
-              >
-                Save Recipe with Comment
-              </button>
-              </td>
-              </tr>
-              <tr>
-                <td>
-              <button
-                onClick={() => {
-                  setIsPopUpComment(false);
-                  setMyComment('');
-                }}
-                className="secondary-button"
-                style={{ flex: 1 }}
-              >
-                Cancel
-              </button>
-              </td>
-              </tr>
+                <tr>
+                  <td>
+                    <button
+                      onClick={handleCommentAndSave}
+                      className="save-recipe-btn"
+                      style={{ flex: 1 }}
+                    >
+                      Save Recipe with Comment
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <button
+                      onClick={() => {
+                        setIsPopUpComment(false);
+                        setMyComment('');
+                      }}
+                      className="secondary-button"
+                      style={{ flex: 1 }}
+                    >
+                      Cancel
+                    </button>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
