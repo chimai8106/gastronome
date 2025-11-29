@@ -205,6 +205,9 @@ export default function SearchResults() {
   };
 
   const totalResults = recipeResults.length + collectionResults.length;
+  if (loading) {
+    return null;
+  }
 
   return (
     <div className="search-results-main-page">
@@ -316,12 +319,7 @@ export default function SearchResults() {
           </div>
         )}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="search-results-loading-state">
-            <p>Searching...</p>
-          </div>
-        )}
+        
 
         {/* Results */}
         {!loading && (
