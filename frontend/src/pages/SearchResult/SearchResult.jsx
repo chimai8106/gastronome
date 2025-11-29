@@ -262,7 +262,7 @@ export default function SearchResults() {
             {showFilters && (
               <div className="search-results-filters-container">
                 <div className="search-results-filter-grid">
-                  <div className="search-results-filter-item">
+                  <div className="form-group">
                     <label>Cuisine</label>
                     <input
                       type="text"
@@ -272,7 +272,7 @@ export default function SearchResults() {
                     />
                   </div>
 
-                  <div className="search-results-filter-item">
+                  <div className="form-group">
                     <label>Max Cook Time (min)</label>
                     <input
                       type="number"
@@ -282,7 +282,7 @@ export default function SearchResults() {
                     />
                   </div>
 
-                  <div className="search-results-filter-item">
+                  <div className="form-group">
                     <label>Difficulty (1-5)</label>
                     <input
                       type="number"
@@ -294,7 +294,7 @@ export default function SearchResults() {
                     />
                   </div>
 
-                  <div className="search-results-filter-item">
+                  <div className="form-group">
                     <label>Min Rating</label>
                     <input
                       type="number"
