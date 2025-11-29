@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { deleteRecipe, addRecipeToCollection, removeRecipeFromCollection, getUserRecipes } from "../../services/RecipeServices";
 import { getMyRecipeCollection, addRecipeCollection } from "../../services/RecipeCollectionServices";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import RecipeGridBox from "../../components/RecipeGridBox";
 import { useAuth } from "../../contexts/authContext";
@@ -15,7 +15,14 @@ export default function Home() {
   const [recipeCollections, setRecipeCollections] = useState([]);
   const [selectedCollections, setSelectedCollections] = useState({}); 
   const [creatingNewCollection, setCreatingNewCollection] = useState({});
-  const [newCollectionTitle, setNewCollectionTitle] = useState({}); // Changed from newCollectionTitle
+  const [newCollectionTitle, setNewCollectionTitle] = useState({});
+  
+  // Infinite scroll states
+  const [displayedCount, setDisplayedCount] = useState(12);
+  const [hasLoadedMore, setHasLoadedMore] = useState(false);
+  const observerTarget = useRef(null);
+  const RECIPES_PER_LOAD = 12;
+  
   const navigate = useNavigate();
   const { uid } = useAuth();
   const currentUserId = uid;
@@ -129,6 +136,16 @@ export default function Home() {
     }
   };
 
+  // Load more recipes (client-side pagination)
+  const loadMoreRecipes = useCallback(() => {
+    setDisplayedCount(prev => prev + RECIPES_PER_LOAD);
+    setHasLoadedMore(true);
+  }, []);
+
+  // Check if there are more recipes to show
+  const hasMore = displayedCount < recipes.length;
+  const displayedRecipes = recipes.slice(0, displayedCount);
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -147,7 +164,32 @@ export default function Home() {
       }
     }
     fetchData();
+    setDisplayedCount(RECIPES_PER_LOAD);
+    setHasLoadedMore(false);
   }, [changed, uid]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMoreRecipes();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, loadMoreRecipes]);
 
   if (loading) {
     return null;
@@ -167,7 +209,7 @@ export default function Home() {
   return (
     <div className="recipe-grid-container">
       <div className="recipe-grid">
-        {recipes.map((recipe) => (
+        {displayedRecipes.map((recipe) => (
           <RecipeGridBox
             key={recipe._id}
             recipe={recipe}
@@ -202,6 +244,16 @@ export default function Home() {
           />
         ))}
       </div>
+      
+      {/* Infinite scroll trigger */}
+      {hasMore && <div ref={observerTarget} style={{ height: '20px', margin: '20px 0' }} />}
+      
+      {/* Only show end message after user has scrolled and loaded more */}
+      {!hasMore && hasLoadedMore && recipes.length > RECIPES_PER_LOAD && (
+        <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+          <p>You've reached the end!</p>
+        </div>
+      )}
     </div>
   );
 }

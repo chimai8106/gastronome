@@ -6,7 +6,7 @@ import "./ImportContext.css";
 import { importRecipe } from '../services/RecipeServices';
 import { useAuth } from './authContext';
 import { addRecipe } from '../services/RecipeServices';
-import { MdSyncProblem } from 'react-icons/md';
+
 
 const ImportContext = createContext();
 
@@ -54,13 +54,13 @@ export const ImportProvider = ({ children }) => {
 
   // Wake up the parser service
   const wakeUpParserService = async () => {
-    const pythonHealthUrl = import.meta.env.VITE_PYTHON_HEALTH || "https://gastronome-recipe-parser.onrender.com/health";
-    console.log(pythonHealthUrl);
+    // Use import.meta.env for Vite (works on server)
+    const pythonHealthUrl = import.meta.env.VITE_PYTHON_HEALTH || "http://127.0.0.1:5000/health"
     const maxAttempts = 12; // ~2 minutes total
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        setLoadingMessage(`Waking up recipe parser... (${attempt + 1}/${maxAttempts})`);
+        setLoadingMessage(`Waking up service)`);
         
         const response = await fetch(pythonHealthUrl, {
           method: 'GET',
@@ -70,20 +70,13 @@ export const ImportProvider = ({ children }) => {
           }
         });
         
+        // Check if response is OK (status 200-299)
         if (response.ok) {
-          console.log('Parser service is awake!');
-          setLoadingMessage('Parser service is ready!');
           return true;
         }
         
-        if (response.status === 429) {
-          console.log('Rate limited, waiting...');
-          setLoadingMessage('Service is waking up, please wait...');
-        }
-        
       } catch (error) {
-        console.log(`Wake attempt ${attempt + 1} failed:`, error.message);
-        setLoadingMessage(`Attempting to wake service... (${attempt + 1}/${maxAttempts})`);
+        console.log(`Attempt ${attempt + 1} failed:`, error.message);
       }
       
       // Wait 10 seconds between attempts
@@ -109,11 +102,10 @@ export const ImportProvider = ({ children }) => {
     
     try {
       // First, wake up the parser service
-      setLoadingMessage('Waking up recipe parser service...');
       const isAwake = await wakeUpParserService();
       
       if (!isAwake) {
-        setError('Failed to wake up parser service. Please try again in a moment.');
+        setError('Parser service unavailable. Please try again in a moment.');
         toast.error('Parser service unavailable');
         setIsLoading(false);
         return;
@@ -147,24 +139,28 @@ export const ImportProvider = ({ children }) => {
     }
   
     try {
+      setIsLoading(true);
+      setLoadingMessage('Saving recipe...');
+      
       // Prepare recipe data
       const formData = new FormData();
       formData.append("title", recipe.title);
-      formData.append("instruction", recipe.instruction);
-      formData.append("ingredients", JSON.stringify(recipe.ingredients));
+      formData.append("instruction", recipe.instructions || recipe.instruction || "");
+      formData.append("ingredients", JSON.stringify(recipe.ingredients || []));
       formData.append("isPublic", "false");
-      formData.append("numServings", recipe.servings || 0);
+      formData.append("numServings", recipe.numServings || recipe.servings || 0);
       formData.append("sourceName", link);
       formData.append("timePrepared", recipe.timePrepared || 0);
       formData.append("rating", 0);
       formData.append("cuisine", recipe.cuisines?.[0] || "");
       formData.append("difficulty", 0);
       formData.append("nutrition", "");
+      formData.append("authorName", recipe.authorName || "");
       
       // Add comment if provided
-      if (withComment) formData.append("myComment", myComment.trim());
-      
-      formData.append("authorName", recipe.authorName);
+      if (withComment && myComment.trim()) {
+        formData.append("myComment", myComment.trim());
+      }
       
       // Fetch and add image if available - with CORS handling
       if (recipe.image) {
@@ -183,11 +179,21 @@ export const ImportProvider = ({ children }) => {
           console.warn("Image fetch failed, saving recipe without image:", imgError);
         }
       }
-
+      
+      // Save the recipe
       const savedRecipe = await addRecipe(formData);
       
+      if (!savedRecipe) { 
+        throw new Error("Failed to save recipe");
+      }
+
+      // Success!
+      setIsLoading(false);
+      setLoadingMessage('');
       closeImportPopup();
+      
       toast.success("Successfully added to my recipe");
+      
       navigate(`/recipe/${savedRecipe._id}`, { 
         state: { refresh: true },
         replace: true 
@@ -195,7 +201,18 @@ export const ImportProvider = ({ children }) => {
       
     } catch (err) {
       console.error('Save recipe error:', err);
-      toast.error(`Failed to save recipe: ${err?.message || err}`);
+      setIsLoading(false);
+      setLoadingMessage('');
+      
+      // Display user-friendly error message
+      const errorMessage = err?.response?.data?.message 
+        || err?.message 
+        || "Failed to save recipe. Please try again.";
+      
+      toast.error(errorMessage);
+      
+      // Don't close popup so user can try again
+      setError(errorMessage);
     }
   };
 
@@ -204,6 +221,7 @@ export const ImportProvider = ({ children }) => {
       toast.error('Please enter a comment');
       return;
     }
+    setIsPopUpComment(false);
     handleAddToMyRecipes(recipe, true);
   };
 
@@ -225,7 +243,7 @@ export const ImportProvider = ({ children }) => {
         onClose={closeImportPopup}
         modal
         nested
-        closeOnDocumentClick={true}
+        closeOnDocumentClick={!isLoading}
       >
         {(close) => (
           <div className="popup-content-wrapper">
@@ -235,6 +253,7 @@ export const ImportProvider = ({ children }) => {
               onClick={closeImportPopup}
               type="button"
               aria-label="Close"
+              disabled={isLoading}
             >
               ×
             </button>
@@ -276,9 +295,16 @@ export const ImportProvider = ({ children }) => {
             )}
 
             {/* Error State */}
-            {error && (
+            {error && !isLoading && (
               <div className="error-message">
                 <p>{error}</p>
+                <button
+                  onClick={() => setError(null)}
+                  className="secondary-button"
+                  style={{ marginTop: '10px' }}
+                >
+                  Dismiss
+                </button>
               </div>
             )}
 
@@ -304,8 +330,8 @@ export const ImportProvider = ({ children }) => {
                     {recipe.timePrepared && (
                       <span>⏱️ {recipe.timePrepared} min</span>
                     )}
-                    {recipe.numServings && (
-                      <span>🍽️ {recipe.numServings}</span>
+                    {(recipe.numServings || recipe.servings) && (
+                      <span>🍽️ {recipe.numServings || recipe.servings}</span>
                     )}
                     {recipe.authorName && (
                       <span>👨‍🍳 {recipe.authorName}</span>
@@ -352,6 +378,7 @@ export const ImportProvider = ({ children }) => {
                         <button
                           onClick={() => handleAddToMyRecipes(recipe, false)}
                           className="save-recipe-btn"
+                          disabled={isLoading}
                         >
                           Save Recipe
                         </button>
@@ -365,8 +392,10 @@ export const ImportProvider = ({ children }) => {
                             setLink('');
                             setIsPopUpComment(false);
                             setMyComment('');
+                            setError(null);
                           }}
                           className="secondary-button"
+                          disabled={isLoading}
                         >
                           Import Another
                         </button>
@@ -377,6 +406,7 @@ export const ImportProvider = ({ children }) => {
                         <button
                           onClick={() => setIsPopUpComment(true)} 
                           className="add-save-btn"
+                          disabled={isLoading}
                         >
                           Add Comment & Save
                         </button>
