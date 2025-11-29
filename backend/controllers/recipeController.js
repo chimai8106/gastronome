@@ -93,9 +93,9 @@ export const createRecipe = async (req, res) => {
       ingredients: parsedIngredients,
       comments: parsedComments,
       isPublic: isPublic === 'true' || isPublic === true,
-      numServings: Number(numServings),
+      numServings: numServings,
       sourceName,
-      timePrepared: Number(timePrepared),
+      timePrepared: timePrepared,
       rating: Number(rating),
       likes: 0,
       cuisine,
@@ -293,9 +293,9 @@ export async function updateRecipe(req, res) {
     if (title !== undefined) updateData.title = title;
     if (instruction !== undefined) updateData.instruction = instruction;
     if (isPublic !== undefined) updateData.isPublic = isPublic === 'true' || isPublic === true;
-    if (numServings !== undefined) updateData.numServings = Number(numServings);
+    if (numServings !== undefined) updateData.numServings = numServings;
     if (sourceName !== undefined) updateData.sourceName = sourceName;
-    if (timePrepared !== undefined) updateData.timePrepared = Number(timePrepared);
+    if (timePrepared !== undefined) updateData.timePrepared = timePrepared;
     if (rating !== undefined) updateData.rating = Number(rating);
     if (likes !== undefined) updateData.likes = Number(likes);
     if (cuisine !== undefined) updateData.cuisine = cuisine;

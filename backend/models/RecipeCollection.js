@@ -47,8 +47,8 @@ const recipeCollectionSchema = new mongoose.Schema(
           default: 0,
         },
         timePrepared: {
-          type: Number,
-          default: 0,
+          type: String,
+          default: "",
         },
         rating: {
           type: Number,

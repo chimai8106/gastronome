@@ -32,8 +32,9 @@ app.use("/api/recipeRecipeCollections", recipeCollections);
 
 // Health check endpoint for Python service
 app.get('/parser-health', async function(req, res) {
-  const pythonUrl = process.env.PYTHON_HEALTH;
-
+  const pythonUrl = process.env.NODE_ENV !== "development" 
+    ? process.env.PYTHON_HEALTH
+    : 'http://127.0.0.1:5000/health';
   try {
     const response = await fetch(pythonUrl, {
       method: 'GET',
@@ -56,10 +57,7 @@ app.get('/parser-health', async function(req, res) {
 
 // Recipe parser endpoint with retry logic
 app.post('/recipe-parser', async function(req, res) {
-  console.log('=== RECIPE PARSER REQUEST ===');
-  console.log('NODE_ENV:', process.env.NODE_ENV);
-  console.log('PYTHON_URL:', process.env.PYTHON_URL);
-  console.log('PYTHON_HEALTH:', process.env.PYTHON_HEALTH);
+  
   
   if (!req.body.link) {
     return res.status(400).json({ error: 'No link provided' });
@@ -67,14 +65,12 @@ app.post('/recipe-parser', async function(req, res) {
   
   const pythonUrl = process.env.PYTHON_URL;
   const healthUrl = process.env.PYTHON_HEALTH;
-
   try {
     let serviceReady = false;
         
     // Check health with multiple attempts - allow time for cold start
     for (let healthCheck = 0; healthCheck < 10; healthCheck++) {
       try {
-        console.log(`[${new Date().toISOString()}] Health check ${healthCheck + 1}/10 to ${healthUrl}`);
         
         // First 3 checks get 60s timeout (for cold start), rest get 10s
         const timeout = healthCheck < 3 ? 60000 : 10000;
@@ -88,32 +84,26 @@ app.post('/recipe-parser', async function(req, res) {
           signal: AbortSignal.timeout(timeout)
         });
         
-        console.log(`Health check ${healthCheck + 1} - Status: ${healthResponse.status}`);
         
         if (healthResponse.ok) {
           serviceReady = true;
-          console.log('Service is ready! Waiting 3 seconds for full initialization...');
           await new Promise(resolve => setTimeout(resolve, 3000));
           break;
         }
         
         // If not ready (including 429 rate limit), wait before next attempt
         if (healthCheck < 9) {
-          console.log('Service not ready, waiting 12 seconds before retry...');
           await new Promise(resolve => setTimeout(resolve, 12000));
         }
         
       } catch (error) {
-        console.log(`Health check ${healthCheck + 1} failed: ${error.name} - ${error.message}`);
         if (healthCheck < 9) {
-          console.log('Waiting 12 seconds before retry...');
           await new Promise(resolve => setTimeout(resolve, 12000));
         }
       }
     }
     
     if (!serviceReady) {
-      console.log('Service failed to become ready after all health checks');
       return res.status(503).json({ 
         error: 'Parser service failed to wake up. Please try again.',
         details: 'The service may be experiencing cold start issues or is unavailable.'
@@ -121,9 +111,6 @@ app.post('/recipe-parser', async function(req, res) {
     }
     
     // Service is ready, make the actual parse request
-    console.log(`[${new Date().toISOString()}] Making parse request to ${pythonUrl}`);
-    console.log('Request payload:', JSON.stringify({ link: req.body.link }));
-    
     const response = await fetch(pythonUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -131,18 +118,15 @@ app.post('/recipe-parser', async function(req, res) {
       signal: AbortSignal.timeout(60000) // 60 second timeout for actual request
     });
 
-    console.log(`Parse request response status: ${response.status}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('Parse successful, returning data');
     return res.json(data);
 
   } catch (error) {
-    console.error('Parser service error:', error.name, error.message);
     
     let userMessage = 'Failed to parse recipe';
     let statusCode = 500;
