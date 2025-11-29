@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { deleteRecipe, addRecipeToCollection, removeRecipeFromCollection, getUserRecipes } from "../../services/RecipeServices";
 import { getMyRecipeCollection, addRecipeCollection } from "../../services/RecipeCollectionServices";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import RecipeGridBox from "../../components/RecipeGridBox";
 import { useAuth } from "../../contexts/authContext";
@@ -15,14 +15,7 @@ export default function Home() {
   const [recipeCollections, setRecipeCollections] = useState([]);
   const [selectedCollections, setSelectedCollections] = useState({}); 
   const [creatingNewCollection, setCreatingNewCollection] = useState({});
-  const [newCollectionTitle, setNewCollectionTitle] = useState({});
-  
-  // Infinite scroll states
-  const [displayedCount, setDisplayedCount] = useState(12); // How many recipes to show
-  const [allRecipes, setAllRecipes] = useState([]); // All fetched recipes
-  const observerTarget = useRef(null);
-  const RECIPES_PER_LOAD = 12; // Load 12 more each time
-  
+  const [newCollectionTitle, setNewCollectionTitle] = useState({}); // Changed from newCollectionTitle
   const navigate = useNavigate();
   const { uid } = useAuth();
   const currentUserId = uid;
@@ -43,6 +36,7 @@ export default function Home() {
     }
   };
 
+  // Remove a recipe from a collection 
   const handleRemoveCollection = async (recipeId, collectionId) => {
     try {
       await removeRecipeFromCollection(recipeId, collectionId);
@@ -53,6 +47,7 @@ export default function Home() {
     }
   };
 
+  // Toggle temporary selection in dropdown
   const handleCollectionToggle = (recipeId, collectionId, collectionTitle) => {
     const currentSelections = selectedCollections[recipeId] || { ids: [], titles: [] };
     
@@ -75,6 +70,7 @@ export default function Home() {
     }
   };
 
+  // Add recipe to multiple collections at once
   const handleAddToCollections = async (recipeId) => {
     const selections = selectedCollections[recipeId];
     
@@ -84,6 +80,7 @@ export default function Home() {
     }
 
     try {
+      // Add to each selected collection
       await Promise.all(
         selections.ids.map(collectionId => 
           addRecipeToCollection(recipeId, collectionId)
@@ -132,23 +129,13 @@ export default function Home() {
     }
   };
 
-  // Load more recipes (client-side pagination)
-  const loadMoreRecipes = useCallback(() => {
-    const newCount = displayedCount + RECIPES_PER_LOAD;
-    setDisplayedCount(newCount);
-  }, [displayedCount]);
-
-  // Check if there are more recipes to show
-  const hasMore = displayedCount < allRecipes.length;
-
-  // Initial load
   useEffect(() => {
     async function fetchData() {
       try {
-        // Load ALL recipes at once
         const recipesData = await getUserRecipes();
-        setAllRecipes(recipesData);
+        setRecipes(recipesData);
         
+        // Only fetch collections if user is logged in
         if (uid) {
           const collectionsData = await getMyRecipeCollection();
           setRecipeCollections(collectionsData);
@@ -160,37 +147,13 @@ export default function Home() {
       }
     }
     fetchData();
-    setDisplayedCount(RECIPES_PER_LOAD); // Reset display count when data changes
   }, [changed, uid]);
-
-  // Intersection Observer for infinite scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore) {
-          loadMoreRecipes();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
-
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
-    };
-  }, [hasMore, loadMoreRecipes]);
 
   if (loading) {
     return null;
   }
 
-  if (allRecipes.length === 0) {
+  if (recipes.length === 0) {
     return (
       <div className="no-recipe-error-container">
         <p>Sorry we haven't added any recipes yet!</p>
@@ -201,13 +164,10 @@ export default function Home() {
     );
   }
 
-  // Get only the recipes we want to display
-  const displayedRecipes = allRecipes.slice(0, displayedCount);
-
   return (
     <div className="recipe-grid-container">
       <div className="recipe-grid">
-        {displayedRecipes.map((recipe) => (
+        {recipes.map((recipe) => (
           <RecipeGridBox
             key={recipe._id}
             recipe={recipe}
@@ -238,20 +198,10 @@ export default function Home() {
             }}
             onDelete={handleDelete}
             onNavigate={navigate}
-            disabledButton={!uid}
+            disabledButton={!uid}  // Disable buttons if not logged in
           />
         ))}
       </div>
-      
-      {/* Infinite scroll trigger - only show when there are more recipes to load */}
-      {hasMore && <div ref={observerTarget} style={{ height: '20px', margin: '20px 0' }} />}
-      
-      {/* End message - only show after user has scrolled and loaded more recipes */}
-      {!hasMore && displayedCount > RECIPES_PER_LOAD && (
-        <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
-          <p>You've reached the end!</p>
-        </div>
-      )}
     </div>
   );
 }
