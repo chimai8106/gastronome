@@ -68,6 +68,12 @@ const recipeCollectionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+recipeCollectionSchema.index({
+  title: 'text',
+  description: 'text',
+  authorName: 'text'
+});
+
 const RecipeCollection = mongoose.model("RecipeCollection", recipeCollectionSchema);
 
 export default RecipeCollection;

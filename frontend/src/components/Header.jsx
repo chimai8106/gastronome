@@ -11,7 +11,7 @@ export default function Header() {
             <img className="logo" src={logo} alt="Logo"/>
             <div className="nav-search-wrap">
             <NavBar />
-            {/*<SearhBar />*/}
+            <SearhBar />
             </div>
         </header>
     );

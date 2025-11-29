@@ -572,3 +572,76 @@ export async function removeRecipeFromCollection(req, res) {
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 }
+export const searchRecipesByText = async (req, res) => {
+  try {
+    const { q, cuisine, maxDifficulty, minRating, limit = 20 } = req.query;
+    
+    // Build query
+    const query = {};
+    
+    // Text search
+    if (q) {
+      query.$text = { $search: q };
+    }
+    
+    // Additional filters
+    if (cuisine) {
+      query.cuisine = cuisine;
+    }
+    
+    if (maxDifficulty) {
+      query.difficulty = { $lte: parseInt(maxDifficulty) };
+    }
+    
+    if (minRating) {
+      query.rating = { $gte: parseFloat(minRating) };
+    }
+    
+    // Only show public recipes or user's own recipes
+    if (req.user) {
+      query.$or = [
+        { isPublic: true },
+        { uid: req.user.uid }
+      ];
+    } else {
+      query.isPublic = true;
+    }
+    
+    // Execute search with relevance scoring
+    const recipes = await Recipe.find(
+      query,
+      q ? { score: { $meta: "textScore" } } : {}
+    )
+    .sort(q ? { score: { $meta: "textScore" } } : { likes: -1 })
+    .limit(parseInt(limit));
+    
+    // Add presigned URLs
+    const recipesWithUrls = await addPresignedUrlsToRecipes(recipes.map(r => r.toObject()));
+    
+    // Add collection info if user is logged in
+    if (req.user) {
+      const myCollections = await RecipeCollection.find({ uid: req.user.uid });
+      
+      recipesWithUrls.forEach(recipe => {
+        recipe.myCollections = myCollections
+          .filter(col => col.recipes.some(r => r._id.toString() === recipe._id.toString()))
+          .map(col => ({
+            _id: col._id,
+            title: col.title
+          }));
+      });
+    } else {
+      recipesWithUrls.forEach(recipe => {
+        recipe.myCollections = [];
+      });
+    }
+    
+    res.status(200).json({
+      recipes: recipesWithUrls,
+      count: recipesWithUrls.length
+    });
+  } catch (error) {
+    console.error("Error in searchRecipesByText controller", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};

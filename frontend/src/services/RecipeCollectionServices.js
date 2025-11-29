@@ -88,3 +88,23 @@ function handleAuthError(err, onNavigate) {
     toast.error(err.message);
   }
 }
+
+/*
+ * Search collections
+ */
+
+export async function searchCollection(collectionData) {
+  try {    
+    const res = await authenticatedFetch("/collections/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(collectionData),
+    });
+     
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    toast.error('Error: ' + error.message);
+    throw error;
+  } 
+}

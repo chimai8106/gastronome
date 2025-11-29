@@ -158,3 +158,23 @@ export async function importRecipe(recipeUrl) {
     throw error;
   } 
 }
+
+/*
+ * Search recipes
+ */
+
+export async function searchRecipe(recipeData) {
+  try {    
+    const res = await authenticatedFetch("/recipes/search-text", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(recipeData),
+    });
+     
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    toast.error('Error: ' + error.message);
+    throw error;
+  } 
+}

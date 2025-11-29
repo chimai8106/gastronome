@@ -70,6 +70,13 @@ const recipeSchema = new mongoose.Schema({
     }
 },
 { timestamps : true});
+recipeSchema.index({
+  title: 'text',
+  ingredients: 'text',
+  cuisine: 'text',
+  instruction: 'text',
+  authorName: 'text'
+});
 const Recipe = mongoose.model("Recipe", recipeSchema)
 
 export default Recipe;

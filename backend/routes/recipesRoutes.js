@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer, {memoryStorage} from 'multer';
-import { searchRecipes, getAllRecipe, getRecipeById, createRecipe, updateRecipe, deleteRecipe, getAllMyRecipe, addRecipeToCollection, removeRecipeFromCollection } from '../controllers/recipeController.js';
+import { searchRecipes, getAllRecipe, getRecipeById, createRecipe, updateRecipe, deleteRecipe, getAllMyRecipe, addRecipeToCollection, removeRecipeFromCollection, searchRecipesByText } from '../controllers/recipeController.js';
 import { verifyFirebaseToken, optionalFirebaseToken } from '../middleware/auth.js';
 
 const router = Router();
@@ -19,6 +19,8 @@ router.post('/remove-from-collection', verifyFirebaseToken, removeRecipeFromColl
 router.post("/", verifyFirebaseToken, upload.single("image"), createRecipe); 
 router.put("/:id", verifyFirebaseToken, upload.single("image"), updateRecipe); 
 router.delete("/:id", verifyFirebaseToken, deleteRecipe);
+router.post('/search-text', verifyFirebaseToken, searchRecipesByText); 
+
 
 // Public routes 
 router.get("/", optionalFirebaseToken, getAllRecipe);

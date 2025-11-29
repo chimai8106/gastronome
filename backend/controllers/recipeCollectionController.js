@@ -165,3 +165,43 @@ export async function deleteRecipeCollection(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
+export const searchCollectionsByText = async (req, res) => {
+  try {
+    const { q, limit = 20 } = req.query;
+    
+    const query = {};
+    
+    if (q) {
+      query.$text = { $search: q };
+    }
+    
+    // Only show public collections or user's own collections
+    if (req.user) {
+      query.$or = [
+        { isPublic: true },
+        { uid: req.user.uid }
+      ];
+    } else {
+      query.isPublic = true;
+    }
+    
+    const collections = await RecipeCollection.find(
+      query,
+      q ? { score: { $meta: "textScore" } } : {}
+    )
+    .sort(q ? { score: { $meta: "textScore" } } : { createdAt: -1 })
+    .limit(parseInt(limit));
+    
+    // Add presigned URLs
+    const collectionsWithUrls = await addPresignedUrlsToCollections(collections);
+    
+    res.status(200).json({
+      collections: collectionsWithUrls,
+      count: collectionsWithUrls.length
+    });
+  } catch (error) {
+    console.error("Error in searchCollectionsByText controller", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
