@@ -1,34 +1,34 @@
-/* frontend/src/pages/SearchResults/SearchResults.css */
+/* Search Results Page - Specific Class Names to Avoid Clashes */
 
-.search-results-page {
+.search-results-main-page {
   min-height: 100vh;
   background-color: #F5EFE7;
   padding: 2rem 1rem;
 }
 
-.search-results-container {
+.search-results-main-container {
   max-width: 1200px;
   margin: 0 auto;
 }
 
 /* Search Header */
-.search-header {
+.search-results-page-header {
   margin-bottom: 2rem;
 }
 
-.search-header h1 {
+.search-results-page-header h1 {
   font-size: 2rem;
   color: #654321;
   margin-bottom: 1rem;
 }
 
-.search-bar-large {
+.search-results-bar-large {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
-.search-bar-large input {
+.search-results-bar-large input {
   flex: 1;
   padding: 0.75rem 1rem;
   font-size: 1rem;
@@ -39,13 +39,13 @@
   font-family: 'Fredoka', sans-serif;
 }
 
-.search-bar-large input:focus {
+.search-results-bar-large input:focus {
   outline: none;
   border-color: #D4A574;
   box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
 }
 
-.search-bar-large button {
+.search-results-bar-large button {
   padding: 0.75rem 1.5rem;
   background-color: #D4A574;
   color: white;
@@ -56,24 +56,24 @@
   transition: background-color 0.2s;
 }
 
-.search-bar-large button:hover {
+.search-results-bar-large button:hover {
   background-color: #C69463;
 }
 
-.results-summary {
+.search-results-summary-text {
   color: #8B7355;
   font-size: 0.95rem;
 }
 
 /* Tabs */
-.search-tabs {
+.search-results-page-tabs {
   display: flex;
   gap: 1rem;
   border-bottom: 2px solid #D4C4B0;
   margin-bottom: 1.5rem;
 }
 
-.search-tabs .tab {
+.search-results-page-tabs .search-results-tab {
   padding: 0.75rem 1.5rem;
   background: none;
   border: none;
@@ -86,21 +86,21 @@
   margin-bottom: -2px;
 }
 
-.search-tabs .tab:hover {
+.search-results-page-tabs .search-results-tab:hover {
   color: #654321;
 }
 
-.search-tabs .tab.active {
+.search-results-page-tabs .search-results-tab.active {
   color: #654321;
   border-bottom-color: #D4A574;
 }
 
 /* Filters */
-.filters-section {
+.search-results-filters-section {
   margin-bottom: 2rem;
 }
 
-.toggle-filters-btn {
+.search-results-toggle-filters-btn {
   padding: 0.5rem 1rem;
   background-color: #E8D5C4;
   color: #654321;
@@ -111,11 +111,11 @@
   transition: background-color 0.2s;
 }
 
-.toggle-filters-btn:hover {
+.search-results-toggle-filters-btn:hover {
   background-color: #DCC8B3;
 }
 
-.filters-container {
+.search-results-filters-container {
   margin-top: 1rem;
   padding: 1.5rem;
   background-color: white;
@@ -123,14 +123,14 @@
   border: 1px solid #D4C4B0;
 }
 
-.filter-grid {
+.search-results-filter-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
-.filter-item label {
+.search-results-filter-item label {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
@@ -138,7 +138,7 @@
   margin-bottom: 0.5rem;
 }
 
-.filter-item input {
+.search-results-filter-item input {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #D4C4B0;
@@ -147,12 +147,12 @@
   font-family: 'Fredoka', sans-serif;
 }
 
-.filter-item input:focus {
+.search-results-filter-item input:focus {
   outline: none;
   border-color: #D4A574;
 }
 
-.apply-filters-btn {
+.search-results-apply-filters-btn {
   padding: 0.5rem 1.5rem;
   background-color: #D4A574;
   color: white;
@@ -163,32 +163,32 @@
   transition: background-color 0.2s;
 }
 
-.apply-filters-btn:hover {
+.search-results-apply-filters-btn:hover {
   background-color: #C69463;
 }
 
 /* Loading */
-.loading-state {
+.search-results-loading-state {
   text-align: center;
   padding: 3rem;
   color: #8B7355;
 }
 
 /* Recipe Grid */
-.recipe-grid {
+.search-results-recipe-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
 }
 
 /* Collections List */
-.collections-list {
+.search-results-collections-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.collection-result-card {
+.search-results-collection-card {
   padding: 1.5rem;
   background-color: white;
   border-radius: 8px;
@@ -197,24 +197,24 @@
   transition: all 0.2s;
 }
 
-.collection-result-card:hover {
+.search-results-collection-card:hover {
   box-shadow: 0 4px 12px rgba(101, 67, 33, 0.15);
   border-color: #D4A574;
 }
 
-.collection-result-card h3 {
+.search-results-collection-card h3 {
   font-size: 1.25rem;
   color: #654321;
   margin-bottom: 0.5rem;
 }
 
-.collection-description {
+.search-results-collection-description {
   color: #8B7355;
   font-size: 0.9rem;
   margin-bottom: 0.75rem;
 }
 
-.collection-meta {
+.search-results-collection-meta {
   display: flex;
   gap: 1rem;
   font-size: 0.875rem;
@@ -222,7 +222,7 @@
 }
 
 /* No Results */
-.no-results {
+.search-results-no-results {
   text-align: center;
   padding: 3rem;
   color: #8B7355;
@@ -231,27 +231,27 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .search-results-page {
+  .search-results-main-page {
     padding: 1rem 0.5rem;
   }
 
-  .search-header h1 {
+  .search-results-page-header h1 {
     font-size: 1.5rem;
   }
 
-  .search-bar-large {
+  .search-results-bar-large {
     flex-direction: column;
   }
 
-  .search-tabs {
+  .search-results-page-tabs {
     overflow-x: auto;
   }
 
-  .filter-grid {
+  .search-results-filter-grid {
     grid-template-columns: 1fr;
   }
 
-  .recipe-grid {
+  .search-results-recipe-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -8,11 +8,13 @@ import { useCreate } from "../../contexts/CreateContext";
 import { 
   deleteRecipe, 
   addRecipeToCollection, 
-  removeRecipeFromCollection, searchRecipe 
+  removeRecipeFromCollection, 
+  searchRecipe 
 } from "../../services/RecipeServices";
 import { 
   getMyRecipeCollection, 
-  addRecipeCollection, searchCollection
+  addRecipeCollection, 
+  searchCollection
 } from "../../services/RecipeCollectionServices";
 import "./SearchResult.css";
 
@@ -25,7 +27,7 @@ export default function SearchResults() {
   const [recipeResults, setRecipeResults] = useState([]);
   const [collectionResults, setCollectionResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("recipes"); // "recipes" or "collections"
+  const [activeTab, setActiveTab] = useState("recipes");
   const [changed, setChanged] = useState(false);
   
   // Advanced filters
@@ -45,7 +47,6 @@ export default function SearchResults() {
   const { toggleCollectionDropdown, isDropdownOpen, closeCollectionDropdown } = useAddToCollection();
   const { openUpdateRecipePopup } = useCreate();
 
-  // Load user's collections if logged in
   useEffect(() => {
     if (uid) {
       loadCollections();
@@ -61,7 +62,6 @@ export default function SearchResults() {
     }
   };
 
-  // Perform search when query changes
   useEffect(() => {
     const query = searchParams.get("q");
     if (query) {
@@ -207,14 +207,14 @@ export default function SearchResults() {
   const totalResults = recipeResults.length + collectionResults.length;
 
   return (
-    <div className="search-results-page">
-      <div className="search-results-container">
+    <div className="search-results-main-page">
+      <div className="search-results-main-container">
         {/* Search Header */}
-        <div className="search-header">
+        <div className="search-results-page-header">
           <h1>Search Results</h1>
           
           {/* Search Bar */}
-          <div className="search-bar-large">
+          <div className="search-results-bar-large">
             <input
               type="text"
               placeholder="Search recipes and collections..."
@@ -227,22 +227,22 @@ export default function SearchResults() {
 
           {/* Results Summary */}
           {!loading && (
-            <p className="results-summary">
+            <p className="search-results-summary-text">
               Found {totalResults} result{totalResults !== 1 ? 's' : ''} for "{searchParams.get("q")}"
             </p>
           )}
         </div>
 
         {/* Tabs */}
-        <div className="search-tabs">
+        <div className="search-results-page-tabs">
           <button
-            className={`tab ${activeTab === "recipes" ? "active" : ""}`}
+            className={`search-results-tab ${activeTab === "recipes" ? "active" : ""}`}
             onClick={() => setActiveTab("recipes")}
           >
             Recipes ({recipeResults.length})
           </button>
           <button
-            className={`tab ${activeTab === "collections" ? "active" : ""}`}
+            className={`search-results-tab ${activeTab === "collections" ? "active" : ""}`}
             onClick={() => setActiveTab("collections")}
           >
             Collections ({collectionResults.length})
@@ -251,18 +251,18 @@ export default function SearchResults() {
 
         {/* Advanced Filters (only for recipes) */}
         {activeTab === "recipes" && (
-          <div className="filters-section">
+          <div className="search-results-filters-section">
             <button
-              className="toggle-filters-btn"
+              className="search-results-toggle-filters-btn"
               onClick={() => setShowFilters(!showFilters)}
             >
               {showFilters ? "Hide" : "Show"} Filters
             </button>
 
             {showFilters && (
-              <div className="filters-container">
-                <div className="filter-grid">
-                  <div className="filter-item">
+              <div className="search-results-filters-container">
+                <div className="search-results-filter-grid">
+                  <div className="search-results-filter-item">
                     <label>Cuisine</label>
                     <input
                       type="text"
@@ -272,7 +272,7 @@ export default function SearchResults() {
                     />
                   </div>
 
-                  <div className="filter-item">
+                  <div className="search-results-filter-item">
                     <label>Max Cook Time (min)</label>
                     <input
                       type="number"
@@ -282,7 +282,7 @@ export default function SearchResults() {
                     />
                   </div>
 
-                  <div className="filter-item">
+                  <div className="search-results-filter-item">
                     <label>Difficulty (1-5)</label>
                     <input
                       type="number"
@@ -294,7 +294,7 @@ export default function SearchResults() {
                     />
                   </div>
 
-                  <div className="filter-item">
+                  <div className="search-results-filter-item">
                     <label>Min Rating</label>
                     <input
                       type="number"
@@ -308,7 +308,7 @@ export default function SearchResults() {
                   </div>
                 </div>
 
-                <button className="apply-filters-btn" onClick={handleAdvancedSearch}>
+                <button className="search-results-apply-filters-btn" onClick={handleAdvancedSearch}>
                   Apply Filters
                 </button>
               </div>
@@ -318,7 +318,7 @@ export default function SearchResults() {
 
         {/* Loading State */}
         {loading && (
-          <div className="loading-state">
+          <div className="search-results-loading-state">
             <p>Searching...</p>
           </div>
         )}
@@ -328,7 +328,7 @@ export default function SearchResults() {
           <>
             {/* Recipe Results */}
             {activeTab === "recipes" && (
-              <div className="recipe-grid">
+              <div className="search-results-recipe-grid">
                 {recipeResults.length > 0 ? (
                   recipeResults.map((recipe) => (
                     <RecipeGridBox
@@ -366,26 +366,26 @@ export default function SearchResults() {
                     />
                   ))
                 ) : (
-                  <p className="no-results">No recipes found</p>
+                  <p className="search-results-no-results">No recipes found</p>
                 )}
               </div>
             )}
 
             {/* Collection Results */}
             {activeTab === "collections" && (
-              <div className="collections-list">
+              <div className="search-results-collections-list">
                 {collectionResults.length > 0 ? (
                   collectionResults.map((collection) => (
                     <div
                       key={collection._id}
-                      className="collection-result-card"
+                      className="search-results-collection-card"
                       onClick={() => navigate(`/collections/${collection._id}`)}
                     >
                       <h3>{collection.title}</h3>
                       {collection.description && (
-                        <p className="collection-description">{collection.description}</p>
+                        <p className="search-results-collection-description">{collection.description}</p>
                       )}
-                      <div className="collection-meta">
+                      <div className="search-results-collection-meta">
                         <span>{collection.recipes?.length || 0} recipes</span>
                         {collection.authorName && (
                           <span>By {collection.authorName}</span>
@@ -394,7 +394,7 @@ export default function SearchResults() {
                     </div>
                   ))
                 ) : (
-                  <p className="no-results">No collections found</p>
+                  <p className="search-results-no-results">No collections found</p>
                 )}
               </div>
             )}

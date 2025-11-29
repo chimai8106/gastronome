@@ -89,22 +89,26 @@ function handleAuthError(err, onNavigate) {
   }
 }
 
-/*
+/**
  * Search collections
  */
-
-export async function searchCollection(collectionData) {
+export async function searchCollection(searchParams) {
   try {    
-    const res = await authenticatedFetch("/collections/search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(collectionData),
+    // Build query string from searchParams
+    const queryParams = new URLSearchParams();
+    if (searchParams.query) queryParams.append('q', searchParams.query);
+    if (searchParams.limit) queryParams.append('limit', searchParams.limit);
+    
+    // Use GET request with query params instead of POST
+    const data = await authenticatedFetch(`/recipeRecipeCollections/search?${queryParams.toString()}`, {
+      method: "POST"
     });
-     
-    const data = await res.json();
-    return data;
+    
+    // authenticatedFetch already returns parsed JSON
+    return data.collections || [];
   } catch (error) {
-    toast.error('Error: ' + error.message);
-    throw error;
-  } 
+    console.error('Collection search error:', error);
+    toast.error('Failed to search collections: ' + error.message);
+    return [];
+  }
 }

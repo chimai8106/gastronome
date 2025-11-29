@@ -135,9 +135,10 @@ function handleAuthError(err, onNavigate) {
     toast.error(err.message);
   }
 }
-/*
-* Import recipe
-*/
+
+/**
+ * Import recipe
+ */
 export async function importRecipe(recipeUrl) {
   try {    
     const url = process.env.NODE_ENV !== "production" ? "http://localhost:5001/recipe-parser" : '/recipe-parser'
@@ -149,9 +150,7 @@ export async function importRecipe(recipeUrl) {
       body: JSON.stringify({ link: recipeUrl })
     });
     
-
     const data = await res.json();
-    
     return data;
   } catch (error) {
     toast.error('Error: ' + error.message);
@@ -159,22 +158,28 @@ export async function importRecipe(recipeUrl) {
   } 
 }
 
-/*
- * Search recipes
+/**
+ * Search recipes 
  */
-
-export async function searchRecipe(recipeData) {
+export async function searchRecipe(searchParams) {
   try {    
-    const res = await authenticatedFetch("/recipes/search-text", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(recipeData),
+    // Build query string from searchParams
+    const queryParams = new URLSearchParams();
+    if (searchParams.query) queryParams.append('q', searchParams.query);
+    if (searchParams.cuisine) queryParams.append('cuisine', searchParams.cuisine);
+    if (searchParams.maxCookTime) queryParams.append('maxDifficulty', searchParams.maxCookTime);
+    if (searchParams.minRating) queryParams.append('minRating', searchParams.minRating);
+    if (searchParams.limit) queryParams.append('limit', searchParams.limit);
+    
+    // Use POST request
+    const data = await authenticatedFetch(`/recipes/search-text?${queryParams.toString()}`, {
+      method: "POST"
     });
-     
-    const data = await res.json();
-    return data;
+    
+    return data.recipes || [];
   } catch (error) {
-    toast.error('Error: ' + error.message);
-    throw error;
+    console.error('Recipe search error:', error);
+    toast.error('Failed to search recipes: ' + error.message);
+    return [];
   } 
 }
