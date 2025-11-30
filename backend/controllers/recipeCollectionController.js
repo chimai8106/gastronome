@@ -2,6 +2,11 @@ import fetch from 'node-fetch';
 import RecipeCollection from '../models/RecipeCollection.js';
 import User from "../models/User.js";
 import { getImagePresignedUrl } from '../db/s3.mjs';
+import validationModule from '../utils/validation.js';
+import errorModule from '../utils/errors.js';
+
+const { validateRequired, validateObjectId } = validationModule;
+const { ValidationError, NotFoundError, AuthorizationError } = errorModule;
 
 // Helper: Add presigned URLs to recipes in a collection
 const addPresignedUrlsToCollection = async (collection) => {
@@ -32,7 +37,7 @@ const addPresignedUrlsToCollections = async (collections) => {
 };
 
 //create a new recipeCollection
-export const createRecipeCollection = async (req, res) => {
+export const createRecipeCollection = async (req, res, next) => {
   try {
     // Extract fields from FormData
     const { title, description, isPublic } = req.body;
@@ -45,17 +50,18 @@ export const createRecipeCollection = async (req, res) => {
       image: req.file ? req.file.path : null,
       authorName: req.user.displayName
     });
+    // Validate required fields
+    validateRequired(['title'], req.body);
 
     const newRecipeCollection = await recipeCollection.save();
     res.status(201).json(newRecipeCollection);
   } catch (error) {
-    console.error("Error in createRecipeCollection controller", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    next(error);
   }
 }
 
 //get all public recipeCollection
-export async function getAllRecipeCollection(_, res) {
+export async function getAllRecipeCollection(_, res, next) {
   try {
     const recipeCollections = await RecipeCollection.find({ isPublic: true }).sort({ likes: -1 });
     
@@ -64,13 +70,12 @@ export async function getAllRecipeCollection(_, res) {
     
     res.status(200).json(collectionsWithUrls);
   } catch (error) {
-    console.error("Error in getAllRecipeCollection controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    next(error);
   }
 }
 
 //get all my recipeCollection
-export async function getAllMyRecipeCollection(req, res) {
+export async function getAllMyRecipeCollection(req, res, next) {
   try {
     const recipeCollections = await RecipeCollection.find({ uid: req.user.uid }).sort({ likes: -1 });
     
@@ -79,13 +84,12 @@ export async function getAllMyRecipeCollection(req, res) {
     
     res.status(200).json(collectionsWithUrls);
   } catch (error) {
-    console.error("Error in getAllMyRecipeCollection controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    next(error);
   }
 }
 
 //get a recipeCollection by its ID
-export async function getRecipeCollectionById(req, res) {
+export async function getRecipeCollectionById(req, res, next) {
   try {
     const recipeCollection = await RecipeCollection.findById(req.params.id);
     if (!recipeCollection) return res.status(404).json({ message: "Recipe Collection not found!" });
@@ -100,13 +104,12 @@ export async function getRecipeCollectionById(req, res) {
     
     res.json(collectionWithUrls);
   } catch (error) {
-    console.error("Error in getRecipeCollectionById controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    next(error);
   }
 }
 
 //update my recipeCollection
-export async function updateRecipeCollection(req, res) {
+export async function updateRecipeCollection(req, res, next) {
   try {
     // First check if the collection belongs to the user
     const existingCollection = await RecipeCollection.findOne({
@@ -142,13 +145,12 @@ export async function updateRecipeCollection(req, res) {
 
     res.status(200).json(collectionWithUrls);
   } catch (error) {
-    console.error("Error in updateRecipeCollection controller", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    next(error);
   }
 }
 
 //delete my recipeCollection
-export async function deleteRecipeCollection(req, res) {
+export async function deleteRecipeCollection(req, res, next) {
   try {
     const deletedRecipeCollection = await RecipeCollection.findOneAndDelete({
       _id: req.params.id,
@@ -161,11 +163,10 @@ export async function deleteRecipeCollection(req, res) {
     
     res.status(200).json({ message: "Recipe Collection deleted successfully!" });
   } catch (error) {
-    console.error("Error in deleteRecipeCollection controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    next(error);
   }
 }
-export const searchCollectionsByText = async (req, res) => {
+export const searchCollectionsByText = async (req, res, next) => {
   try {
     const { q, limit = 20 } = req.query;
     
@@ -200,8 +201,7 @@ export const searchCollectionsByText = async (req, res) => {
       count: collectionsWithUrls.length
     });
   } catch (error) {
-    console.error("Error in searchCollectionsByText controller", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+   next(error);
   }
 };
 

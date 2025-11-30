@@ -60,7 +60,7 @@ export const ImportProvider = ({ children }) => {
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        setLoadingMessage(`Waking up service)`);
+        setLoadingMessage(`Waking up service`);
         
         const response = await fetch(pythonHealthUrl, {
           method: 'GET',

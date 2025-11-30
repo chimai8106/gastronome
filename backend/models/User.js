@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
   },
-  recipeRecipeCollections: [
+  recipeCollections: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "RecipeCollection",

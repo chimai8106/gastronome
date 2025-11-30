@@ -3,50 +3,75 @@ import Recipe from '../models/Recipe.js';
 import RecipeCollection from '../models/RecipeCollection.js';
 import { getImagePresignedUrl, uploadToS3, deleteImage, addPresignedUrlToRecipe, addPresignedUrlsToRecipes } from '../db/s3.mjs';
 
+import validationModule from '../utils/validation.js';
+import errorModule from '../utils/errors.js';
+
+const { validateRequired, validateObjectId, validateNumberRange } = validationModule;
+const { ValidationError, NotFoundError, AuthorizationError } = errorModule;
 //search recipe based on ingredients
-export const searchRecipes = async (req, res) => {
-  const { ingredients, number, ranking, ignorePantry, uid } = req.body;
-  if (uid === null) {
-    res.status(401).json({ message: "You need to log in to search recipe" });
+export const searchRecipes = async (req, res, next) => {
+  try {
+    const { ingredients, number, ranking, ignorePantry, uid } = req.body;
+    
+    // Validate required fields
+    validateRequired(['ingredients', 'uid'], req.body);
+    
+    // Validate number range
+    if (number) validateNumberRange(number, 'number', 1, 100);
+    if (ranking) validateNumberRange(ranking, 'ranking', 1, 2);
+    
+    if (uid === null) {
+      res.status(401).json({ message: "You need to log in to search recipe" });
+    }
+    const apiKey = process.env.SPOONACULAR_API_KEY;
+    
+    const basicResponse = await fetch(
+      `https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=${number}&ranking=${ranking}&ignorePantry=${ignorePantry}&apiKey=${apiKey}`
+    );
+    const basicData = await basicResponse.json();
+
+    const detailedData = await Promise.all(
+      basicData.map(async (recipe) => {
+        const detailResponse = await fetch(
+          `https://api.spoonacular.com/recipes/${recipe.id}/information?apiKey=${apiKey}`
+        );
+        return detailResponse.json();
+      })
+    );
+
+    const mergedRecipes = detailedData.map((detail) => {
+      const match = basicData.find((r) => r.id === detail.id);
+      return {
+        ...detail,
+        usedIngredients: match.usedIngredients,
+        missedIngredients: match.missedIngredients,
+        authorName: "Kitchen Remix",
+        uid: 1111
+      };
+    });
+
+    res.json(mergedRecipes);
+   } catch (error) {
+    next(error);
   }
-  const apiKey = process.env.SPOONACULAR_API_KEY;
-  
-  const basicResponse = await fetch(
-    `https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=${number}&ranking=${ranking}&ignorePantry=${ignorePantry}&apiKey=${apiKey}`
-  );
-  const basicData = await basicResponse.json();
-
-  const detailedData = await Promise.all(
-    basicData.map(async (recipe) => {
-      const detailResponse = await fetch(
-        `https://api.spoonacular.com/recipes/${recipe.id}/information?apiKey=${apiKey}`
-      );
-      return detailResponse.json();
-    })
-  );
-
-  const mergedRecipes = detailedData.map((detail) => {
-    const match = basicData.find((r) => r.id === detail.id);
-    return {
-      ...detail,
-      usedIngredients: match.usedIngredients,
-      missedIngredients: match.missedIngredients,
-      authorName: "Kitchen Remix",
-      uid: 1111
-    };
-  });
-
-  res.json(mergedRecipes);
 };
 
 //create a new recipe
-export const createRecipe = async (req, res) => {
+export const createRecipe = async (req, res, next) => {
   try {
     const {
       title, instruction, isPublic, numServings, sourceName,
       timePrepared, rating, cuisine, difficulty, nutrition,
       ingredients, comments, recipeCollectionID, recipeCollectionName, authorName, myComment
     } = req.body;
+    // Validate required fields
+    validateRequired(['title', 'instruction', 'ingredients'], req.body);
+    
+    // Validate number ranges
+    if (rating !== undefined) validateNumberRange(rating, 'rating', 0, 5);
+    if (difficulty !== undefined) validateNumberRange(difficulty, 'difficulty', 0, 5);
+    if (numServings !== undefined && numServings > 0) validateNumberRange(numServings, 'numServings', 1, 100);
+    if (timePrepared !== undefined && timePrepared > 0) validateNumberRange(timePrepared, 'timePrepared', 1, 1440);
     
     const file = req.file;
     let imageKey = null;
@@ -152,13 +177,12 @@ export const createRecipe = async (req, res) => {
 
     res.status(201).json(recipeWithUrl);
   } catch (error) {
-    console.error("Error in createRecipe controller", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    next(error);
   }
 }
 
 //get all public recipe
-export async function getAllRecipe(req, res) {
+export async function getAllRecipe(req, res, next) {
   try {
     const recipes = await Recipe.find({ isPublic: true }).sort({ likes: -1 });
     // Generate presigned URLs for all recipes before sending
@@ -184,13 +208,12 @@ export async function getAllRecipe(req, res) {
     
     res.status(200).json(recipesWithUrls);
   } catch (error) {
-    console.error("Error in getAllRecipe controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    next(error);
   }
 }
 
 //get all my recipe
-export async function getAllMyRecipe(req, res) {
+export async function getAllMyRecipe(req, res, next) {
   try {
     const recipes = await Recipe.find({ uid: req.user.uid }).sort({ likes: -1 });
     // Generate presigned URLs for all recipes before sending
@@ -210,13 +233,12 @@ export async function getAllMyRecipe(req, res) {
     
     res.status(200).json(recipesWithUrls);
   } catch (error) {
-    console.error("Error in getAllMyRecipe controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    next(error);
   }
 }
 
 //get a recipe by its ID
-export async function getRecipeById(req, res) {
+export async function getRecipeById(req, res, next) {
   try {
     const recipe = await Recipe.findById(req.params.id);
     if (!recipe) return res.status(404).json({ message: "Recipe not found!" });
@@ -245,13 +267,12 @@ export async function getRecipeById(req, res) {
     
     res.json(recipeWithUrl);
   } catch (error) {
-    console.error("Error in getRecipeById controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    next(error);
   }
 }
 
 //update my recipe
-export async function updateRecipe(req, res) {
+export async function updateRecipe(req, res, next) {
   try {
     const existingRecipe = await Recipe.findOne({
       _id: req.params.id,
@@ -442,13 +463,12 @@ export async function updateRecipe(req, res) {
 
     res.status(200).json(recipeWithUrl);
   } catch (error) {
-    console.error("Error in updateRecipe controller", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    next(error);
   }
 }
 
 //delete my recipe
-export async function deleteRecipe(req, res) {
+export async function deleteRecipe(req, res, next) {
   try {
     const recipe = await Recipe.findOne({
       _id: req.params.id,
@@ -479,13 +499,12 @@ export async function deleteRecipe(req, res) {
     
     res.status(200).json({ message: "Recipe deleted successfully!" });
   } catch (error) {
-    console.error("Error in deleteRecipe controller", error);
-    res.status(500).json({ message: "Internal server error" });
+   next(error);
   }
 }
 
 //Add any public recipe to my collection
-export async function addRecipeToCollection(req, res) {
+export async function addRecipeToCollection(req, res, next) {
   try {
 
     const { recipeId, collectionId } = req.body;
@@ -536,13 +555,12 @@ export async function addRecipeToCollection(req, res) {
       collection: updatedCollection
     });
   } catch (error) {
-    console.error("Error in addRecipeToCollection controller", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    next(error);
   }
 }
 
 //Remove recipe from MY collection
-export async function removeRecipeFromCollection(req, res) {
+export async function removeRecipeFromCollection(req, res, next) {
   try {
     const { recipeId, collectionId } = req.body;
     
@@ -568,11 +586,10 @@ export async function removeRecipeFromCollection(req, res) {
       collection: updatedCollection
     });
   } catch (error) {
-    console.error("Error in removeRecipeFromCollection controller", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    next(error);
   }
 }
-export const searchRecipesByText = async (req, res) => {
+export const searchRecipesByText = async (req, res, next) => {
   try {
     const { q, cuisine, maxDifficulty, minRating, limit = 20 } = req.query;
     
@@ -641,7 +658,6 @@ export const searchRecipesByText = async (req, res) => {
       count: recipesWithUrls.length
     });
   } catch (error) {
-    console.error("Error in searchRecipesByText controller", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
-  }
+    next(error);
+    }
 };

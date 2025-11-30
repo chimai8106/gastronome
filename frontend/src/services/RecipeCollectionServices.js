@@ -6,7 +6,7 @@ import { toast } from "react-hot-toast";
  */
 export async function addRecipeCollection(recipeRecipeCollectionData, onNavigate) {
   try {
-    const res = await authenticatedFetch("/recipeRecipeCollections", {
+    const res = await authenticatedFetch("/recipeCollections", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(recipeRecipeCollectionData),
@@ -22,7 +22,7 @@ export async function addRecipeCollection(recipeRecipeCollectionData, onNavigate
  */
 export async function getUserRecipeCollection() {
   try {
-    return await optionalAuthFetch("/recipeRecipeCollections");
+    return await optionalAuthFetch("/recipeCollections");
   } catch (err) {
     toast.error(err.message);
   }
@@ -33,7 +33,7 @@ export async function getUserRecipeCollection() {
  */
 export async function updateRecipeCollection(recipeRecipeCollectionId, recipeRecipeCollectionData, onNavigate) {
   try {
-    const res = await authenticatedFetch(`/recipeRecipeCollections/${recipeRecipeCollectionId}`, {
+    const res = await authenticatedFetch(`/recipeCollections/${recipeRecipeCollectionId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(recipeRecipeCollectionData),
@@ -49,7 +49,7 @@ export async function updateRecipeCollection(recipeRecipeCollectionId, recipeRec
  */
 export async function getRecipeCollectionById(recipeRecipeCollectionId, onNavigate) {
   try {
-    return await optionalAuthFetch(`/recipeRecipeCollections/${recipeRecipeCollectionId}`, { method: "GET" });
+    return await optionalAuthFetch(`/recipeCollections/${recipeRecipeCollectionId}`, { method: "GET" });
   } catch (err) {
     handleAuthError(err, onNavigate);
   }
@@ -60,7 +60,7 @@ export async function getRecipeCollectionById(recipeRecipeCollectionId, onNaviga
  */
 export async function deleteRecipeCollection(recipeRecipeCollectionId, onNavigate) {
   try {
-    return await authenticatedFetch(`/recipeRecipeCollections/${recipeRecipeCollectionId}`, { method: "DELETE" });
+    return await authenticatedFetch(`/recipeCollections/${recipeRecipeCollectionId}`, { method: "DELETE" });
   } catch (err) {
     handleAuthError(err, onNavigate);
   }
@@ -71,7 +71,7 @@ export async function deleteRecipeCollection(recipeRecipeCollectionId, onNavigat
  */
 export async function getMyRecipeCollection(onNavigate) {
   try {
-    return await authenticatedFetch("/recipeRecipeCollections/dashboard");
+    return await authenticatedFetch("/recipeCollections/dashboard");
   } catch (err) {
     handleAuthError(err, onNavigate);
   }
@@ -100,7 +100,7 @@ export async function searchCollection(searchParams) {
     if (searchParams.limit) queryParams.append('limit', searchParams.limit);
     
     // Use GET request with query params instead of POST
-    const data = await authenticatedFetch(`/recipeRecipeCollections/search?${queryParams.toString()}`, {
+    const data = await authenticatedFetch(`/recipeCollections/search?${queryParams.toString()}`, {
       method: "POST"
     });
     
