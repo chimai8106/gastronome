@@ -34,7 +34,6 @@ export default function SearchResults() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     cuisine: "",
-    maxCookTime: "",
     difficulty: "",
     minRating: ""
   });
@@ -272,16 +271,6 @@ export default function SearchResults() {
                       placeholder="e.g., Italian"
                       value={filters.cuisine}
                       onChange={(e) => setFilters({...filters, cuisine: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Max Cook Time (min)</label>
-                    <input
-                      type="number"
-                      placeholder="e.g., 30"
-                      value={filters.maxCookTime}
-                      onChange={(e) => setFilters({...filters, maxCookTime: e.target.value})}
                     />
                   </div>
 

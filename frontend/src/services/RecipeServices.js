@@ -167,7 +167,7 @@ export async function searchRecipe(searchParams) {
     const queryParams = new URLSearchParams();
     if (searchParams.query) queryParams.append('q', searchParams.query);
     if (searchParams.cuisine) queryParams.append('cuisine', searchParams.cuisine);
-    if (searchParams.maxCookTime) queryParams.append('maxDifficulty', searchParams.maxCookTime);
+    if (searchParams.maxDifficulty) queryParams.append('maxDifficulty', searchParams.maxDifficulty);
     if (searchParams.minRating) queryParams.append('minRating', searchParams.minRating);
     if (searchParams.limit) queryParams.append('limit', searchParams.limit);
     
