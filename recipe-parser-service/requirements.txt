@@ -1,9 +1,21 @@
+# Flask + scraping
 Flask==3.0.0
 Flask-CORS==4.0.0
-requests==2.31.0
+requests==2.32.3
 beautifulsoup4==4.12.3
 lxml==5.1.0
 gunicorn==21.2.0
 recipe-scrapers==15.9.0
-html5lib==1.1 
+html5lib==1.1
 soupsieve==2.5
+
+# Atomic agents stack
+instructor==1.13.0
+pydantic>=2.11.0,<3.0.0
+rich>=13.7.1,<14.0.0
+gitpython>=3.1.43,<4.0.0
+pyfiglet>=1.0.2,<2.0.0
+textual>=0.82.0,<1.0.0
+pyyaml>=6.0.2,<7.0.0
+atomic-agents>=1.0.0,<2.0.0
+google-api-python-client>=2.114.0

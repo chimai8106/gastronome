@@ -28,7 +28,23 @@
         "backend/constants.js": false,
         "backend/index.js": false,
         "frontend/dist": false,
-        "frontend/public": false
+        "frontend/public": false,
+        "atomic-agents/atomic-agents": true,
+        "atomic-agents/atomic-examples/basic-multimodal": true,
+        "atomic-agents/atomic-examples/basic-pdf-analysis": true,
+        "atomic-agents/atomic-examples/deep-research": true,
+        "atomic-agents/atomic-examples/fastapi-memory": true,
+        "atomic-agents/atomic-examples/hooks-example": true,
+        "atomic-agents/atomic-examples/mcp-agent": true,
+        "atomic-agents/atomic-examples/orchestration-agent": true,
+        "atomic-agents/atomic-examples/quickstart": true,
+        "atomic-agents/atomic-examples/rag-chatbot": true,
+        "atomic-agents/atomic-forge": true,
+        "atomic-agents/atomic-assembler": true,
+        "atomic-agents/.assets": true
     },
-    "explorerExclude.backup": {}
+    "explorerExclude.backup": {},
+    "python.analysis.extraPaths": [
+        "./recipe-parser-service/atomic-agents/atomic-examples/youtube-to-recipe"
+    ]
 }

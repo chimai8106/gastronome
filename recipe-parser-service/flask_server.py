@@ -1,7 +1,18 @@
 import os
+import sys
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from flask import Flask, request, jsonify
 from recipe_service import parse_recipe 
 from flask_cors import CORS
+from urllib.parse import urlparse
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(ROOT, "atomic-agents", "atomic-examples", "youtube-to-recipe"))
+import youtube_to_recipe.main as youtube_service
 
 app = Flask(__name__)
 
@@ -18,6 +29,19 @@ CORS(app, resources={
     }
 })
 
+
+def is_youtube_url(url):
+    domain = urlparse(url).netloc.lower()
+    youtube_domains = {
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com",
+        "youtu.be",
+        "www.youtu.be",
+        "youtube-nocookie.com",
+    }
+    return domain in youtube_domains
+
 @app.route('/recipe-parser', methods=['POST'])
 def index():
     try:
@@ -25,7 +49,10 @@ def index():
         url = data.get("link")        
         if not url:
             return jsonify({"error": "No URL provided"}), 400
-        result = parse_recipe(url)
+        if is_youtube_url(url):
+            result = youtube_service.parse_youtube_url(url)
+        else:
+            result = parse_recipe(url)
         return result
     except Exception as e:
         print(f"Error: {str(e)}", flush=True)
