@@ -10,6 +10,7 @@ from youtube_transcript_api import (
     TranscriptsDisabled,
     YouTubeTranscriptApi,
 )
+from youtube_transcript_api.proxies import WebshareProxyConfig
 from atomic_agents import BaseIOSchema, BaseTool, BaseToolConfig
 
 
@@ -102,7 +103,12 @@ class YouTubeTranscriptTool(BaseTool[YouTubeTranscriptToolInputSchema, YouTubeTr
         video_id = self.extract_video_id(params.video_url)
         try:
             # Create an instance of YouTubeTranscriptApi
-            api = YouTubeTranscriptApi()
+            api = YouTubeTranscriptApi(
+            proxy_config=WebshareProxyConfig(
+            proxy_username=os.getenv("WEBSHARE_USERNAME"),
+            proxy_password=os.getenv("WEBSHARE_PASSWORD"),
+            )
+            )
             if params.language:
                 transcripts = api.fetch(video_id, languages=[params.language])
             else:

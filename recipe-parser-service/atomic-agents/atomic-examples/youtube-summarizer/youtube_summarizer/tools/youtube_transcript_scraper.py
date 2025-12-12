@@ -10,6 +10,7 @@ from youtube_transcript_api import (
     TranscriptsDisabled,
     YouTubeTranscriptApi,
 )
+from youtube_transcript_api.proxies import WebshareProxyConfig
 from atomic_agents import BaseIOSchema, BaseTool, BaseToolConfig
 
 
@@ -103,11 +104,17 @@ class YouTubeTranscriptTool(BaseTool[YouTubeTranscriptToolInputSchema, YouTubeTr
             Exception: If fetching the transcript fails.
         """
         video_id = self.extract_video_id(params.video_url)
+        ytt_api = YouTubeTranscriptApi(
+            proxy_config=WebshareProxyConfig(
+            proxy_username=os.getenv("WEBSHARE_USERNAME"),
+            proxy_password=os.getenv("WEBSHARE_PASSWORD"),
+        )
+        )
         try:
             if params.language:
-                transcripts = YouTubeTranscriptApi.fetch(video_id, languages=[params.language])
+                transcripts = ytt_api.fetch(video_id, languages=[params.language])
             else:
-                transcripts = YouTubeTranscriptApi.fetch(video_id)
+                transcripts = ytt_api.fetch(video_id)
         except (NoTranscriptFound, TranscriptsDisabled) as e:
             raise Exception(f"Failed to fetch transcript for video '{video_id}': {str(e)}")
 
