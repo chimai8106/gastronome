@@ -52,42 +52,6 @@ export const ImportProvider = ({ children }) => {
     setLoadingMessage('');
   };
 
-  // Wake up the parser service
-  const wakeUpParserService = async () => {
-    // Use import.meta.env for Vite (works on server)
-    const pythonHealthUrl = import.meta.env.VITE_PYTHON_HEALTH || "http://127.0.0.1:5000/health"
-    const maxAttempts = 12; // ~2 minutes total
-    
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      try {
-        setLoadingMessage(`Waking up service`);
-        
-        const response = await fetch(pythonHealthUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0 Safari/537.36",
-          }
-        });
-        
-        // Check if response is OK (status 200-299)
-        if (response.ok) {
-          return true;
-        }
-        
-      } catch (error) {
-        console.log(`Attempt ${attempt + 1} failed:`, error.message);
-      }
-      
-      // Wait 10 seconds between attempts
-      if (attempt < maxAttempts - 1) {
-        await new Promise(resolve => setTimeout(resolve, 10000));
-      }
-    }
-    
-    return false;
-  };
-
   // Handle link import
   const handleImportLink = async (e) => {
     e.preventDefault();
@@ -101,15 +65,6 @@ export const ImportProvider = ({ children }) => {
     setError(null);
     
     try {
-      // First, wake up the parser service
-      const isAwake = await wakeUpParserService();
-      
-      if (!isAwake) {
-        setError('Parser service unavailable. Please try again in a moment.');
-        toast.error('Parser service unavailable');
-        setIsLoading(false);
-        return;
-      }
       
       // Service is awake, now import the recipe
       setLoadingMessage('Parsing recipe...');
