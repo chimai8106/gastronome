@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(ROOT, "atomic-agents", "atomic-examples", "youtube-to-recipe"))
 import youtube_to_recipe.main as youtube_service
+import tiktok_service as tiktok
 
 app = Flask(__name__)
 
@@ -42,6 +43,17 @@ def is_youtube_url(url):
     }
     return domain in youtube_domains
 
+def is_tiktok_url(url):
+    domain = urlparse(url).netloc.lower()
+    tiktok_domains = {
+        "tiktok.com",
+        "www.tiktok.com",
+        "m.tiktok.com",
+        "vm.tiktok.com", 
+        "vt.tiktok.com", 
+    }
+    return domain in tiktok_domains
+
 @app.route('/recipe-parser', methods=['POST'])
 def index():
     try:
@@ -52,7 +64,10 @@ def index():
         if is_youtube_url(url):
             result = youtube_service.parse_youtube_url(url)
         else:
-            result = parse_recipe(url)
+            if is_tiktok_url(url):
+                result = tiktok.parse_tiktok_recipe(url)
+            else:
+                result = parse_recipe(url)
         return result
     except Exception as e:
         print(f"Error: {str(e)}", flush=True)

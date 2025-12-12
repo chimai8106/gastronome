@@ -1,3 +1,5 @@
+"""Extract and format recipe from a Youtube (get Transcript from Youtube API and format with OpenAI)"""
+
 import os
 import json
 from dotenv import load_dotenv

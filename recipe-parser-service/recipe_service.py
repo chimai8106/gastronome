@@ -1,3 +1,4 @@
+"""Parse recipe from an article """
 import json
 import re
 from urllib.request import Request, urlopen
@@ -217,7 +218,7 @@ def parse_recipe(url):
         except UnicodeDecodeError:
             html = urlopen(request, timeout=10).read().decode("latin-1")
 
-        # 1️⃣ Try recipe_scrapers first
+        # Try recipe_scrapers first
         try:
             result = parse_recipe_simple(url, html)
             return json.dumps(result, ensure_ascii=False)
