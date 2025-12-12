@@ -56,6 +56,7 @@ export const ImportProvider = ({ children }) => {
   const wakeUpParserService = async () => {
     // Use import.meta.env for Vite (works on server)
     const pythonHealthUrl = import.meta.env.VITE_PYTHON_HEALTH || "http://127.0.0.1:5000/health"
+    console.log(pythonHealthUrl);
     const maxAttempts = 12; // ~2 minutes total
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
