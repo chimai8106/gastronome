@@ -184,9 +184,37 @@ export const createRecipe = async (req, res, next) => {
 //get all public recipe
 export async function getAllRecipe(req, res, next) {
   try {
-    const recipes = await Recipe.find({ isPublic: true }).sort({ likes: -1 });
+    //use aggregate to better filter out recipe with image first
+    const recipes = await Recipe.aggregate([
+      { $match: { isPublic: true } },
+      {
+          $addFields: {
+              hasImage: {
+                  $cond: [
+                      { $and: [
+                          { $ne: ["$imageKey", null] },
+                          { $ne: ["$imageKey", ""] }
+                      ]},
+                      1,  // Has image
+                      0   // No image
+                  ]
+              }
+          }
+      },
+      {
+          $sort: {
+              hasImage: -1,  // Images first
+              likes: -1      // Then by likes
+          }
+      },
+      {
+          $project: {
+              hasImage: 0  // Remove the temporary field from results
+          }
+      }
+  ]);
     // Generate presigned URLs for all recipes before sending
-    const recipesWithUrls = await addPresignedUrlsToRecipes(recipes.map(r => r.toObject()));
+    const recipesWithUrls = await addPresignedUrlsToRecipes(recipes);
     
     // If user is logged in, add which collections contain each recipe
     if (req.user) {
@@ -215,9 +243,43 @@ export async function getAllRecipe(req, res, next) {
 //get all my recipe
 export async function getAllMyRecipe(req, res, next) {
   try {
-    const recipes = await Recipe.find({ uid: req.user.uid }).sort({ likes: -1 });
+    const recipes = await Recipe.aggregate([
+      // Filter by user's uid
+      { $match: { uid: req.user.uid } },
+      
+      // Add helper field to check if image exists
+      {
+          $addFields: {
+              hasImage: {
+                  $cond: [
+                      { $and: [
+                          { $ne: ["$imageKey", null] },
+                          { $ne: ["$imageKey", ""] }
+                      ]},
+                      1,  // Has image
+                      0   // No image
+                  ]
+              }
+          }
+      },
+      
+      // Sort by image presence, then likes
+      {
+          $sort: {
+              hasImage: -1,  // Images first
+              likes: -1      // Then by likes
+          }
+      },
+      
+      // Remove temporary field
+      {
+          $project: {
+              hasImage: 0
+          }
+      }
+  ]);
     // Generate presigned URLs for all recipes before sending
-    const recipesWithUrls = await addPresignedUrlsToRecipes(recipes.map(r => r.toObject()));
+    const recipesWithUrls = await addPresignedUrlsToRecipes(recipes);
     
     // Add which of my collections contain each recipe
     const myCollections = await RecipeCollection.find({ uid: req.user.uid });

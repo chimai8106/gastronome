@@ -282,7 +282,7 @@ export const ImportProvider = ({ children }) => {
                 <div className="recipe-header-search">
                   <h3>{recipe.title}</h3>
                   <div className="recipe-meta">
-                    {recipe.timePrepared && (
+                    {recipe.timePrepared>0 && (
                       <span>⏱️ {recipe.timePrepared} min</span>
                     )}
                     {(recipe.numServings || recipe.servings) && (
