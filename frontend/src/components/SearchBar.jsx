@@ -9,28 +9,21 @@ export default function SearchBar() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Navigate to search results page with query
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSubmit(e);
-    }
-  };
-
   return (
-    <div className="search">
-      <input 
+    <form className="search" onSubmit={handleSubmit}>
+      <input
         type="text"
         aria-label="Search"
-        placeholder="Search"
+        placeholder="Search recipes..."
         name="searchText"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        onKeyPress={handleKeyPress}
       />
-    </div>
+      <button type="submit">Search</button>
+    </form>
   );
 }

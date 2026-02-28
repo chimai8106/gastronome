@@ -9,8 +9,6 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-
-
 }
 
 body > #root {
@@ -47,8 +45,20 @@ body {
 }
 
 h1 {
-  font-size: 3.2em;
+  font-size: 2.5em;
   line-height: 1.1;
+}
+
+/* Scoped h3 — avoid making ALL h3s huge on mobile */
+h3 {
+  color: black;
+  font-size: 1.5em;
+}
+
+@media (min-width: 768px) {
+  h3 {
+    font-size: 1.75em;
+  }
 }
 
 button {
@@ -74,16 +84,13 @@ p {
   color: black;
 }
 
-h3 {
-  color: black;
-  font-size: 2em
-}
-
 .error-text {
   color: red;
 }
 
-/* Dark overlay behind popup */
+/* ============================================
+   POPUP STYLES
+   ============================================ */
 .popup-overlay {
   background: rgba(0, 0, 0, 0.7) !important;
   display: flex !important;
@@ -97,32 +104,39 @@ h3 {
   z-index: 999 !important;
 }
 
-/* Clear, visible popup window */
 .pop-up {
   background-color: #ffffff !important;
   color: #333333 !important;
   padding: 32px !important;
   border-radius: 12px !important;
-  max-width: 2000px !important;
-  width: 100% !important;
+  max-width: 600px !important;
+  width: 90% !important;
   max-height: 85vh !important;
   overflow-y: auto !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
   position: relative !important;
   z-index: 1000 !important;
   border: none !important;
+  box-sizing: border-box !important;
 }
 
-/* Target the popup content wrapper */
+@media (max-width: 640px) {
+  .pop-up {
+    padding: 20px !important;
+    width: 95% !important;
+    max-height: 92vh !important;
+  }
+}
+
 .popup-content {
   background-color: #ffffff !important;
   border-radius: 12px !important;
   padding: 0 !important;
   border: none !important;
-  width: 50%;
+  width: 90%;
+  max-width: 600px;
 }
 
-/* Style form elements inside popup */
 .pop-up input,
 .pop-up textarea,
 .pop-up select {
@@ -149,42 +163,7 @@ h3 {
   font-weight: 500 !important;
   color: #333 !important;
 }
-/*Ingredients list */
-.ingredients-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
 
-.ingredients-list li {
-  padding: 18px 0;
-  margin: 0;
-  font-size: 16px;
-  line-height: 1.6;
-  color: #654321;
-  border-bottom: 1px solid #D4C4B0;
-  font-family: 'Fredoka', sans-serif;
-  background: transparent;
-}
-
-.ingredients-list li:last-child {
-  border-bottom: none;
-}
-/* Instruction */
-.instructions-text {
-  white-space: pre-line;
-  line-height: 2.2;
-  font-size: 17px;
-  color: #654321;
-  background: linear-gradient(135deg, #F5EFE7 0%, #FFFFFF 100%);
-  padding: 32px;
-  border-radius: 20px;
-  border: 3px solid #D4C4B0;
-  border-left: 6px solid #7A9B76;
-  font-family: 'Fredoka', sans-serif;
-  box-shadow: 0 2px 8px rgba(101, 67, 33, 0.08);
-}
-/* Make sure all text inside popup is visible */
 .pop-up * {
   color: #333333;
   border: #654321;
@@ -198,64 +177,114 @@ h3 {
   color: #333333 !important;
 }
 
-/* Recipe Grid Spacing - Add better column spacing */
+/* ============================================
+   RECIPE GRID
+   ============================================ */
 .recipe-grid-container {
   width: 100%;
   padding: 40px 32px;
   box-sizing: border-box;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-title {
+  font-size: 2rem;
+  color: #654321;
+  margin-bottom: 1.5rem;
+  align-self: flex-start;
 }
 
 .recipe-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 380px));
-  gap: 40px 32px; /* row-gap column-gap */
-  max-width: 100%;
-  justify-content: center;
   width: 100%;
-  grid-auto-rows: minmax(auto, auto);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
 }
 
 .no-recipe-error-container {
   display: flex;
-  justify-content: center; 
-  flex-direction: column; 
-  align-items: center;     
+  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  height: 100vh;          
+  min-height: 60vh;
+  gap: 1rem;
+  padding: 2rem;
 }
 
-
-
-/* Responsive adjustments for better spacing */
-@media (min-width: 768px) {
-  .recipe-grid {
-    gap: 48px 40px;
-  }
+/* ============================================
+   INGREDIENT / INSTRUCTION LISTS
+   ============================================ */
+.ingredients-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-@media (min-width: 1024px) {
-  .recipe-grid {
-    gap: 56px 48px;
-  }
+.ingredients-list li {
+  padding: 14px 0;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #654321;
+  border-bottom: 1px solid #D4C4B0;
+  font-family: 'Fredoka', sans-serif;
+  background: transparent;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  
-  a:hover {
-    color: #747bff;
-  }
-  
-  button {
-    background-color: #f9f9f9;
-  }
+.ingredients-list li:last-child {
+  border-bottom: none;
 }
-/* Primary Action Buttons (Create, Add, Save) */
+
+.instructions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: step-counter;
+}
+
+.instructions-list li {
+  padding: 16px 20px 16px 60px;
+  margin-bottom: 12px;
+  background: #F5EFE7;
+  border-radius: 12px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #654321;
+  border: 2px solid #D4C4B0;
+  border-left: 5px solid #7A9B76;
+  position: relative;
+  font-family: 'Fredoka', sans-serif;
+  counter-increment: step-counter;
+}
+
+.instructions-list li::before {
+  content: counter(step-counter);
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  background: #7A9B76;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.instructions-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================
+   BUTTON SYSTEM
+   ============================================ */
+
+/* Primary */
 .btn,
 .submit-button,
 .save-new-collection-btn,
@@ -275,62 +304,18 @@ h3 {
   border-color: transparent;
 }
 
-/* Update/Edit Buttons */
+/* Update/Edit */
 .update-btn {
   background-color: #8B7355;
   color: #FFFFFF;
   border: none;
 }
-
 .update-btn:hover {
   background-color: #6F5B42;
   border-color: transparent;
 }
 
-.instructions-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  counter-reset: step-counter;
-}
-
-.instructions-list li {
-  padding: 20px 24px 20px 70px;
-  margin-bottom: 16px;
-  background: #F5EFE7;
-  border-radius: 16px;
-  font-size: 16px;
-  line-height: 1.8;
-  color: #654321;
-  border: 2px solid #D4C4B0;
-  border-left: 5px solid #7A9B76;
-  position: relative;
-  font-family: 'Fredoka', sans-serif;
-  counter-increment: step-counter;
-}
-
-.instructions-list li::before {
-  content: counter(step-counter);
-  position: absolute;
-  left: 20px;
-  top: 20px;
-  background: #7A9B76;
-  color: white;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 16px;
-}
-
-.instructions-list li:last-child {
-  margin-bottom: 0;
-}
-
-/* Delete/Remove Buttons */
+/* Delete/Remove */
 .delete-recipe-btn,
 .remove-collection-btn,
 .remove-from-list-btn {
@@ -338,7 +323,6 @@ h3 {
   color: #FFFFFF;
   border: none;
 }
-
 .delete-recipe-btn:hover,
 .remove-collection-btn:hover,
 .remove-from-list-btn:hover {
@@ -346,21 +330,20 @@ h3 {
   border-color: transparent;
 }
 
-/* Cancel/Secondary Buttons */
+/* Cancel/Secondary */
 .cancel-new-collection-btn,
 .new-collection-cancel {
   background-color: #A69080;
   color: #FFFFFF;
   border: none;
 }
-
 .cancel-new-collection-btn:hover,
 .new-collection-cancel:hover {
   background-color: #8F7A6A;
   border-color: transparent;
 }
 
-/* Toggle/Info Buttons */
+/* Toggle/Info */
 .toggle-collection-btn,
 .collection-button,
 .new-collection-header-btn {
@@ -368,7 +351,6 @@ h3 {
   color: white;
   border: 1px solid #D4C4B0;
 }
-
 .toggle-collection-btn:hover,
 .collection-button:hover,
 .new-collection-header-btn:hover {
@@ -376,23 +358,63 @@ h3 {
   border-color: #C6B39F;
 }
 
-/* View/Details Buttons */
+/* View/Details */
 .view-details-btn {
   background-color: #7A9B76;
   color: #FFFFFF;
   border: none;
 }
-
 .view-details-btn:hover {
   background-color: #688760;
   border-color: transparent;
 }
 
-/* Disabled State */
+/* Disabled */
 .add-selected-btn.disabled,
 button:disabled {
   background-color: #D4C4B0;
   color: #8B7355;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+/* ============================================
+   RESPONSIVE TYPOGRAPHY
+   ============================================ */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.8em;
+  }
+
+  h3 {
+    font-size: 1.2em;
+  }
+
+  .instructions-list li {
+    padding: 12px 12px 12px 50px;
+    font-size: 14px;
+  }
+
+  .instructions-list li::before {
+    left: 12px;
+    top: 12px;
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+  }
 }

@@ -12,7 +12,9 @@ export default function RecipeGridBox({
   selectedCollections,
   showCollectionDropdown,
   creatingNewCollection,
+  // Accept BOTH names for backward compatibility across pages
   newCollectionTitle,
+  newCollectionName,
   recipeCollections,
   onCollectionToggle,
   onRemoveCollection,
@@ -20,20 +22,25 @@ export default function RecipeGridBox({
   onAddToCollections,
   onCreateNewCollection,
   onSetCreatingNewCollection,
+  // Accept BOTH setter names for backward compatibility
   onSetNewCollectionTitle,
+  onSetNewCollectionName,
   onUpdate,
   onDelete,
-  onNavigate, 
-  disabledButton
+  onNavigate,
+  disabledButton,
 }) {
   const recipeId = recipe._id;
   const currentSelections = selectedCollections[recipeId] || { ids: [], titles: [] };
-  
+
+  // Normalize prop — accept either name
+  const collectionTitleValue = newCollectionTitle || newCollectionName || {};
+  const setCollectionTitle = onSetNewCollectionTitle || onSetNewCollectionName || (() => {});
+
   // Use myCollections from backend
   const savedCollections = recipe.myCollections || [];
-  const savedCollectionIds = savedCollections.map(c => c._id);
+  const savedCollectionIds = savedCollections.map((c) => c._id);
 
-  // Handle collection dropdown - redirect to login if not logged in
   const handleCollectionDropdownClick = () => {
     if (!currentUserId) {
       toast.error("Please log in to add recipes to collections");
@@ -48,24 +55,13 @@ export default function RecipeGridBox({
       {/* Recipe Image */}
       <div className="recipe-image-container-grid">
         {recipe.image != null ? (
-          <img 
-            src={recipe.image} 
-            alt={recipe.title}
-            className="recipe-image"
-          />
+          <img src={recipe.image} alt={recipe.title} className="recipe-image" />
         ) : (
           <div className="recipe-image-placeholder">
-            <svg 
-              width="64" 
-              height="64" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="1.5"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
             </svg>
             <span className="no-image-text">No image</span>
           </div>
@@ -76,190 +72,194 @@ export default function RecipeGridBox({
         <RecipeIntro recipe={recipe} />
       </div>
 
-      {/* Action Buttons Table */}
-      {!disabledButton && <table className="recipe-actions-grid-box">
-        <tbody className="tbody-grid-box">
-          <tr>
-            {/* Add to Collection Section */}
-            <td>
-              <div className="collection-dropdown-container">
-                {!creatingNewCollection[recipeId] ? (
-                  <>
-                    <button 
-                      type="button" 
-                      onClick={handleCollectionDropdownClick}
-                      className="toggle-collection-btn"
-                    >
-                      {showCollectionDropdown ? '− Hide Collections' : '+ Add to Collection'}
-                    </button>
+      {!disabledButton && (
+        <table className="recipe-actions-grid-box">
+          <tbody className="tbody-grid-box">
+            <tr>
+              {/* Add to Collection Section */}
+              <td style={{ position: "relative" }}>
+                <div className="collection-dropdown-container">
+                  {!creatingNewCollection[recipeId] ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleCollectionDropdownClick}
+                        className="toggle-collection-btn"
+                      >
+                        {showCollectionDropdown ? "− Hide Collections" : "+ Add to Collection"}
+                      </button>
 
-                    {/* Only show dropdown if user is logged in AND dropdown is open */}
-                    {showCollectionDropdown && (
-                      <div className="collection-dropdown">
-                        {/* Header with action buttons */}
-                        <div className="dropdown-header">
-                          <button
-                            onClick={() => onSetCreatingNewCollection(recipeId, true)}
-                            className="new-collection-header-btn"
-                          >
-                            + New Collection
-                          </button>
-                          <button
-                            onClick={() => onAddToCollections(recipeId)}
-                            disabled={currentSelections.ids.length === 0}
-                            className={`add-selected-btn ${currentSelections.ids.length === 0 ? 'disabled' : ''}`}
-                          >
-                            Add Selected {currentSelections.ids.length > 0 && `(${currentSelections.ids.length})`}
-                          </button>
-                        </div>
-
-                        {/* Temporary selections preview */}
-                        {currentSelections.titles.length > 0 && (
-                          <div className="temp-selections-preview">
-                            <p className="temp-selections-label">Ready to add:</p>
-                            <div className="temp-selections-tags">
-                              {currentSelections.titles.map((title, idx) => (
-                                <span key={idx} className="temp-selection-tag">
-                                  {title}
-                                </span>
-                              ))}
-                            </div>
+                      {showCollectionDropdown && (
+                        <div className="collection-dropdown">
+                          {/* Header */}
+                          <div className="dropdown-header">
+                            <button
+                              onClick={() => onSetCreatingNewCollection(recipeId, true)}
+                              className="new-collection-header-btn"
+                            >
+                              + New Collection
+                            </button>
+                            <button
+                              onClick={() => onAddToCollections(recipeId)}
+                              disabled={currentSelections.ids.length === 0}
+                              className={`add-selected-btn ${
+                                currentSelections.ids.length === 0 ? "disabled" : ""
+                              }`}
+                            >
+                              Add Selected{" "}
+                              {currentSelections.ids.length > 0 &&
+                                `(${currentSelections.ids.length})`}
+                            </button>
                           </div>
-                        )}
 
-                        {/* Saved Collections Display */}
-                        {savedCollections.length > 0 && (
-                          <div className="saved-collections-in-dropdown">
-                            <p className="saved-collections-label">Your Collections:</p>
-                            <div className="saved-collections-tags">
-                              {savedCollections.map((collection) => (
-                                <span key={collection._id} className="saved-collection-tag">
-                                  <span 
-                                    onClick={() => onNavigate(`/collection/${collection._id}`)}
-                                    className="collection-tag-name"
-                                  >
-                                    {collection.title}
+                          {/* Temp selections preview */}
+                          {currentSelections.titles.length > 0 && (
+                            <div className="temp-selections-preview">
+                              <p className="temp-selections-label">Ready to add:</p>
+                              <div className="temp-selections-tags">
+                                {currentSelections.titles.map((title, idx) => (
+                                  <span key={idx} className="temp-selection-tag">
+                                    {title}
                                   </span>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onRemoveCollection(recipeId, collection._id);
-                                    }}
-                                    className="remove-collection-btn"
-                                    title="Remove from collection"
-                                  >
-                                    ×
-                                  </button>
-                                </span>
-                              ))}
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
-                        {/* Scrollable collection list */}
-                        <div className="collection-list">
-                          {recipeCollections.length === 0 ? (
-                            <div className="empty-collections">
-                              No collections yet. Create one now!
-                            </div>
-                          ) : (
-                            recipeCollections.map((c) => {
-                              const isAlreadySaved = savedCollectionIds.includes(c._id);
-                              const isSelected = currentSelections.ids.includes(c._id);
-                              
-                              return (
-                                <div 
-                                  key={c._id}
-                                  className={`collection-item ${isAlreadySaved ? 'already-saved' : ''} ${isSelected ? 'selected' : ''}`}
-                                >
-                                  <div 
-                                    onClick={() => !isAlreadySaved && onCollectionToggle(recipeId, c._id, c.title)}
-                                    className="collection-item-main"
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={isSelected}
-                                      disabled={isAlreadySaved}
-                                      onChange={() => {}}
-                                      className="collection-checkbox"
-                                    />
-                                    <span className="collection-name">{c.title}</span>
-                                    {isAlreadySaved && (
-                                      <span className="already-saved-badge">
-                                        ✓ Added
-                                      </span>
-                                    )}
-                                  </div>
-                                  {isAlreadySaved && (
+                          {/* Saved Collections */}
+                          {savedCollections.length > 0 && (
+                            <div className="saved-collections-in-dropdown">
+                              <p className="saved-collections-label">Your Collections:</p>
+                              <div className="saved-collections-tags">
+                                {savedCollections.map((collection) => (
+                                  <span key={collection._id} className="saved-collection-tag">
+                                    <span
+                                      onClick={() =>
+                                        onNavigate(`/collections/${collection._id}`)
+                                      }
+                                      className="collection-tag-name"
+                                    >
+                                      {collection.title}
+                                    </span>
                                     <button
-                                      onClick={() => onRemoveCollection(recipeId, c._id)}
-                                      className="remove-from-list-btn"
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRemoveCollection(recipeId, collection._id);
+                                      }}
+                                      className="remove-collection-btn"
                                       title="Remove from collection"
                                     >
-                                      Remove
+                                      ×
                                     </button>
-                                  )}
-                                </div>
-                              );
-                            })
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
                           )}
+
+                          {/* Scrollable collection list */}
+                          <div className="collection-list">
+                            {recipeCollections.length === 0 ? (
+                              <div className="empty-collections">
+                                No collections yet. Create one now!
+                              </div>
+                            ) : (
+                              recipeCollections.map((c) => {
+                                const isAlreadySaved = savedCollectionIds.includes(c._id);
+                                const isSelected = currentSelections.ids.includes(c._id);
+                                return (
+                                  <div
+                                    key={c._id}
+                                    className={`collection-item ${
+                                      isAlreadySaved ? "already-saved" : ""
+                                    } ${isSelected ? "selected" : ""}`}
+                                  >
+                                    <div
+                                      onClick={() =>
+                                        !isAlreadySaved &&
+                                        onCollectionToggle(recipeId, c._id, c.title)
+                                      }
+                                      className="collection-item-main"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        disabled={isAlreadySaved}
+                                        onChange={() => {}}
+                                        className="collection-checkbox"
+                                      />
+                                      <span className="collection-name">{c.title}</span>
+                                      {isAlreadySaved && (
+                                        <span className="already-saved-badge">✓ Added</span>
+                                      )}
+                                    </div>
+                                    {isAlreadySaved && (
+                                      <button
+                                        onClick={() => onRemoveCollection(recipeId, c._id)}
+                                        className="remove-from-list-btn"
+                                        title="Remove from collection"
+                                      >
+                                        Remove
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
                         </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="new-collection-form">
+                      <input
+                        type="text"
+                        placeholder="New collection name"
+                        value={collectionTitleValue[recipeId] || ""}
+                        onChange={(e) => setCollectionTitle(recipeId, e.target.value)}
+                        className="new-collection-input"
+                      />
+                      <div className="new-collection-actions">
+                        <button
+                          onClick={() => onCreateNewCollection(recipeId)}
+                          className="save-new-collection-btn"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => {
+                            onSetCreatingNewCollection(recipeId, false);
+                            setCollectionTitle(recipeId, "");
+                          }}
+                          className="cancel-new-collection-btn"
+                        >
+                          Cancel
+                        </button>
                       </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="new-collection-form">
-                    <input
-                      type="text"
-                      placeholder="New collection name"
-                      value={newCollectionTitle[recipeId] || ""}
-                      onChange={(e) => onSetNewCollectionTitle(recipeId, e.target.value)}
-                      className="new-collection-input"
-                    />
-                    <div className="new-collection-actions">
-                      <button
-                        onClick={() => onCreateNewCollection(recipeId)}
-                        className="save-new-collection-btn"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => {
-                          onSetCreatingNewCollection(recipeId, false);
-                          onSetNewCollectionTitle(recipeId, "");
-                        }}
-                        className="cancel-new-collection-btn"
-                      >
-                        Cancel
-                      </button>
                     </div>
-                  </div>
-                )}
-              </div>
-            </td>
-          </tr>
+                  )}
+                </div>
+              </td>
+            </tr>
 
             {/* Owner Actions */}
             {isOwner(recipe) ? (
               <>
-              <tr>
-                <td>
-                  <button onClick={onUpdate} className="update-recipe-btn">
-                    Update
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <button
-                    onClick={() => onDelete(recipe._id)}
-                    className="delete-recipe-btn"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
+                <tr>
+                  <td>
+                    <button onClick={onUpdate} className="update-recipe-btn">
+                      Update
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <button onClick={() => onDelete(recipe._id)} className="delete-recipe-btn">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
               </>
             ) : (
               <tr>
@@ -273,9 +273,9 @@ export default function RecipeGridBox({
                 </td>
               </tr>
             )}
-        </tbody>
-      </table>
-      }
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

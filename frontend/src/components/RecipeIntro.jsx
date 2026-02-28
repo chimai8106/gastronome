@@ -1,19 +1,40 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+function SourceLink({ source }) {
+  if (!source) return null;
+  const isUrl = source.startsWith("http://") || source.startsWith("https://");
+  if (isUrl) {
+    return (
+      <a
+        href={source}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          color: "#D4A574",
+          textDecoration: "underline",
+          wordBreak: "break-word",
+          overflowWrap: "break-word",
+        }}
+      >
+        {source}
+      </a>
+    );
+  }
+  return <span style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>{source}</span>;
+}
+
 export default function RecipeIntro({ recipe }) {
   const navigate = useNavigate();
 
   if (!recipe) return null;
 
   const savedCollections = recipe.myCollections || [];
-  const savedCollectionIds = savedCollections.map(c => c._id);
-  const savedCollectionNames = savedCollections.map(c => c.title);
-  
+
   return (
     <div className="recipe-intro">
       <h3
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: "pointer" }}
         onClick={() => navigate(`/recipe/${recipe._id}`)}
       >
         {recipe.title}
@@ -25,9 +46,9 @@ export default function RecipeIntro({ recipe }) {
               <strong>Author:</strong> {recipe.authorName}
             </p>
           )}
-          {recipe.sourceName&& (
-            <p style ={{wordBreak: 'break-word', overflowWrap: 'break-word'}}>
-              <strong>Source:</strong> {recipe.sourceName}
+          {recipe.sourceName && (
+            <p>
+              <strong>Source:</strong> <SourceLink source={recipe.sourceName} />
             </p>
           )}
           {(recipe.timePrepared > 0 || recipe.readyInMinutes > 0) && (
@@ -76,13 +97,6 @@ export default function RecipeIntro({ recipe }) {
               <strong>Rating:</strong> {recipe.rating}/5
             </p>
           )}
-          {/*
-          {recipe.likes != null && (
-            <p>
-              <strong>Likes:</strong> {recipe.likes}
-            </p>
-          )}
-            */}
           {savedCollections.length > 0 && (
             <div className="mt-2">
               <strong className="block mb-2">Collections:</strong>
@@ -92,18 +106,18 @@ export default function RecipeIntro({ recipe }) {
                     key={collection._id}
                     to={`/collections/${collection._id}`}
                     style={{
-                      display: 'inline-block',
-                      backgroundColor: '#fef08a',
-                      color: '#854d0e',
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      textDecoration: 'none',
-                      transition: 'background-color 0.2s'
+                      display: "inline-block",
+                      backgroundColor: "#fef08a",
+                      color: "#854d0e",
+                      padding: "0.25rem 0.75rem",
+                      borderRadius: "9999px",
+                      fontSize: "0.875rem",
+                      fontWeight: "500",
+                      textDecoration: "none",
+                      transition: "background-color 0.2s",
                     }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#fde047'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#fef08a'}
+                    onMouseEnter={(e) => (e.target.style.backgroundColor = "#fde047")}
+                    onMouseLeave={(e) => (e.target.style.backgroundColor = "#fef08a")}
                   >
                     {collection.title}
                   </Link>
@@ -113,7 +127,10 @@ export default function RecipeIntro({ recipe }) {
           )}
           {recipe.myComment && (
             <p>
-              <strong style={{color: "#8B5E3C", textDecoration: "underline"}}>My Comment:</strong> {recipe.myComment}
+              <strong style={{ color: "#8B5E3C", textDecoration: "underline" }}>
+                My Comment:
+              </strong>{" "}
+              {recipe.myComment}
             </p>
           )}
         </div>

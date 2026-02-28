@@ -12,5 +12,6 @@ export default function Logout() {
   },[]);
 
   if (!userLoggedIn) return <Navigate to="/" />;
+  return null;
 
 }

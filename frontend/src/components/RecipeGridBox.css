@@ -14,30 +14,12 @@
   box-shadow: 0 4px 12px rgba(101, 67, 33, 0.15);
 }
 
-/* Recipe Actions Table Styling */
-.recipe-actions-grid-box { 
-  margin-right: auto; /* Push table to the right */
-  border-collapse: separate; /* Change from collapse to separate for spacing */
-  border-spacing: 0 5px; /* Add horizontal spacing between cells */
-  width: 100%;
-  display: block;
-  table-layout: fixed;
-  position: relative;
-}
-
-.recipe-actions-grid-box tr {
-  width: 100%;
-}
-
-.recipe-actions-grid-box td {
-  width: 100%;
-  padding: 0;
-}
-
-/* Recipe Image */
+/* ============================================
+   RECIPE IMAGE — square crop
+   ============================================ */
 .recipe-image-container-grid {
   width: 100%;
-  height: 300px;
+  aspect-ratio: 1 / 1;
   background-color: #F5EFE7;
   border-radius: 6px;
   margin-bottom: 12px;
@@ -65,42 +47,177 @@
   margin-top: 8px;
 }
 
-/* Recipe Content */
+/* ============================================
+   RECIPE CONTENT
+   ============================================ */
 .recipe-content {
   flex-grow: 1;
   margin-bottom: 12px;
 }
 
-.recipe-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  justify-content: center;
-  align-items: center;
-}
-table {
-  border-collapse: collapse;
+/* ============================================
+   ALL BUTTONS INSIDE THE GRID BOX — fully scoped
+   ============================================ */
+.recipe-grid-box button {
+  display: block;
   width: 100%;
+  padding: 10px 16px !important;
+  border: none !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  font-family: 'Fredoka', sans-serif !important;
+  transition: background-color 0.2s, transform 0.1s !important;
+  box-sizing: border-box !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+  white-space: nowrap;
 }
 
-.tbody-grid-box tr {
+/* Individual button colors — scoped to .recipe-grid-box */
+.recipe-grid-box .toggle-collection-btn {
+  background-color: #D4B89A !important;
+  color: white !important;
+  border: none !important;
+}
+.recipe-grid-box .toggle-collection-btn:hover {
+  background-color: #C6A27F !important;
+}
+
+.recipe-grid-box .update-recipe-btn {
+  background-color: #8B7355 !important;
+  color: white !important;
+  border: none !important;
+}
+.recipe-grid-box .update-recipe-btn:hover {
+  background-color: #6F5B42 !important;
+}
+
+.recipe-grid-box .delete-recipe-btn {
+  background-color: #C85A54 !important;
+  color: white !important;
+  border: none !important;
+}
+.recipe-grid-box .delete-recipe-btn:hover {
+  background-color: #B04943 !important;
+}
+
+.recipe-grid-box .view-details-btn {
+  background-color: #7A9B76 !important;
+  color: white !important;
+  border: none !important;
+}
+.recipe-grid-box .view-details-btn:hover {
+  background-color: #688760 !important;
+}
+
+.recipe-grid-box .new-collection-header-btn {
+  background-color: #E8D5C4 !important;
+  color: #654321 !important;
+  border: 1px solid #D4C4B0 !important;
+}
+.recipe-grid-box .new-collection-header-btn:hover {
+  background-color: #DCC8B3 !important;
+}
+
+.recipe-grid-box .add-selected-btn {
+  background-color: #7A9B76 !important;
+  color: white !important;
+  border: none !important;
+}
+.recipe-grid-box .add-selected-btn:hover:not(.disabled) {
+  background-color: #688760 !important;
+}
+.recipe-grid-box .add-selected-btn.disabled {
+  background-color: #D4C4B0 !important;
+  color: #8B7355 !important;
+  cursor: not-allowed !important;
+}
+
+.recipe-grid-box .save-new-collection-btn {
+  background-color: #D4A574 !important;
+  color: white !important;
+  border: none !important;
+}
+.recipe-grid-box .save-new-collection-btn:hover {
+  background-color: #C69463 !important;
+}
+
+.recipe-grid-box .cancel-new-collection-btn {
+  background-color: #A69080 !important;
+  color: white !important;
+  border: none !important;
+}
+.recipe-grid-box .cancel-new-collection-btn:hover {
+  background-color: #8F7A6A !important;
+}
+
+.recipe-grid-box .remove-from-list-btn {
+  background-color: #C85A54 !important;
+  color: white !important;
+  border: none !important;
+  width: auto !important;
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  border-radius: 4px !important;
+  flex-shrink: 0;
+}
+.recipe-grid-box .remove-from-list-btn:hover {
+  background-color: #B04943 !important;
+}
+
+.recipe-grid-box .remove-collection-btn {
+  background: rgba(101, 67, 33, 0.15) !important;
+  border: none !important;
+  color: #654321 !important;
+  width: 14px !important;
+  height: 14px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  font-size: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0;
+  cursor: pointer !important;
+}
+.recipe-grid-box .remove-collection-btn:hover {
+  background: rgba(101, 67, 33, 0.3) !important;
+}
+
+/* ============================================
+   ACTION TABLE
+   ============================================ */
+.recipe-actions-grid-box {
+  border-collapse: separate;
+  border-spacing: 0 6px;
+  width: 100%;
   display: table;
+  table-layout: fixed;
+}
+
+.recipe-actions-grid-box tr {
+  display: table-row;
   width: 100%;
-  table-layout: fixed; /* ensures cells share equal width */
-}
-.view-details-btn {
-    width: 100%;
 }
 
-td {
-  text-align: center;
+.recipe-actions-grid-box td {
+  display: table-cell;
+  width: 100%;
+  padding: 0;
+  position: relative;
 }
 
-td button {
-  padding: 10px 16px;
+/* ============================================
+   COLLECTION DROPDOWN
+   ============================================ */
+.recipe-grid-box .collection-dropdown-container {
+  position: relative;
+  width: 100%;
 }
 
-.collection-dropdown {
+.recipe-grid-box .collection-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -108,27 +225,17 @@ td button {
   width: 100%;
   margin-top: 4px;
   border: 1px solid #D4C4B0;
-  border-radius: 4px;
+  border-radius: 6px;
   background: white;
-  z-index: 10;
-  box-shadow: 0 4px 6px rgba(101, 67, 33, 0.1);
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(101, 67, 33, 0.15);
   display: flex;
   flex-direction: column;
-  max-height: 320px;
+  max-height: 340px;
+  overflow: hidden;
 }
 
-/* Prevent overflow on left side */
-@media (max-width: 768px) {
-  .collection-dropdown {
-    left: 0;
-    right: 0;
-    transform: none;
-    width: auto;
-  }
-}
-
-/* Dropdown Header */
-.dropdown-header {
+.recipe-grid-box .dropdown-header {
   padding: 10px;
   display: flex;
   gap: 8px;
@@ -137,70 +244,37 @@ td button {
   position: sticky;
   top: 0;
   z-index: 1;
+  flex-shrink: 0;
 }
 
-.new-collection-header-btn {
+.recipe-grid-box .dropdown-header button {
   flex: 1;
-  padding: 8px 12px;
-  background-color: #E8D5C4;
-  color: #654321;
-  border: 1px solid #D4C4B0;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  width: auto !important;
+  padding: 8px 10px !important;
+  font-size: 12px !important;
 }
 
-.new-collection-header-btn:hover {
-  background-color: #DCC8B3;
-}
-
-.add-selected-btn {
-  flex: 1;
-  padding: 8px 12px;
-  background-color: #7A9B76;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  transition: background-color 0.2s;
-}
-
-.add-selected-btn:hover:not(.disabled) {
-  background-color: #688760;
-}
-
-.add-selected-btn.disabled {
-  background-color: #D4C4B0;
-  color: #8B7355;
-  cursor: not-allowed;
-}
-
-/* Temp Selections Preview */
-.temp-selections-preview {
-  padding: 8px;
+.recipe-grid-box .temp-selections-preview {
+  padding: 8px 10px;
   background-color: #FFF8F0;
   border-bottom: 1px solid #E8D5C4;
+  flex-shrink: 0;
 }
 
-.temp-selections-label {
+.recipe-grid-box .temp-selections-label {
   font-size: 11px;
   color: #654321;
-  margin-bottom: 4px;
-  margin-top: 0;
+  margin: 0 0 4px 0;
   font-weight: 600;
 }
 
-.temp-selections-tags {
+.recipe-grid-box .temp-selections-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.temp-selection-tag {
+.recipe-grid-box .temp-selection-tag {
   background: linear-gradient(135deg, #D4A574 0%, #A67C52 100%);
   color: white;
   padding: 3px 8px;
@@ -209,92 +283,62 @@ td button {
   font-weight: 500;
 }
 
-/* Saved Collections inside dropdown */
-.saved-collections-in-dropdown {
-  padding: 10px;
+.recipe-grid-box .saved-collections-in-dropdown {
+  padding: 8px 10px;
   background-color: #F5EFE7;
   border-bottom: 1px solid #D4C4B0;
+  flex-shrink: 0;
 }
 
-.saved-collections-label {
+.recipe-grid-box .saved-collections-label {
   font-size: 11px;
   color: #654321;
-  margin-bottom: 6px;
-  margin-top: 0;
+  margin: 0 0 6px 0;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.saved-collections-tags {
+.recipe-grid-box .saved-collections-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.saved-collection-tag {
+.recipe-grid-box .saved-collection-tag {
   background: #E8D5C4;
   color: #654321;
-  padding: 6px 10px;
-  border-radius: 16px;
-  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   border: 1px solid #D4C4B0;
   font-weight: 500;
 }
 
-.collection-tag-name {
+.recipe-grid-box .collection-tag-name {
   cursor: pointer;
   transition: all 0.2s;
-  text-decoration: none;
 }
-
-.collection-tag-name:hover {
-  color: #8B7355;
+.recipe-grid-box .collection-tag-name:hover {
   text-decoration: underline;
 }
 
-.remove-collection-btn {
-  background: rgba(101, 67, 33, 0.15);
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 10px;
-  color: #654321;
-  padding: 0;
-  margin-left: 2px;
-  line-height: 1;
-  transition: all 0.2s;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.remove-collection-btn:hover {
-  background: rgba(101, 67, 33, 0.3);
-  transform: scale(1.15);
-}
-
-/* Collection List */
-.collection-list {
+.recipe-grid-box .collection-list {
   overflow-y: auto;
-  max-height: 200px;
+  flex: 1;
 }
 
-.empty-collections {
-  padding: 20px;
+.recipe-grid-box .empty-collections {
+  padding: 16px;
   text-align: center;
   color: #8B7355;
   font-size: 13px;
 }
 
-.collection-item {
+.recipe-grid-box .collection-item {
   border-bottom: 1px solid #E8D5C4;
   display: flex;
   align-items: center;
@@ -303,75 +347,58 @@ td button {
   transition: background-color 0.2s;
 }
 
-.collection-item-main {
+.recipe-grid-box .collection-item-main {
   flex: 1;
   display: flex;
   align-items: center;
   padding: 10px;
   cursor: pointer;
+  gap: 8px;
 }
 
-.collection-item:hover:not(.already-saved) .collection-item-main {
+.recipe-grid-box .collection-item:hover:not(.already-saved) .collection-item-main {
   background-color: #FFF8F0;
 }
 
-.collection-item.selected {
+.recipe-grid-box .collection-item.selected {
   background-color: #FFF8F0;
   border-left: 3px solid #D4A574;
 }
 
-.collection-item.already-saved {
+.recipe-grid-box .collection-item.already-saved {
   background-color: #F5EFE7;
+  opacity: 0.8;
 }
 
-.collection-item.already-saved .collection-item-main {
+.recipe-grid-box .collection-item.already-saved .collection-item-main {
   cursor: not-allowed;
-  opacity: 0.7;
 }
 
-.collection-checkbox {
-  margin-right: 8px;
+.recipe-grid-box .collection-checkbox {
+  width: 16px;
+  height: 16px;
   cursor: pointer;
+  flex-shrink: 0;
 }
-
-.collection-checkbox:disabled {
+.recipe-grid-box .collection-checkbox:disabled {
   cursor: not-allowed;
 }
 
-.collection-name {
+.recipe-grid-box .collection-name {
   flex: 1;
   color: #654321;
+  font-size: 13px;
 }
 
-.already-saved-badge {
-  margin-left: 8px;
+.recipe-grid-box .already-saved-badge {
   font-size: 11px;
   color: #7A9B76;
   font-weight: 600;
+  margin-left: auto;
 }
 
-/* FIXED: Smaller Remove button positioned on the right */
-.remove-from-list-btn {
-  padding: 4px 8px;
-  margin-left: 8px;
-  background-color: #C85A54;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 10px;
-  font-weight: 500;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.remove-from-list-btn:hover {
-  background-color: #B04943;
-}
-
-/* New Collection Form */
-.new-collection-form {
+/* New collection inline form */
+.recipe-grid-box .new-collection-form {
   position: absolute;
   top: 100%;
   left: 0;
@@ -380,12 +407,12 @@ td button {
   padding: 10px;
   background-color: white;
   border: 1px solid #D4C4B0;
-  border-radius: 4px;
-  z-index: 10;
-  box-shadow: 0 4px 6px rgba(101, 67, 33, 0.1);
+  border-radius: 6px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(101, 67, 33, 0.15);
 }
 
-.new-collection-input {
+.recipe-grid-box .new-collection-input {
   width: 100%;
   padding: 8px;
   margin-bottom: 8px;
@@ -393,85 +420,20 @@ td button {
   border-radius: 4px;
   border: 1px solid #D4C4B0;
   font-size: 14px;
+  font-family: 'Fredoka', sans-serif;
+}
+.recipe-grid-box .new-collection-input:focus {
+  outline: none;
+  border-color: #D4A574;
 }
 
-.new-collection-actions {
+.recipe-grid-box .new-collection-actions {
   display: flex;
   gap: 8px;
 }
-
-.save-new-collection-btn {
+.recipe-grid-box .new-collection-actions button {
   flex: 1;
-  padding: 8px 12px;
-  background-color: #D4A574;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.2s;
-}
-
-.save-new-collection-btn:hover {
-  background-color: #C69463;
-}
-
-.cancel-new-collection-btn {
-  flex: 1;
-  padding: 8px 12px;
-  background-color: #A69080;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.2s;
-}
-
-.cancel-new-collection-btn:hover {
-  background-color: #8F7A6A;
-}
-
-/* Action Buttons - Force uniform sizing */
-.recipe-grid-box .recipe-actions button {
-  width: 100% !important;
-  padding: 8px 16px !important;
-  border: none !important;
-  border-radius: 6px !important;
-  cursor: pointer !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  transition: background-color 0.2s !important;
-  box-sizing: border-box !important;
-  line-height: 1.5 !important;
-  margin: 0 !important;
-}
-
-.recipe-actions .btn {
-  background-color: #8B7355;
-  color: white;
-}
-
-.recipe-actions .btn:hover {
-  background-color: #6F5B42;
-}
-
-.recipe-actions .delete-recipe-btn {
-  background-color: #C85A54 !important;
-  color: white !important;
-}
-
-.recipe-actions .delete-recipe-btn:hover {
-  background-color: #B04943 !important;
-  border-color: #B04943 !important;
-}
-
-.recipe-actions .view-details-btn {
-  background-color: #7A9B76 !important;
-  color: white !important;
-}
-
-.recipe-actions .view-details-btn:hover {
-  background-color: #688760 !important;
-  border-color: #688760 !important;
+  width: auto !important;
+  padding: 8px 10px !important;
+  font-size: 12px !important;
 }

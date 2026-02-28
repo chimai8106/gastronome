@@ -14,7 +14,8 @@ export const searchRecipes = async (req, res, next) => {
     const { ingredients, number, ranking, ignorePantry, uid } = req.body;
     
     // Validate required fields
-    validateRequired(['ingredients', 'uid'], req.body);
+    // validateRequired(['ingredients', 'uid'], req.body);
+    validateRequired(['ingredients'], req.body);
     
     // Validate number range
     if (number) validateNumberRange(number, 'number', 1, 100);

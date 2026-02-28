@@ -204,6 +204,7 @@ export default function SearchResults() {
   };
 
   const totalResults = recipeResults.length + collectionResults.length;
+
   if (loading) {
     return null;
   }
@@ -308,82 +309,88 @@ export default function SearchResults() {
           </div>
         )}
 
-        
-
         {/* Results */}
         {!loading && (
           <>
             {/* Recipe Results */}
             {activeTab === "recipes" && (
-              <div className="search-results-recipe-grid">
+              <>
                 {recipeResults.length > 0 ? (
-                  recipeResults.map((recipe) => (
-                    <RecipeGridBox
-                      key={recipe._id}
-                      recipe={recipe}
-                      currentUserId={uid}
-                      isOwner={isOwner}
-                      selectedCollections={selectedCollections}
-                      showCollectionDropdown={isDropdownOpen(recipe._id)}
-                      creatingNewCollection={creatingNewCollection}
-                      newCollectionTitle={newCollectionTitle}
-                      recipeCollections={recipeCollections}
-                      onCollectionToggle={handleCollectionToggle}
-                      onRemoveCollection={handleRemoveCollection}
-                      onShowCollectionDropdown={() => toggleCollectionDropdown(recipe._id)}
-                      onAddToCollections={handleAddToCollections}
-                      onCreateNewCollection={handleCreateNewCollection}
-                      onSetCreatingNewCollection={(recipeId, value) => setCreatingNewCollection({ 
-                        ...creatingNewCollection, 
-                        [recipeId]: value 
-                      })}
-                      onSetNewCollectionTitle={(recipeId, value) => setNewCollectionTitle({ 
-                        ...newCollectionTitle, 
-                        [recipeId]: value 
-                      })}
-                      onUpdate={() => {
-                        openUpdateRecipePopup(recipe, () => {
-                          setChanged(!changed);
-                          performSearch(searchQuery);
-                        });
-                      }}
-                      onDelete={handleDelete}
-                      onNavigate={navigate}
-                      disabledButton={!uid}
-                    />
-                  ))
+                  <div className="search-results-recipe-grid">
+                    {recipeResults.map((recipe) => (
+                      <RecipeGridBox
+                        key={recipe._id}
+                        recipe={recipe}
+                        currentUserId={uid}
+                        isOwner={isOwner}
+                        selectedCollections={selectedCollections}
+                        showCollectionDropdown={isDropdownOpen(recipe._id)}
+                        creatingNewCollection={creatingNewCollection}
+                        newCollectionTitle={newCollectionTitle}
+                        recipeCollections={recipeCollections}
+                        onCollectionToggle={handleCollectionToggle}
+                        onRemoveCollection={handleRemoveCollection}
+                        onShowCollectionDropdown={() => toggleCollectionDropdown(recipe._id)}
+                        onAddToCollections={handleAddToCollections}
+                        onCreateNewCollection={handleCreateNewCollection}
+                        onSetCreatingNewCollection={(recipeId, value) => setCreatingNewCollection({ 
+                          ...creatingNewCollection, 
+                          [recipeId]: value 
+                        })}
+                        onSetNewCollectionTitle={(recipeId, value) => setNewCollectionTitle({ 
+                          ...newCollectionTitle, 
+                          [recipeId]: value 
+                        })}
+                        onUpdate={() => {
+                          openUpdateRecipePopup(recipe, () => {
+                            setChanged(!changed);
+                            performSearch(searchQuery);
+                          });
+                        }}
+                        onDelete={handleDelete}
+                        onNavigate={navigate}
+                        disabledButton={!uid}
+                      />
+                    ))}
+                  </div>
                 ) : (
-                  <p className="search-results-no-results">No recipes found</p>
+                  <div className="search-results-no-results">
+                    <p>No recipes found</p>
+                  </div>
                 )}
-              </div>
+              </>
             )}
 
             {/* Collection Results */}
             {activeTab === "collections" && (
-              <div className="search-results-collections-list">
+              <>
                 {collectionResults.length > 0 ? (
-                  collectionResults.map((collection) => (
-                    <div
-                      key={collection._id}
-                      className="search-results-collection-card"
-                      onClick={() => navigate(`/collections/${collection._id}`)}
-                    >
-                      <h3>{collection.title}</h3>
-                      {collection.description && (
-                        <p className="search-results-collection-description">{collection.description}</p>
-                      )}
-                      <div className="search-results-collection-meta">
-                        <span>{collection.recipes?.length || 0} recipes</span>
-                        {collection.authorName && (
-                          <span>By {collection.authorName}</span>
+                  <div className="search-results-collections-list">
+                    {collectionResults.map((collection) => (
+                      <div
+                        key={collection._id}
+                        className="search-results-collection-card"
+                        onClick={() => navigate(`/collections/${collection._id}`)}
+                      >
+                        <h3>{collection.title}</h3>
+                        {collection.description && (
+                          <p className="search-results-collection-description">{collection.description}</p>
                         )}
+                        <div className="search-results-collection-meta">
+                          <span>{collection.recipes?.length || 0} recipes</span>
+                          {collection.authorName && (
+                            <span>By {collection.authorName}</span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 ) : (
-                  <p className="search-results-no-results">No collections found</p>
+                  <div className="search-results-no-results">
+                    <p>No collections found</p>
+                  </div>
                 )}
-              </div>
+              </>
             )}
           </>
         )}

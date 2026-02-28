@@ -99,9 +99,9 @@ export async function searchCollection(searchParams) {
     if (searchParams.query) queryParams.append('q', searchParams.query);
     if (searchParams.limit) queryParams.append('limit', searchParams.limit);
     
-    // Use GET request with query params instead of POST
-    const data = await authenticatedFetch(`/recipeCollections/search?${queryParams.toString()}`, {
-      method: "POST"
+    // Use GET request with query params 
+    const data = await optionalAuthFetch(`/recipeCollections/search?${queryParams.toString()}`, {
+      method: "GET"
     });
     
     // authenticatedFetch already returns parsed JSON

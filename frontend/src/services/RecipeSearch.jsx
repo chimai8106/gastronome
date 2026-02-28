@@ -28,8 +28,6 @@ export default function SearchByIngredients() {
   const [isPopUpComment, setIsPopUpComment] = useState(false);
   const [myComment, setMyComment] = useState('');
   const [recipe, setRecipe] = useState(null);
-  
-  
 
   const formattedIngredients = ingredients.split(";").map(i => i.trim()).join(";");
 
@@ -48,59 +46,41 @@ export default function SearchByIngredients() {
   }, [uid]);
 
   const handleCommentAndSave = () => {
-      if (!myComment.trim()) {
-        toast.error('Please enter a comment');
-        return;
-      }
-      handleAddToMyRecipes(recipe, true);
-    };
+    if (!myComment.trim()) {
+      toast.error('Please enter a comment');
+      return;
+    }
+    handleAddToMyRecipes(recipe, true);
+  };
 
   const handleSearch = async () => {
-    // Validation
     if (!ingredients || ingredients.trim() === "") {
       toast.error("Please enter at least one ingredient");
       return false;
     }
-
     setIsLoading(true);
     setApiError(false);
     setRecipes([]);
-
     try {
-      const recipeData = { 
-        ingredients: formattedIngredients, 
-        number, 
-        ranking, 
-        ignorePantry, 
-        uid 
-      };
-      
+      const recipeData = { ingredients: formattedIngredients, number, ranking, ignorePantry };
       const data = await searchRecipeByIngredients(recipeData);
-      
-      // Handle case where API returns null, undefined, or empty array
       if (!data) {
         setApiError(true);
         toast.error("Recipe service is currently unavailable. Please try again later.");
         setRecipes([]);
         return false;
       }
-
       if (Array.isArray(data) && data.length === 0) {
-        // Valid response but no recipes found
         setRecipes([]);
         toast.info("No recipes found with those ingredients. Try different combinations!");
         return true;
       }
-
       setRecipes(data);
       toast.success(`Found ${data.length} recipe${data.length !== 1 ? 's' : ''}!`);
       return true;
-
     } catch (err) {
       console.error("Search error:", err);
       setApiError(true);
-      
-      // Check for specific error types
       if (err.message?.includes("fetch") || err.message?.includes("network")) {
         toast.error("Network error. Please check your connection and try again.");
       } else if (err.response?.status === 503 || err.response?.status === 500) {
@@ -108,7 +88,6 @@ export default function SearchByIngredients() {
       } else {
         toast.error(`Failed to search recipes: ${err?.message || "Unknown error"}. Please try again.`);
       }
-      
       setRecipes([]);
       return false;
     } finally {
@@ -117,10 +96,7 @@ export default function SearchByIngredients() {
   };
 
   const toggleRecipeExpansion = (recipeId) => {
-    setExpandedRecipes(prev => ({
-      ...prev,
-      [recipeId]: !prev[recipeId]
-    }));
+    setExpandedRecipes(prev => ({ ...prev, [recipeId]: !prev[recipeId] }));
   };
 
   const handleAddToMyRecipes = async (recipe, withComment = false) => {
@@ -129,9 +105,7 @@ export default function SearchByIngredients() {
       navigate("/login");
       return;
     }
-
     try {
-      // Prepare recipe data
       const formData = new FormData();
       formData.append("title", recipe.title);
       formData.append("instruction", recipe.analyzedInstructions?.[0]?.steps?.map(s => s.step).join("\n\n") || "");
@@ -143,24 +117,17 @@ export default function SearchByIngredients() {
       formData.append("cuisine", recipe.cuisines?.[0] || "");
       formData.append("difficulty", 0);
       formData.append("nutrition", "");
-      // Add comment if provided
       if (withComment) formData.append("myComment", myComment.trim());
-      
-      // Extract ingredient names
       const ingredientNames = [
         ...(recipe.usedIngredients?.map(ing => ing.original) || []),
         ...(recipe.missedIngredients?.map(ing => ing.original) || [])
       ];
       formData.append("ingredients", JSON.stringify(ingredientNames));
       formData.append("comments", JSON.stringify([]));
-      
-
-      // Fetch and add image if available - with CORS handling
       if (recipe.image) {
         try {
           const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(recipe.image)}`;
           const imageResponse = await fetch(proxyUrl);
-          
           if (imageResponse.ok) {
             const imageBlob = await imageResponse.blob();
             const imageFile = new File([imageBlob], `${recipe.title}.jpg`, { type: 'image/jpeg' });
@@ -174,15 +141,8 @@ export default function SearchByIngredients() {
       }
       const savedRecipe = await addRecipe(formData);
       toast.success("Recipe saved to your collection!");
-      // Clear selections
       setSelectedCollections({ ...selectedCollections, [recipe.id]: { ids: [], titles: [] } });
-      navigate(`/recipe/${savedRecipe._id}`, { 
-        state: { refresh: true },
-        replace: true 
-        });
-  
-      
-      
+      navigate(`/recipe/${savedRecipe._id}`, { state: { refresh: true }, replace: true });
     } catch (err) {
       toast.error(`Failed to save recipe: ${err?.message || err}`);
     }
@@ -194,25 +154,14 @@ export default function SearchByIngredients() {
       toast.error("Please enter a collection name");
       return;
     }
-
     try {
-      const newCol = await addRecipeCollection({
-        title: collectionTitle,
-        description: "",
-        isPublic: false,
-      });
-      
+      const newCol = await addRecipeCollection({ title: collectionTitle, description: "", isPublic: false });
       setRecipeCollections([...recipeCollections, newCol]);
-      
       const currentSelections = selectedCollections[recipeId] || { ids: [], titles: [] };
       setSelectedCollections({
         ...selectedCollections,
-        [recipeId]: {
-          ids: [...currentSelections.ids, newCol._id],
-          titles: [...currentSelections.titles, newCol.title]
-        }
+        [recipeId]: { ids: [...currentSelections.ids, newCol._id], titles: [...currentSelections.titles, newCol.title] }
       });
-      
       setCreatingNewCollection({ ...creatingNewCollection, [recipeId]: false });
       setNewCollectionTitle({ ...newCollectionTitle, [recipeId]: "" });
       toast.success("Collection created and selected!");
@@ -221,30 +170,20 @@ export default function SearchByIngredients() {
     }
   };
 
-  // Handle collection dropdown - redirect to login if not logged in
-  const handleCollectionDropdownClick = (recipeId) => {
-    if (!uid) {
-      toast.error("Please log in to add recipes to collections");
-      navigate("/login");
-      return;
-    }
-    toggleCollectionDropdown(recipeId);
-  };
-
   return (
     <div className="search-container">
       <h1>Kitchen Remix</h1>
       <p>
-        Kitchen Remix helps you turn the ingredients you already have into delicious meals. 
+        Kitchen Remix helps you turn the ingredients you already have into delicious meals.
         Just enter what's in your pantry, and we'll suggest recipes you can cook today!
       </p>
 
       {/* Ingredients */}
       <div className="form-group">
         <label>
-          Ingredients * 
+          Ingredients *
           <span className="tooltip">Enter ingredients you have, separated by semicolon (;).</span>
-          <p style ={{color: 'grey', fontWeight: '50px', fontSize: '12px'}}>Separated by semicolon (;)</p>
+          <p style={{ color: 'grey', fontWeight: '50px', fontSize: '12px' }}>Separated by semicolon (;)</p>
         </label>
         <input
           type="text"
@@ -287,24 +226,21 @@ export default function SearchByIngredients() {
 
       {/* Ignore Pantry */}
       <div className="form-group">
-        <label>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={ignorePantry}
             onChange={(e) => setIgnorePantry(e.target.checked)}
             disabled={isLoading}
           />
-          Ignore Pantry
+          <span className="checkbox-text">Ignore Pantry</span>
           <span className="tooltip">Toggle to ignore items you already have in your pantry.</span>
         </label>
       </div>
 
       {/* Search Button */}
-      <button 
-        onClick={() => { 
-          setSearchClicked(true); 
-          handleSearch(); 
-        }} 
+      <button
+        onClick={() => { setSearchClicked(true); handleSearch(); }}
         className="search-btn"
         disabled={isLoading}
       >
@@ -316,29 +252,17 @@ export default function SearchByIngredients() {
         <div className="ingredients-list-search">
           <h2>Your Ingredients</h2>
           <ul>
-            {ingredients
-              .split(";")
-              .map(item => item.trim())
-              .filter(item => item.length > 0) 
-              .map((item, index) => (
-                <li key={index}>
-                  <button
-                    onClick={() =>
-                      setIngredients(prev =>
-                        prev
-                          .split(";")
-                          .map(i => i.trim())
-                          .filter((_, i) => i !== index)
-                          .join("; ")
-                      )
-                    }
-                    disabled={isLoading}
-                  >
-                    ×
-                  </button>
-                  {item}
-                </li>
-              ))}
+            {ingredients.split(";").map(item => item.trim()).filter(item => item.length > 0).map((item, index) => (
+              <li key={index}>
+                <button
+                  onClick={() => setIngredients(prev => prev.split(";").map(i => i.trim()).filter((_, i) => i !== index).join("; "))}
+                  disabled={isLoading}
+                >
+                  ×
+                </button>
+                {item}
+              </li>
+            ))}
           </ul>
         </div>
       )}
@@ -356,13 +280,7 @@ export default function SearchByIngredients() {
           <h3>⚠️ Service Unavailable</h3>
           <p>We're having trouble connecting to the recipe service right now.</p>
           <p>Please try again in a few moments.</p>
-          <button 
-            onClick={() => {
-              setSearchClicked(true);
-              handleSearch();
-            }}
-            className="search-btn"
-          >
+          <button onClick={() => { setSearchClicked(true); handleSearch(); }} className="search-btn">
             Try Again
           </button>
         </div>
@@ -372,37 +290,29 @@ export default function SearchByIngredients() {
       {!isLoading && searchClicked && recipes.length > 0 && (
         <div className="search-results">
           <h2 className="results-title">Found {recipes.length} Recipe{recipes.length !== 1 ? 's' : ''}</h2>
-          
+
           {recipes.map((recipe) => {
             const isExpanded = expandedRecipes[recipe.id];
-            
             return (
               <div key={recipe.id} className="recipe-card-search">
-                {/* Recipe Image */}
                 {recipe.image && (
-                  <img 
+                  <img
                     src={`https://corsproxy.io/?${encodeURIComponent(recipe.image)}`}
                     alt={recipe.title}
                     className="recipe-image-search"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
                   />
                 )}
 
-                {/* Recipe Header */}
                 <div className="recipe-header-search">
                   <h3>{recipe.title}</h3>
                   <div className="recipe-meta">
                     <span>⏱️ {recipe.readyInMinutes} min</span>
                     <span>🍽️ {recipe.servings} servings</span>
-                    {recipe.cuisines?.length > 0 && (
-                      <span>🌍 {recipe.cuisines.join(", ")}</span>
-                    )}
+                    {recipe.cuisines?.length > 0 && <span>🌍 {recipe.cuisines.join(", ")}</span>}
                   </div>
                 </div>
 
-                {/* Ingredients Summary */}
                 <div className="ingredients-summary">
                   {recipe.usedIngredients?.length > 0 && (
                     <div className="used-ingredients">
@@ -418,25 +328,19 @@ export default function SearchByIngredients() {
                   )}
                 </div>
 
-                {/* Expandable Details */}
                 {isExpanded && (
                   <div className="recipe-details-expanded">
                     <div className="section">
                       <h4>All Ingredients</h4>
                       <ul className="ingredients-list">
                         {recipe.usedIngredients?.map((ing, i) => (
-                          <li key={`used-${i}`} className="ingredient-used">
-                            ✓ {ing.original}
-                          </li>
+                          <li key={`used-${i}`} className="ingredient-used">✓ {ing.original}</li>
                         ))}
                         {recipe.missedIngredients?.map((ing, i) => (
-                          <li key={`missed-${i}`} className="ingredient-missed">
-                            ✗ {ing.original}
-                          </li>
+                          <li key={`missed-${i}`} className="ingredient-missed">✗ {ing.original}</li>
                         ))}
                       </ul>
                     </div>
-
                     {recipe.analyzedInstructions?.[0]?.steps && (
                       <div className="section">
                         <h4>Instructions</h4>
@@ -449,43 +353,30 @@ export default function SearchByIngredients() {
                     )}
                   </div>
                 )}
-                
-                {/* Action Buttons Table */}
+
                 <table className="recipe-actions-grid-box">
                   <tbody className="tbody-grid-box">
                     <tr>
                       <td>
-                        <button 
-                          onClick={() => toggleRecipeExpansion(recipe.id)}
-                          className="update-recipe-btn"
-                        >
+                        <button onClick={() => toggleRecipeExpansion(recipe.id)} className="search-action-btn btn-expand">
                           {isExpanded ? "Show Less" : "Show More"}
                         </button>
                       </td>
                     </tr>
                     <tr>
                       <td>
-                        <button 
-                          onClick={() => handleAddToMyRecipes(recipe)}
-                          className="delete-recipe-btn"
-                        >
+                        <button onClick={() => handleAddToMyRecipes(recipe)} className={`search-action-btn ${uid ? "btn-save" : "btn-login"}`}>
                           {uid ? "Save Recipe" : "Login to Save"}
                         </button>
                       </td>
                     </tr>
-                     <tr>
+                    <tr>
                       <td>
-                        <button
-                          onClick={() => {
-                            setRecipe(recipe);
-                            setIsPopUpComment(true);}} 
-                          className="add-save-search-btn"
-                        >
+                        <button onClick={() => { setRecipe(recipe); setIsPopUpComment(true); }} className="search-action-btn btn-comment">
                           Add Comment & Save
                         </button>
                       </td>
                     </tr>
-                    
                   </tbody>
                 </table>
               </div>
@@ -500,28 +391,22 @@ export default function SearchByIngredients() {
           <p>No recipes found with those ingredients. Try different combinations!</p>
         </div>
       )}
-     {/* Comment Popup */}
+
+      {/* Comment Popup */}
       <Popup
         className="import"
         overlayClassName="popup-overlay"
         open={isPopUpComment}
-        onClose={() => {
-          setIsPopUpComment(false);
-          setMyComment('');
-        }}
+        onClose={() => { setIsPopUpComment(false); setMyComment(''); }}
         modal
         nested
         closeOnDocumentClick={true}
       >
         {(close) => (
           <div className="popup-content-wrapper">
-            {/* Close Button */}
-            <button 
-              className="popup-close-btn" 
-              onClick={() => {
-                setIsPopUpComment(false);
-                setMyComment('');
-              }}
+            <button
+              className="popup-close-btn"
+              onClick={() => { setIsPopUpComment(false); setMyComment(''); }}
               type="button"
               aria-label="Close"
             >
@@ -529,14 +414,14 @@ export default function SearchByIngredients() {
             </button>
 
             <h3 style={{ marginBottom: '20px' }}>Add Your Comment</h3>
-            
+
             <div className="form-group">
               <label className="form-label">Comment</label>
-              <textarea 
+              <textarea
                 className="form-textarea"
                 rows="6"
                 placeholder="What do you think about this recipe? Any modifications or tips?"
-                value={myComment} 
+                value={myComment}
                 onChange={(e) => setMyComment(e.target.value)}
                 autoFocus
               />
@@ -544,31 +429,20 @@ export default function SearchByIngredients() {
 
             <table className="recipe-actions">
               <tbody>
-              <tr>
-              <td>
-              <button
-                onClick={handleCommentAndSave}
-                className="save-recipe-btn"
-                style={{ flex: 1 }}
-              >
-                Save Recipe with Comment
-              </button>
-              </td>
-              </tr>
-              <tr>
-                <td>
-              <button
-                onClick={() => {
-                  setIsPopUpComment(false);
-                  setMyComment('');
-                }}
-                className="secondary-button"
-                style={{ flex: 1 }}
-              >
-                Cancel
-              </button>
-              </td>
-              </tr>
+                <tr>
+                  <td>
+                    <button onClick={handleCommentAndSave} className="search-action-btn btn-save">
+                      Save Recipe with Comment
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <button onClick={() => { setIsPopUpComment(false); setMyComment(''); }} className="search-action-btn btn-cancel">
+                      Cancel
+                    </button>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>

@@ -84,7 +84,7 @@ export async function getMyRecipes(onNavigate) {
  */
 export async function searchRecipeByIngredients(recipeData, onNavigate) {
   try {
-    return await authenticatedFetch("/recipes/search", {
+    return await optionalAuthFetch("/recipes/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(recipeData),
@@ -171,9 +171,9 @@ export async function searchRecipe(searchParams) {
     if (searchParams.minRating) queryParams.append('minRating', searchParams.minRating);
     if (searchParams.limit) queryParams.append('limit', searchParams.limit);
     
-    // Use POST request
-    const data = await authenticatedFetch(`/recipes/search-text?${queryParams.toString()}`, {
-      method: "POST"
+    // Use GET request
+    const data = await optionalAuthFetch(`/recipes/search-text?${queryParams.toString()}`, {
+      method: "GET"
     });
     
     return data.recipes || [];
