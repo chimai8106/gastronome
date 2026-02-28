@@ -126,8 +126,8 @@ export default function SearchByIngredients() {
       formData.append("comments", JSON.stringify([]));
       if (recipe.image) {
         try {
-          const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(recipe.image)}`;
-          const imageResponse = await fetch(proxyUrl);
+          // Fetch image directly from Spoonacular (no proxy needed)
+          const imageResponse = await fetch(recipe.image);
           if (imageResponse.ok) {
             const imageBlob = await imageResponse.blob();
             const imageFile = new File([imageBlob], `${recipe.title}.jpg`, { type: 'image/jpeg' });
@@ -297,7 +297,7 @@ export default function SearchByIngredients() {
               <div key={recipe.id} className="recipe-card-search">
                 {recipe.image && (
                   <img
-                    src={`https://corsproxy.io/?${encodeURIComponent(recipe.image)}`}
+                    src={recipe.image}  // Direct Spoonacular URL, no proxy needed
                     alt={recipe.title}
                     className="recipe-image-search"
                     onError={(e) => { e.target.style.display = 'none'; }}
