@@ -296,12 +296,14 @@ export default function SearchByIngredients() {
             return (
               <div key={recipe.id} className="recipe-card-search">
                 {recipe.image && (
-                  <img
-                    src={recipe.image}  // Direct Spoonacular URL, no proxy needed
-                    alt={recipe.title}
-                    className="recipe-image-search"
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                  />
+                  <div className="recipe-image-wrapper">
+                    <img
+                      src={recipe.image}
+                      alt={recipe.title}
+                      className="recipe-image-search"
+                      onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+                    />
+                  </div>
                 )}
 
                 <div className="recipe-header-search">
