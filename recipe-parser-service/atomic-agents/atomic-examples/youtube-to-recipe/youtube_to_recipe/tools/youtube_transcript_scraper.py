@@ -10,7 +10,7 @@ from youtube_transcript_api import (
     TranscriptsDisabled,
     YouTubeTranscriptApi,
 )
-from youtube_transcript_api.proxies import WebshareProxyConfig
+from youtube_transcript_api.proxies import GenericProxyConfig, WebshareProxyConfig
 from atomic_agents import BaseIOSchema, BaseTool, BaseToolConfig
 
 
@@ -102,10 +102,12 @@ class YouTubeTranscriptTool(BaseTool[YouTubeTranscriptToolInputSchema, YouTubeTr
         """
         video_id = self.extract_video_id(params.video_url)
         try:
+            proxy_url = f"http://{os.getenv('OXYLABS_USERNAME')}:{os.getenv('OXYLABS_PASSWORD')}@residential.oxylabs.io:10000"
+
             api = YouTubeTranscriptApi(
-                proxy_config=WebshareProxyConfig(
-                    proxy_username=os.getenv("WEBSHARE_USERNAME"),
-                proxy_password=os.getenv("WEBSHARE_PASSWORD")
+                proxy_config=GenericProxyConfig(
+                    http_url=proxy_url,
+                    https_url=proxy_url,
                 )
             )
             if params.language:
