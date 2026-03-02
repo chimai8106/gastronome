@@ -102,12 +102,11 @@ class YouTubeTranscriptTool(BaseTool[YouTubeTranscriptToolInputSchema, YouTubeTr
         """
         video_id = self.extract_video_id(params.video_url)
         try:
-            # Create an instance of YouTubeTranscriptApi
-            proxy_config = WebshareProxyConfig(
-                proxy_username="oghkwowv",
-                proxy_password="kfwboc5qon0z",
-                proxy_host="31.59.20.176",
-                proxy_port=6754,
+            api = YouTubeTranscriptApi(
+                proxy_config=WebshareProxyConfig(
+                    proxy_username=os.getenv("WEBSHARE_USERNAME"),
+                proxy_password=os.getenv("WEBSHARE_PASSWORD")
+                )
             )
             if params.language:
                 transcripts = api.fetch(video_id, languages=[params.language])
