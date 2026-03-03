@@ -99,7 +99,7 @@ class YouTubeTranscriptTool(BaseTool[YouTubeTranscriptToolInputSchema, YouTubeTr
             Exception: If fetching the transcript fails.
         """
         video_id = self.extract_video_id(params.video_url)
-        proxy_url = f"http://{os.getenv('OXYLABS_USERNAME')}:{os.getenv('OXYLABS_PASSWORD')}@residential.oxylabs.io:10000"
+        proxy_url = f"http://customer-{os.getenv('OXYLABS_USERNAME')}-cc-US:{os.getenv('OXYLABS_PASSWORD')}@pr.oxylabs.io:7777"
 
         yttb_api = YouTubeTranscriptApi(
             proxy_config=GenericProxyConfig(
@@ -107,6 +107,7 @@ class YouTubeTranscriptTool(BaseTool[YouTubeTranscriptToolInputSchema, YouTubeTr
                 https_url=proxy_url,
             )
         )
+
         try:
 
             if params.language:
